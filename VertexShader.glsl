@@ -9,13 +9,12 @@ layout(location=3) out float myAttrOut;
 // uniform offset
 layout(location=10) uniform float offset;
 
-layout(location=11) uniform mat4 rotateZ;
 void main() {
 	color = vertex_color;
 	myAttrOut = myAttr;
 	// gl_Position = newVertex;//vec4(vec3(newVertex.x + offset, newVertex.yz), 1.0);
 	// gl_Position = vec4(vertex_position, 1.0);
 
- 	vec4 newVertex = rotateZ * vec4(vertex_position, 1.0f);
+ 	vec4 newVertex = vec4(vertex_position, 1.0f);
  	gl_Position = vec4(vec3(newVertex.x + offset, newVertex.yz), 1.0);
 }

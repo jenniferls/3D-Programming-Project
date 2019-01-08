@@ -56,9 +56,7 @@ GLint gUniformColourLoc = -1;
 
 float gOffsetX = 0.0f;
 float gIncrement = 0.0f;
-float gRotateZ = 0.0f;
 
-glm::mat4 gRotate2D;
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
@@ -478,10 +476,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::ColorEdit3("clear color", gClearColour); // Edit 3 floats representing a color
 		ImGui::ColorEdit3("triangle color", gUniformColour);
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::SliderAngle("RotateZ", &gRotateZ);
 
-		static float gRotate2Z = 0;
-		ImGui::SliderAngle("RotateFrame", &gRotate2Z);
 		static float gTx[2] = {0,0};
 		ImGui::DragFloat2("Translate", gTx, 0.1f, -0.5f, 0.5f);
 		static float scale = 1.0f;
@@ -493,9 +488,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::End();
 
 		const glm::mat4 identity = glm::mat4(1.0f);
-		//gRotate2D = identity;
-		gRotate2D = glm::rotate(identity, gRotateZ, glm::vec3(0.0f,0.0f,1.0f));
-		glUniformMatrix4fv(11, 1, GL_TRUE, &gRotate2D[0][0]);//glm::value_ptr(gRotate2D));
 
 		Render(); //9. Rendera
 
@@ -518,9 +510,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
 		
 		glm::mat4 translate = glm::translate(identity, glm::vec3(gTx[0], gTx[1], 0.0f));
-		glm::mat4 rotation = glm::rotate(identity, gRotate2Z, glm::vec3(0.0f, 0.0f, 1.0f));
 		glm::mat4 scaleMat = glm::scale(identity, glm::vec3(scale, scale, scale));
-		glm::mat4 transform = translate * rotation * scaleMat;
+		glm::mat4 transform = translate * scaleMat;
 		glUniformMatrix4fv(5, 1, GL_TRUE, &transform[0][0]);
 
 		// false
