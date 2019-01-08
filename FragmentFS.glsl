@@ -10,13 +10,11 @@ layout(location=3) uniform bool sampleDepth;
 
 void main () {
 
-    if (sampleDepth)
-	{
+    if (sampleDepth) {
 		float depthValue = texture(depthSampler, uvCoord).r;
 		fragment_color = vec4(vec3(depthValue), 1.0);
 	}
-	else
-	{
+	else {
 		fragment_color = texture(colourSampler, uvCoord);
 	}
 }

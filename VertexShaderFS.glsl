@@ -6,8 +6,7 @@ layout(location=2) out vec2 uvCoord;
 
 layout(location=5) uniform mat4 transform;
 
-void main() 
-{
+void main() {
 	uvCoord = vertex_uv;
 	gl_Position = vec4(vertex_position, 0.0f, 1.0f) * transform;
 }

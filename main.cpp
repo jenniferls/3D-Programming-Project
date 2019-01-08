@@ -4,6 +4,7 @@
 //--------------------------------------------------------------------------------------
 #include <windows.h>
 
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <streambuf>
@@ -102,8 +103,7 @@ int CreateFrameBuffer() {
 	return err;
 }
 
-void CreateFSShaders()
-{
+void CreateFSShaders() {
 	// local buffer to store error strings when compiling.
 	char buff[1024]; 
 	memset(buff, 0, 1024);
@@ -180,8 +180,7 @@ void CreateFSShaders()
 	glDeleteShader(fs);
 }
 
-void CreateShaders()
-{
+void CreateShaders() {
 	// local buffer to store error strings when compiling.
 	char buff[1024]; 
 	memset(buff, 0, 1024);
@@ -258,8 +257,7 @@ void CreateShaders()
 	glDeleteShader(fs);
 }
 
-void CreateFullScreenQuad()
-{
+void CreateFullScreenQuad() {
 	struct Pos2UV {
 		float x,y;
 		float u,v;
@@ -297,12 +295,10 @@ void CreateFullScreenQuad()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
 
-void CreateTriangleData()
-{
+void CreateTriangleData() {
 	// this is how we will structure the input data for the vertex shader
 	// every six floats, is one vertex.
-	struct TriangleVertex
-	{
+	struct TriangleVertex {
 		float x, y, z;
 		float r, g, b;
 		float myAttr;
@@ -311,8 +307,7 @@ void CreateTriangleData()
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
-	TriangleVertex triangleVertices[3] = 
-	{
+	TriangleVertex triangleVertices[3] = {
 		// pos and color for each vertex
 		{ 0.0f, 0.5f, 0.3f,	1.0f, 0.0f, 0.0f, 0.0},
 		{ 0.5f, -0.5f, 0.3f, 0.0f, 1.0f, 0.0f, 0.0},
@@ -374,14 +369,12 @@ void CreateTriangleData()
 	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*6));
 }
 
-void SetViewport()
-{
+void SetViewport() {
 	// usually (not necessarily) this matches with the window size
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
 
-void Render()
-{
+void Render() {
 	// set the color TO BE used (this does not clear the screen right away)
 	glClearColor(gClearColour[0], gClearColour[1],gClearColour[2],1.0);
 
@@ -402,8 +395,7 @@ void Render()
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	/*
 	if (key == GLFW_KEY_W)
 		keys[0] = (action == GLFW_PRESS || action == GLFW_REPEAT);
@@ -416,8 +408,55 @@ static void keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 	*/
 }
 
-int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
-{
+//This function specifies the layout of debug messages
+void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
+	//Take out 131185 for example to test debug messages
+	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) { //Insignificant errors/notifications
+		return;
+	}
+
+	freopen("CON", "w", stdout);
+
+	cout << "---------------" << endl;
+	cout << "Debug message (" << id << "): " << message << endl;
+
+	switch (source) {
+	case GL_DEBUG_SOURCE_API:             cout << "Source: API"; break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   cout << "Source: Window System"; break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER: cout << "Source: Shader Compiler"; break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:     cout << "Source: Third Party"; break;
+	case GL_DEBUG_SOURCE_APPLICATION:     cout << "Source: Application"; break;
+	case GL_DEBUG_SOURCE_OTHER:           cout << "Source: Other"; break;
+	} cout << endl;
+
+	switch (type) {
+	case GL_DEBUG_TYPE_ERROR:               cout << "Type: Error"; break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: cout << "Type: Deprecated Behaviour"; break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  cout << "Type: Undefined Behaviour"; break;
+	case GL_DEBUG_TYPE_PORTABILITY:         cout << "Type: Portability"; break;
+	case GL_DEBUG_TYPE_PERFORMANCE:         cout << "Type: Performance"; break;
+	case GL_DEBUG_TYPE_MARKER:              cout << "Type: Marker"; break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:          cout << "Type: Push Group"; break;
+	case GL_DEBUG_TYPE_POP_GROUP:           cout << "Type: Pop Group"; break;
+	case GL_DEBUG_TYPE_OTHER:               cout << "Type: Other"; break;
+	} cout << endl;
+
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_HIGH:         cout << "Severity: high"; break;
+	case GL_DEBUG_SEVERITY_MEDIUM:       cout << "Severity: medium"; break;
+	case GL_DEBUG_SEVERITY_LOW:          cout << "Severity: low"; break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION: cout << "Severity: notification"; break;
+	} cout << endl;
+	cout << endl;
+}
+
+int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow ) {
+	//Attaches a console used for displaying debug messages to the application
+	AllocConsole();
+	AttachConsole(GetCurrentProcessId());
+	freopen("CON", "w", stdout);
+	cout << "Welcome to the debug console!" << endl;
+
 	initWindow(WIDTH, HEIGHT);
 	glfwSetKeyCallback(gWindow, keyboard);
 	bool shutdown = false;
@@ -442,8 +481,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	gUniformColourLoc = glGetUniformLocation(gShaderProgram, "colourFromImGui");
 
-	while (!glfwWindowShouldClose(gWindow))
-	{
+	while (!glfwWindowShouldClose(gWindow)) {
 		glfwPollEvents();
 		if (GLFW_PRESS == glfwGetKey(gWindow, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(gWindow, 1);
@@ -457,6 +495,16 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		glUseProgram(gShaderProgram);
 		glBindVertexArray(gVertexAttribute);
+
+		//Enable OpenGL debug context if context allows for debug context
+		GLint flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+		if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+			glEnable(GL_DEBUG_OUTPUT);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); //Makes sure errors are displayed synchronously
+			glDebugMessageCallback(glDebugOutput, nullptr);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+		}
+
 		glEnable(GL_DEPTH_TEST);
 
 		float deltaTime = ImGui::GetIO().DeltaTime;
@@ -470,8 +518,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+		ImGui::Begin("Debug");                          // Create a window called "Debug" and append into it.
+		ImGui::Text("DV1568 3D-Programming");               // Display some text (you can use a format strings too)
 		ImGui::SliderFloat("float", &gFloat, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
 		ImGui::ColorEdit3("clear color", gClearColour); // Edit 3 floats representing a color
 		ImGui::ColorEdit3("triangle color", gUniformColour);
@@ -489,7 +537,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		const glm::mat4 identity = glm::mat4(1.0f);
 
-		Render(); //9. Rendera
+		Render(); //9. Render
 
 		// first pass is done!
 		// now render a second pass
@@ -541,14 +589,14 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 }
 
-void initWindow(unsigned int w, unsigned int h)
-{
+void initWindow(unsigned int w, unsigned int h) {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); //Allows for Debug output (should generally be commented out in a release build)
+
 	gWindow = glfwCreateWindow(w, h, "basic GLFW window", NULL, NULL);
 	if (!gWindow) {
 		fprintf(stderr, "error creating window\n");
@@ -563,8 +611,7 @@ void initWindow(unsigned int w, unsigned int h)
 	glfwSwapInterval(1);
 
 	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
+	if (GLEW_OK != err) {
 		fprintf(stderr, "Error GLEW: %s\n", glewGetErrorString(err));
 	}
 	const GLubyte* renderer = glGetString(GL_RENDERER);
