@@ -415,7 +415,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 		return;
 	}
 
-	freopen("CON", "w", stdout);
+	freopen("CON", "w", stdout); //Redirects the string stream to the debug console
 
 	cout << "---------------" << endl;
 	cout << "Debug message (" << id << "): " << message << endl;
@@ -454,7 +454,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	//Attaches a console used for displaying debug messages to the application
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
-	freopen("CON", "w", stdout);
+	freopen("CON", "w", stdout); //Redirects the string stream to the debug console
 	cout << "Welcome to the debug console!" << endl;
 
 	initWindow(WIDTH, HEIGHT);
@@ -469,6 +469,15 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	ImGui_ImplOpenGL3_Init("#version 130");
 
 	ImGui::StyleColorsDark();
+
+	//Enable OpenGL debug context if context allows for debug context
+	GLint flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); //Makes sure errors are displayed synchronously
+		glDebugMessageCallback(glDebugOutput, nullptr);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+	}
 
 	CreateShaders(); //5. Skapa vertex- och fragment-shaders
 	CreateFSShaders(); //5. Skapa vertex- och fragment-shaders
@@ -495,15 +504,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		glUseProgram(gShaderProgram);
 		glBindVertexArray(gVertexAttribute);
-
-		//Enable OpenGL debug context if context allows for debug context
-		GLint flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-		if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-			glEnable(GL_DEBUG_OUTPUT);
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); //Makes sure errors are displayed synchronously
-			glDebugMessageCallback(glDebugOutput, nullptr);
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-		}
 
 		glEnable(GL_DEPTH_TEST);
 
