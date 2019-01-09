@@ -7,7 +7,6 @@ layout(location=3) in float myAttrOut;
 out vec4 fragment_color;
 
 // this is a uniform value, the very same value for ALL pixel shader executions
-layout(location = 5) uniform vec3 colourFromImGui;
 
 void main () {
 	fragment_color = vec4 (color, 1.0);

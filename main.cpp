@@ -47,16 +47,8 @@ GLuint gShaderProgram = 0;
 GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
 GLuint gShaderProgramFS = 0;
-float gTx, gTy;
 
-float gFloat = 0;
 float gClearColour[3] {};
-
-float gUniformColour[3] {};
-GLint gUniformColourLoc = -1;
-
-float gOffsetX = 0.0f;
-float gIncrement = 0.0f;
 
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
@@ -384,8 +376,6 @@ void Render() {
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
 
-	glUniform3fv(gUniformColourLoc, 1, &gUniformColour[0]);
-
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(gVertexAttribute);
 	
@@ -488,8 +478,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
 	CreateFullScreenQuad();
 
-	gUniformColourLoc = glGetUniformLocation(gShaderProgram, "colourFromImGui");
-
 	while (!glfwWindowShouldClose(gWindow)) {
 		glfwPollEvents();
 		if (GLFW_PRESS == glfwGetKey(gWindow, GLFW_KEY_ESCAPE)) {
@@ -507,26 +495,16 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		glEnable(GL_DEPTH_TEST);
 
-		float deltaTime = ImGui::GetIO().DeltaTime;
-		// move along X
-		gIncrement += 1.0f * deltaTime;
-		gOffsetX = sin(gIncrement);
-		glUniform1f(10, gOffsetX);
-
 		// prepare IMGUI output
 		ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
 		ImGui::Begin("Debug");                          // Create a window called "Debug" and append into it.
-		ImGui::Text("DV1568 3D-Programming");               // Display some text (you can use a format strings too)
-		ImGui::SliderFloat("float", &gFloat, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+		ImGui::Text("DV1568 3D-Programming");           // Display some text (you can use a format strings too)   
 		ImGui::ColorEdit3("clear color", gClearColour); // Edit 3 floats representing a color
-		ImGui::ColorEdit3("triangle color", gUniformColour);
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-		static float gTx[2] = {0,0};
-		ImGui::DragFloat2("Translate", gTx, 0.1f, -0.5f, 0.5f);
 		static float scale = 1.0f;
 		ImGui::SliderFloat("Scale", &scale, 0.0f, 1.0f);
 
@@ -557,9 +535,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
 		
-		glm::mat4 translate = glm::translate(identity, glm::vec3(gTx[0], gTx[1], 0.0f));
 		glm::mat4 scaleMat = glm::scale(identity, glm::vec3(scale, scale, scale));
-		glm::mat4 transform = translate * scaleMat;
+		glm::mat4 transform = scaleMat;
 		glUniformMatrix4fv(5, 1, GL_TRUE, &transform[0][0]);
 
 		// false
@@ -597,7 +574,7 @@ void initWindow(unsigned int w, unsigned int h) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); //Allows for Debug output (should generally be commented out in a release build)
 
-	gWindow = glfwCreateWindow(w, h, "basic GLFW window", NULL, NULL);
+	gWindow = glfwCreateWindow(w, h, "DV", NULL, NULL);
 	if (!gWindow) {
 		fprintf(stderr, "error creating window\n");
 		exit(-1);
