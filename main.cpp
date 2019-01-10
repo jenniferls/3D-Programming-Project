@@ -52,6 +52,9 @@ GLuint gShaderProgramFS = 0;
 
 float gClearColour[3] {};
 
+GLint mvp_id = -1;
+glm::mat4 mvp_matrix;
+
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
@@ -363,6 +366,23 @@ void CreateTriangleData() {
 	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*6));
 }
 
+void CreateMatrixData() {
+	//MVP-matrix
+	const glm::mat4 world = glm::mat4(1.0f);
+	const glm::mat4 view = glm::lookAt(
+		glm::vec3(0, 0, 2), //Camera position
+		glm::vec3(0, 0, 0), //Looks at origin
+		glm::vec3(0, 1, 0)  //Up vector
+	);
+	const glm::mat4 projection = glm::perspective(glm::radians(45.0f), WIDTH / HEIGHT, 0.1f, 20.0f);
+	mvp_matrix = projection * view * world;
+	mvp_id = glGetUniformLocation(gShaderProgram, "MVP_MAT");
+	if (mvp_id == -1) {
+		OutputDebugStringA("Error, cannot find 'mvp_id' attribute in Vertex shader\n");
+		return;
+	}
+}
+
 void SetViewport() {
 	// usually (not necessarily) this matches with the window size
 	glViewport(0, 0, WIDTH, HEIGHT);
@@ -478,6 +498,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		shutdown = true;
 
 	CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
+	CreateMatrixData(); //Creates mvp-matrix
 	CreateFullScreenQuad();
 
 	while (!glfwWindowShouldClose(gWindow)) {
@@ -511,16 +532,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		//MVP-matrix
-		const glm::mat4 world = glm::mat4(1.0f);
-		const glm::mat4 view = glm::lookAt(
-			glm::vec3(0, 0, 2), //Camera position
-			glm::vec3(0, 0, 0), //Looks at origin
-			glm::vec3(0, 1, 0)  //Up vector
-		);
-		const glm::mat4 projection = glm::perspective(glm::radians(45.0f), WIDTH / HEIGHT, 0.1f, 20.0f);
-		const glm::mat4 mvp_matrix = projection * view * world;
-		glUniformMatrix4fv(11, 1, GL_TRUE, glm::value_ptr(mvp_matrix));
+		glUniformMatrix4fv(mvp_id, 1, GL_TRUE, glm::value_ptr(mvp_matrix)); //Sends data about mvp-matrix to vertex-shader
 
 		Render(); //9. Render
 
@@ -542,7 +554,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
 		
-		glm::mat4 scaleMat = glm::scale(world, glm::vec3(scale, scale, scale));
+		glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(scale, scale, scale));
 		glm::mat4 transform = scaleMat;
 		glUniformMatrix4fv(5, 1, GL_TRUE, &transform[0][0]);
 
