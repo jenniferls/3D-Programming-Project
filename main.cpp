@@ -20,6 +20,8 @@
 
 // read docs: https://github.com/g-truc/glm/blob/master/manual.md#section1
 #include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "glm/ext.hpp"
 #include <gl/GL.h>
 
@@ -27,8 +29,8 @@
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "glfw3.lib")
 
-#define WIDTH 900
-#define HEIGHT 900
+#define WIDTH 900.0f
+#define HEIGHT 900.0f
 GLFWwindow *gWindow;
 
 using namespace std;
@@ -113,7 +115,7 @@ void CreateFSShaders() {
 	// get the pointer to the c style string stored in the string object.
 	const char* shaderTextPtr = shaderText.c_str();
 	
-	// ask GL to use this string a shader code source
+	// ask GL to use this string as a shader code source
 	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
 
 	// try to compile this shader source.
@@ -469,8 +471,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 	}
 
-	CreateShaders(); //5. Skapa vertex- och fragment-shaders
-	CreateFSShaders(); //5. Skapa vertex- och fragment-shaders
+	CreateShaders(); //5. Create vertex- and fragment-shaders
+	CreateFSShaders(); //5. Create vertex- and fragment-shaders
 
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
@@ -495,25 +497,30 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		glEnable(GL_DEPTH_TEST);
 
-		// prepare IMGUI output
+		//Prepare IMGUI output
 		ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
 		ImGui::Begin("Debug");                          // Create a window called "Debug" and append into it.
 		ImGui::Text("DV1568 3D-Programming");           // Display some text (you can use a format strings too)   
 		ImGui::ColorEdit3("clear color", gClearColour); // Edit 3 floats representing a color
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
 		static float scale = 1.0f;
 		ImGui::SliderFloat("Scale", &scale, 0.0f, 1.0f);
-
 		static bool renderDepth = false;
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
-
 		ImGui::End();
 
-		const glm::mat4 identity = glm::mat4(1.0f);
+		//MVP-matrix
+		const glm::mat4 world = glm::mat4(1.0f);
+		const glm::mat4 view = glm::lookAt(
+			glm::vec3(0, 0, 2), //Camera position
+			glm::vec3(0, 0, 0), //Looks at origin
+			glm::vec3(0, 1, 0)  //Up vector
+		);
+		const glm::mat4 projection = glm::perspective(glm::radians(45.0f), WIDTH / HEIGHT, 0.1f, 20.0f);
+		const glm::mat4 mvp_matrix = projection * view * world;
+		glUniformMatrix4fv(11, 1, GL_TRUE, glm::value_ptr(mvp_matrix));
 
 		Render(); //9. Render
 
@@ -535,7 +542,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
 		
-		glm::mat4 scaleMat = glm::scale(identity, glm::vec3(scale, scale, scale));
+		glm::mat4 scaleMat = glm::scale(world, glm::vec3(scale, scale, scale));
 		glm::mat4 transform = scaleMat;
 		glUniformMatrix4fv(5, 1, GL_TRUE, &transform[0][0]);
 
@@ -543,10 +550,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glUniform1i(3, renderDepth);  // 0 == false
 		
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		ImGui::Render();
 
+		//Render IMGUI interface
+		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		glfwSwapBuffers(gWindow);
+		glfwSwapBuffers(gWindow); //10. Växla front- och back-buffer
 	}
 
 	// SHUTDOWN
@@ -574,7 +582,7 @@ void initWindow(unsigned int w, unsigned int h) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); //Allows for Debug output (should generally be commented out in a release build)
 
-	gWindow = glfwCreateWindow(w, h, "DV", NULL, NULL);
+	gWindow = glfwCreateWindow(w, h, "DV1568 3D-Programming Project", NULL, NULL);
 	if (!gWindow) {
 		fprintf(stderr, "error creating window\n");
 		exit(-1);

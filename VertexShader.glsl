@@ -3,6 +3,8 @@ layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_color;
 layout(location = 2) in float myAttr;
 
+layout(location=11) uniform mat4 mvp_matrix;
+
 out vec3 color;
 layout(location=3) out float myAttrOut;
 
@@ -13,5 +15,5 @@ void main() {
 	// gl_Position = vec4(vertex_position, 1.0);
 
  	vec4 newVertex = vec4(vertex_position, 1.0f);
- 	gl_Position = vec4(vec3(newVertex.x, newVertex.yz), 1.0);
+ 	gl_Position = mvp_matrix * vec4(vec3(newVertex.x, newVertex.yz), 1.0);
 }
