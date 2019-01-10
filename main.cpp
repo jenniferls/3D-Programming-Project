@@ -54,6 +54,7 @@ float gClearColour[3] {};
 
 GLint mvp_id = -1;
 glm::mat4 mvp_matrix;
+float FoV = 45.0f; //Field-of-view
 
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
@@ -366,7 +367,7 @@ void CreateTriangleData() {
 	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*6));
 }
 
-void CreateMatrixData() {
+void CreateMatrixData(float FoV) {
 	//MVP-matrix
 	const glm::mat4 world = glm::mat4(1.0f);
 	const glm::mat4 view = glm::lookAt(
@@ -374,7 +375,7 @@ void CreateMatrixData() {
 		glm::vec3(0, 0, 0), //Looks at origin
 		glm::vec3(0, 1, 0)  //Up vector
 	);
-	const glm::mat4 projection = glm::perspective(glm::radians(45.0f), WIDTH / HEIGHT, 0.1f, 20.0f);
+	const glm::mat4 projection = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 20.0f);
 	mvp_matrix = projection * view * world;
 	mvp_id = glGetUniformLocation(gShaderProgram, "MVP_MAT");
 	if (mvp_id == -1) {
@@ -418,6 +419,12 @@ static void keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 	if (key == GLFW_KEY_D)
 		keys[3] = (action == GLFW_PRESS || action == GLFW_REPEAT);
 	*/
+}
+
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+	freopen("CON", "w", stdout); //Redirects the string stream to the debug console
+	cout << yOffset << endl;
+	FoV = FoV - 5 * yOffset;
 }
 
 //This function specifies the layout of debug messages
@@ -498,7 +505,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		shutdown = true;
 
 	CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
-	CreateMatrixData(); //Creates mvp-matrix
 	CreateFullScreenQuad();
 
 	while (!glfwWindowShouldClose(gWindow)) {
@@ -506,6 +512,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		if (GLFW_PRESS == glfwGetKey(gWindow, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(gWindow, 1);
 		}
+
+		glfwSetScrollCallback(gWindow, scrollCallback);
 
 		// first pass
 		// render all geometry to a framebuffer object
@@ -532,6 +540,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
+		CreateMatrixData(FoV); //Creates mvp-matrix
 		glUniformMatrix4fv(mvp_id, 1, GL_TRUE, glm::value_ptr(mvp_matrix)); //Sends data about mvp-matrix to vertex-shader
 
 		Render(); //9. Render
