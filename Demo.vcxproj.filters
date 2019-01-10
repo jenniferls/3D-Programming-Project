@@ -91,7 +91,7 @@
     <ClInclude Include="imgui\imgui_impl_opengl3.h">
       <Filter>Resource Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\External libraries\stb\stb_image.h">
+    <ClInclude Include="stb_image.h">
       <Filter>Resource Files\stb_image</Filter>
     </ClInclude>
   </ItemGroup>

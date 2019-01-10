@@ -305,14 +305,14 @@ void CreateTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int widht, height, nrOfChannels;
-	unsigned char *data = stbi_load("Resources\Textures\container.jpg", &widht, &height, &nrOfChannels, 0);
+	int width, height, nrOfChannels;
+	unsigned char* data = stbi_load("Resources/Textures/container.jpg", &width, &height, &nrOfChannels, 0);
 	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widht, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
-		std::cout << "Failed to load texture" << std::endl;
+		cout << "Failed to load texture. Reason: " << stbi_failure_reason() << endl;
 	}
 	stbi_image_free(data);
 }
