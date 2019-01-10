@@ -25,6 +25,8 @@
 #include "glm/ext.hpp"
 #include <gl/GL.h>
 
+#include "stb_image.h"
+
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "glfw3.lib")
@@ -293,6 +295,28 @@ void CreateFullScreenQuad() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
 
+void CreateTexture() {
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int widht, height, nrOfChannels;
+	unsigned char *data = stbi_load("Resources\Textures\container.jpg", &widht, &height, &nrOfChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widht, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+}
+
 void CreateTriangleData() {
 	// this is how we will structure the input data for the vertex shader
 	// every six floats, is one vertex.
@@ -540,6 +564,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		CreateMatrixData(FoV); //Creates mvp-matrix
 		glUniformMatrix4fv(mvp_id, 1, GL_TRUE, glm::value_ptr(mvp_matrix)); //Sends data about mvp-matrix to vertex-shader
+
+		CreateTexture();
 
 		Render(); //9. Render
 
