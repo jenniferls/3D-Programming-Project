@@ -421,9 +421,8 @@ static void keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 	*/
 }
 
+//This function uses output from the mouse wheel
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-	freopen("CON", "w", stdout); //Redirects the string stream to the debug console
-	cout << yOffset << endl;
 	FoV = FoV - 5 * yOffset;
 }
 
@@ -478,6 +477,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	initWindow(WIDTH, HEIGHT);
 	glfwSetKeyCallback(gWindow, keyboard);
+	glfwSetScrollCallback(gWindow, scrollCallback);
 	bool shutdown = false;
 
 	IMGUI_CHECKVERSION();
@@ -512,8 +512,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		if (GLFW_PRESS == glfwGetKey(gWindow, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(gWindow, 1);
 		}
-
-		glfwSetScrollCallback(gWindow, scrollCallback);
 
 		// first pass
 		// render all geometry to a framebuffer object
