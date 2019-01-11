@@ -56,6 +56,18 @@ float gClearColour[3] {};
 
 GLint mvp_id = -1;
 glm::mat4 mvp_matrix;
+
+GLint model_id = -1;
+glm::mat4 model_matrix;
+GLint view_id = -1;
+glm::mat4 view_matrix;
+GLint projection_id = -1;
+glm::mat4 projection_matrix;
+
+//Camera
+glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 2.0f); //Default camera position
+glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
+glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
 float FoV = 45.0f; //Field-of-view
 
 // macro that returns "char*" with offset "i"
@@ -391,16 +403,30 @@ void CreateTriangleData() {
 	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*6));
 }
 
-void CreateMatrixData(float FoV) {
+void CreateMatrixData() {
 	//MVP-matrix
-	const glm::mat4 world = glm::mat4(1.0f);
-	const glm::mat4 view = glm::lookAt(
-		glm::vec3(0, 0, 2), //Camera position
-		glm::vec3(0, 0, 0), //Looks at origin
-		glm::vec3(0, 1, 0)  //Up vector
-	);
-	const glm::mat4 projection = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 20.0f);
-	mvp_matrix = projection * view * world;
+	model_matrix = glm::mat4(1.0f);
+	//model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
+	//if (model_id == -1) {
+	//	OutputDebugStringA("Error, cannot find 'model_id' attribute in Vertex shader\n");
+	//	return;
+	//}
+
+	view_matrix = glm::lookAt(camPos, camPos + camFront, camUp); //Camera position, Looking direction and Up vector
+	//view_id = glGetUniformLocation(gShaderProgram, "VIEW_MAT");
+	//if (view_id == -1) {
+	//	OutputDebugStringA("Error, cannot find 'view_id' attribute in Vertex shader\n");
+	//	return;
+	//}
+
+	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 20.0f);
+	//projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
+	//if (projection_id == -1) {
+	//	OutputDebugStringA("Error, cannot find 'projection_id' attribute in Vertex shader\n");
+	//	return;
+	//}
+	
+	mvp_matrix = projection_matrix * view_matrix * model_matrix;
 	mvp_id = glGetUniformLocation(gShaderProgram, "MVP_MAT");
 	if (mvp_id == -1) {
 		OutputDebugStringA("Error, cannot find 'mvp_id' attribute in Vertex shader\n");
@@ -433,21 +459,39 @@ void Render() {
 }
 
 static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	/*
+	float movementSpeed = 0.07f;
 	if (key == GLFW_KEY_W)
-		keys[0] = (action == GLFW_PRESS || action == GLFW_REPEAT);
+		camPos += movementSpeed * camFront;
+	//	keys[0] = (action == GLFW_PRESS || action == GLFW_REPEAT);
 	if (key == GLFW_KEY_A)
-		keys[1] = (action == GLFW_PRESS || action == GLFW_REPEAT);
+		camPos -= glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
+	//	keys[1] = (action == GLFW_PRESS || action == GLFW_REPEAT);
 	if (key == GLFW_KEY_S)
-		keys[2] = (action == GLFW_PRESS || action == GLFW_REPEAT);
+		camPos -= movementSpeed * camFront;
+	//	keys[2] = (action == GLFW_PRESS || action == GLFW_REPEAT);
 	if (key == GLFW_KEY_D)
-		keys[3] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-	*/
+		camPos += glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
+	//	keys[3] = (action == GLFW_PRESS || action == GLFW_REPEAT);
 }
 
 //This function uses output from the mouse wheel
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
 	FoV = FoV - 5 * yOffset;
+	if (FoV <= 10.0f) {
+		FoV = 10.0f;
+	}
+	if (FoV >= 100.0f) {
+		FoV = 100.0f;
+	}
+	cout << "Current FoV: " << FoV << endl;
+}
+
+void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
+
+	//This provides feedback for mouse movement
+	cout << "X-Position: " << xPos << endl;
+	cout << "Y-Position: " << yPos << endl;
+	cout << endl;
 }
 
 //This function specifies the layout of debug messages
@@ -500,8 +544,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	cout << "Welcome to the debug console!" << endl;
 
 	initWindow(WIDTH, HEIGHT);
-	glfwSetKeyCallback(gWindow, keyboard);
-	glfwSetScrollCallback(gWindow, scrollCallback);
 	bool shutdown = false;
 
 	IMGUI_CHECKVERSION();
@@ -530,6 +572,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
 	CreateFullScreenQuad();
+	CreateTexture();
 
 	while (!glfwWindowShouldClose(gWindow)) {
 		glfwPollEvents();
@@ -562,10 +605,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(FoV); //Creates mvp-matrix
+		CreateMatrixData(); //Creates mvp-matrix
+		//glUniformMatrix4fv(model_id, 1, GL_TRUE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to vertex-shader
+		//glUniformMatrix4fv(view_id, 1, GL_TRUE, glm::value_ptr(view_matrix)); //Sends data about view-matrix to vertex-shader
+		//glUniformMatrix4fv(projection_id, 1, GL_TRUE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix to vertex-shader
 		glUniformMatrix4fv(mvp_id, 1, GL_TRUE, glm::value_ptr(mvp_matrix)); //Sends data about mvp-matrix to vertex-shader
-
-		CreateTexture();
 
 		Render(); //9. Render
 
@@ -635,8 +679,10 @@ void initWindow(unsigned int w, unsigned int h) {
 	glfwMakeContextCurrent(gWindow);
 	glewExperimental = GL_TRUE;
 
-	// mouse callback
-	// glfwSetCursorPosCallback(gWindow, mouseMoved);
+	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //Disables mouse cursor (Press ESCAPE to quit application)
+	glfwSetKeyCallback(gWindow, keyboard); //Keyboard callback
+	glfwSetScrollCallback(gWindow, scrollCallback); //Scroll-wheel callback
+	glfwSetCursorPosCallback(gWindow, mouseCallback); //Mouse callback
 
 	glfwSwapInterval(1);
 
