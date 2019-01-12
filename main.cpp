@@ -54,9 +54,7 @@ GLuint gShaderProgramFS = 0;
 
 float gClearColour[3] {};
 
-GLint mvp_id = -1;
-glm::mat4 mvp_matrix;
-
+//MVP-Matrix
 GLint model_id = -1;
 glm::mat4 model_matrix;
 GLint view_id = -1;
@@ -65,9 +63,9 @@ GLint projection_id = -1;
 glm::mat4 projection_matrix;
 
 //Camera
-glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 2.0f); //Default camera position
-glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
-glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
+glm::vec3 camPos	= glm::vec3(0.0f, 0.0f, 2.0f); //Default camera position
+glm::vec3 camFront	= glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
+glm::vec3 camUp		= glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
 float FoV = 45.0f; //Field-of-view
 
 // macro that returns "char*" with offset "i"
@@ -405,32 +403,25 @@ void CreateTriangleData() {
 
 void CreateMatrixData() {
 	//MVP-matrix
-	model_matrix = glm::mat4(1.0f);
-	//model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
-	//if (model_id == -1) {
-	//	OutputDebugStringA("Error, cannot find 'model_id' attribute in Vertex shader\n");
-	//	return;
-	//}
+	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
+	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
+	if (projection_id == -1) {
+		OutputDebugStringA("Error, cannot find 'projection_id' attribute in Vertex shader\n");
+		return; //Comment out if using Nvidia-card
+	}
 
 	view_matrix = glm::lookAt(camPos, camPos + camFront, camUp); //Camera position, Looking direction and Up vector
-	//view_id = glGetUniformLocation(gShaderProgram, "VIEW_MAT");
-	//if (view_id == -1) {
-	//	OutputDebugStringA("Error, cannot find 'view_id' attribute in Vertex shader\n");
-	//	return;
-	//}
+	view_id = glGetUniformLocation(gShaderProgram, "VIEW_MAT");
+	if (view_id == -1) {
+		OutputDebugStringA("Error, cannot find 'view_id' attribute in Vertex shader\n");
+		return; //Comment out if using Nvidia-card
+	}
 
-	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 20.0f);
-	//projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
-	//if (projection_id == -1) {
-	//	OutputDebugStringA("Error, cannot find 'projection_id' attribute in Vertex shader\n");
-	//	return;
-	//}
-	
-	mvp_matrix = projection_matrix * view_matrix * model_matrix;
-	mvp_id = glGetUniformLocation(gShaderProgram, "MVP_MAT");
-	if (mvp_id == -1) {
-		OutputDebugStringA("Error, cannot find 'mvp_id' attribute in Vertex shader\n");
-		return;
+	model_matrix = glm::mat4(1.0f);
+	model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
+	if (model_id == -1) {
+		OutputDebugStringA("Error, cannot find 'model_id' attribute in Vertex shader\n");
+		return; //Comment out if using Nvidia-card
 	}
 }
 
@@ -606,10 +597,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::End();
 
 		CreateMatrixData(); //Creates mvp-matrix
-		//glUniformMatrix4fv(model_id, 1, GL_TRUE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to vertex-shader
-		//glUniformMatrix4fv(view_id, 1, GL_TRUE, glm::value_ptr(view_matrix)); //Sends data about view-matrix to vertex-shader
-		//glUniformMatrix4fv(projection_id, 1, GL_TRUE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix to vertex-shader
-		glUniformMatrix4fv(mvp_id, 1, GL_TRUE, glm::value_ptr(mvp_matrix)); //Sends data about mvp-matrix to vertex-shader
+		glUniformMatrix4fv(projection_id, 1, GL_TRUE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix to vertex-shader
+		glUniformMatrix4fv(view_id, 1, GL_TRUE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix to vertex-shader
+		glUniformMatrix4fv(model_id, 1, GL_TRUE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix to vertex-shader
 
 		Render(); //9. Render
 
