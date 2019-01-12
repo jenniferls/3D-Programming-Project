@@ -62,11 +62,15 @@ glm::mat4 view_matrix;
 GLint projection_id = -1;
 glm::mat4 projection_matrix;
 
-//Camera
+//Camera variables
 glm::vec3 camPos	= glm::vec3(0.0f, 0.0f, 2.0f); //Default camera position
 glm::vec3 camFront	= glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
 glm::vec3 camUp		= glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
 float FoV = 45.0f; //Field-of-view
+float camYaw = -90.0f;
+float camPitch = 0.0f;
+float mouseLastX = WIDTH / 2; //At centre of the screen
+float mouseLastY = HEIGHT / 2; //At centre of the screen
 
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
@@ -407,21 +411,21 @@ void CreateMatrixData() {
 	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
 	if (projection_id == -1) {
 		OutputDebugStringA("Error, cannot find 'projection_id' attribute in Vertex shader\n");
-		return; //Comment out if using Nvidia-card
+		return;
 	}
 
 	view_matrix = glm::lookAt(camPos, camPos + camFront, camUp); //Camera position, Looking direction and Up vector
 	view_id = glGetUniformLocation(gShaderProgram, "VIEW_MAT");
 	if (view_id == -1) {
 		OutputDebugStringA("Error, cannot find 'view_id' attribute in Vertex shader\n");
-		return; //Comment out if using Nvidia-card
+		return;
 	}
 
 	model_matrix = glm::mat4(1.0f);
 	model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
 	if (model_id == -1) {
 		OutputDebugStringA("Error, cannot find 'model_id' attribute in Vertex shader\n");
-		return; //Comment out if using Nvidia-card
+		return;
 	}
 }
 
@@ -478,11 +482,38 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
 }
 
 void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
+	float mouseSpeed = 0.05f;
+
+	float xOffset = xPos - mouseLastX;
+	float yOffset = mouseLastY - yPos;
+	mouseLastX = xPos;
+	mouseLastY = yPos;
+
+	xOffset *= mouseSpeed;
+	yOffset *= mouseSpeed;
+
+	camYaw += xOffset;
+	camPitch += yOffset;
+
+	//Constraining camera movement to avoid flipping
+	if (camPitch >= 90.0f) {
+		camPitch = 90.0f;;
+	}
+	if (camPitch <= -90.0f) {
+		camPitch = -90.0f;
+	}
+
+	//Calculating direction vector
+	glm::vec3 direction = glm::vec3(
+		cos(glm::radians(camPitch)) * cos(glm::radians(camYaw)),
+		sin(glm::radians(camPitch)),
+		cos(glm::radians(camPitch)) * sin(glm::radians(camYaw)));
+	camFront = glm::normalize(direction);
 
 	//This provides feedback for mouse movement
-	cout << "X-Position: " << xPos << endl;
-	cout << "Y-Position: " << yPos << endl;
-	cout << endl;
+	//cout << "X-Position: " << xPos << endl;
+	//cout << "Y-Position: " << yPos << endl;
+	//cout << endl;
 }
 
 //This function specifies the layout of debug messages
@@ -670,6 +701,7 @@ void initWindow(unsigned int w, unsigned int h) {
 	glewExperimental = GL_TRUE;
 
 	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //Disables mouse cursor (Press ESCAPE to quit application)
+	glfwSetCursorPos(gWindow, mouseLastX, mouseLastY); //Initializes cursor position to the middle of the screen
 	glfwSetKeyCallback(gWindow, keyboard); //Keyboard callback
 	glfwSetScrollCallback(gWindow, scrollCallback); //Scroll-wheel callback
 	glfwSetCursorPosCallback(gWindow, mouseCallback); //Mouse callback
