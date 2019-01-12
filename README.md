@@ -2,5 +2,5 @@
 
 Controls:
 WASD-keys controls camera position.
-Mouse determines looking direction (yet to be implemented).
+Mouse determines looking direction.
 ESC-key exits the application.
