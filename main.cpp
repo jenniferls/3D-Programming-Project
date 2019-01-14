@@ -47,6 +47,8 @@ GLuint gVertexBuffer = 0;
 GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
 
+GLuint texture = 0;
+
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
@@ -314,7 +316,6 @@ void CreateFullScreenQuad() {
 };
 
 void CreateTexture() {
-	unsigned int texture;
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -341,6 +342,7 @@ void CreateTriangleData() {
 	struct TriangleVertex {
 		float x, y, z;
 		float r, g, b;
+		float u, v;
 		float myAttr;
 	};
 
@@ -348,10 +350,10 @@ void CreateTriangleData() {
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
 	TriangleVertex triangleVertices[3] = {
-		// pos and color for each vertex
-		{ 0.0f, 0.5f, 0.3f,	1.0f, 0.0f, 0.0f, 0.0},
-		{ 0.5f, -0.5f, 0.3f, 0.0f, 1.0f, 0.0f, 0.0},
-		{ -0.5f, -0.5f, 0.3f, 0.0f, 0.0f, 1.0f, 0.0}
+		//|	  POSITIONS	  |		|TEX COORD |
+		{ 0.0f, 0.5f,  0.3f,	1.0f, 1.0f},
+		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f},
+		{-0.5f, -0.5f, 0.3f,	0.0f, 0.0f}
 	};
 
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
@@ -396,17 +398,17 @@ void CreateTriangleData() {
 
 	// repeat the process for the second attribute.
 	// query which "slot" corresponds to the input vertex_color in the Vertex Shader 
-	GLuint vertexColor = glGetAttribLocation(gShaderProgram, "vertex_color");
+	GLuint vertexColor = glGetAttribLocation(gShaderProgram, "vertex_texture");
 	glVertexAttribPointer(
 		vertexColor, 
-		3, 
+		2, 
 		GL_FLOAT, 
 		GL_FALSE, sizeof(TriangleVertex), // distance between two vertexColor 
 		BUFFER_OFFSET(sizeof(float)*3)	// note, the first color starts after the first vertex.
 	);
 
 	GLint myAttrLoc = glGetAttribLocation(gShaderProgram, "myAttr");
-	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*6));
+	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*5));
 }
 
 void CreateMatrixData() {
@@ -447,6 +449,8 @@ void Render() {
 
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
+
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(gVertexAttribute);
