@@ -49,10 +49,13 @@ GLuint gVertexBuffer = 0;
 GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
 
+GLuint texture = 0;
+
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
 GLuint gShaderProgramFS = 0;
+
 
 float gClearColour[3] {};
 
@@ -314,8 +317,8 @@ void CreateFullScreenQuad() {
 };
 
 void CreateTexture() {
-	unsigned int texture;
 	glGenTextures(1, &texture);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -340,7 +343,8 @@ void CreateTriangleData() {
 	// every six floats, is one vertex.
 	struct TriangleVertex {
 		float x, y, z;
-		float r, g, b;
+		//float r, g, b;
+		float u, v;
 		float myAttr;
 	};
 
@@ -349,9 +353,9 @@ void CreateTriangleData() {
 	// end up with an array of many of these structs.
 	TriangleVertex triangleVertices[3] = {
 		// pos and color for each vertex
-		{ 0.0f, 0.5f, 0.3f,	1.0f, 0.0f, 0.0f, 0.0},
-		{ 0.5f, -0.5f, 0.3f, 0.0f, 1.0f, 0.0f, 0.0},
-		{ -0.5f, -0.5f, 0.3f, 0.0f, 0.0f, 1.0f, 0.0}
+		{ 0.0f,  0.5f, 0.3f,	0.5f, 0.5f},
+		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f},
+		{-0.5f, -0.5f, 0.3f,	0.0f, 0.0f}
 	};
 
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
@@ -396,10 +400,10 @@ void CreateTriangleData() {
 
 	// repeat the process for the second attribute.
 	// query which "slot" corresponds to the input vertex_color in the Vertex Shader 
-	GLuint vertexColor = glGetAttribLocation(gShaderProgram, "vertex_color");
+	GLuint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
 	glVertexAttribPointer(
-		vertexColor, 
-		3, 
+		textureCoord,
+		2, 
 		GL_FLOAT, 
 		GL_FALSE, sizeof(TriangleVertex), // distance between two vertexColor 
 		BUFFER_OFFSET(sizeof(float)*3)	// note, the first color starts after the first vertex.
@@ -447,6 +451,9 @@ void Render() {
 
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(gVertexAttribute);
