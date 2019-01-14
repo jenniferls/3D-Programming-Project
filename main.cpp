@@ -27,6 +27,8 @@
 
 #include "stb_image.h"
 
+#include "GameTimer.h"
+
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "glfw3.lib")
@@ -72,9 +74,7 @@ float camPitch = 0.0f;
 float mouseLastX = WIDTH / 2; //At centre of the screen
 float mouseLastY = HEIGHT / 2; //At centre of the screen
 
-//Delta time variables
-float deltaTime = 0.0f;	//Time between current frame and last frame
-float lastFrame = 0.0f; //Time of last frame
+GameTimer timer;
 
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
@@ -458,7 +458,7 @@ void Render() {
 }
 
 static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	float movementSpeed = 2.5f * deltaTime;
+	float movementSpeed = 2.5f * timer.GetDeltaTime();
 	if (key == GLFW_KEY_W)
 		camPos += movementSpeed * camFront;
 	//	keys[0] = (action == GLFW_PRESS || action == GLFW_REPEAT);
@@ -607,9 +607,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		}
 
 		//Calculate delta time
-		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		timer.Tick();
 
 		// first pass
 		// render all geometry to a framebuffer object
