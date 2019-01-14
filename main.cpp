@@ -72,6 +72,10 @@ float camPitch = 0.0f;
 float mouseLastX = WIDTH / 2; //At centre of the screen
 float mouseLastY = HEIGHT / 2; //At centre of the screen
 
+//Delta time variables
+float deltaTime = 0.0f;	//Time between current frame and last frame
+float lastFrame = 0.0f; //Time of last frame
+
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
@@ -454,7 +458,7 @@ void Render() {
 }
 
 static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	float movementSpeed = 0.07f;
+	float movementSpeed = 2.5f * deltaTime;
 	if (key == GLFW_KEY_W)
 		camPos += movementSpeed * camFront;
 	//	keys[0] = (action == GLFW_PRESS || action == GLFW_REPEAT);
@@ -510,7 +514,7 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
 		cos(glm::radians(camPitch)) * sin(glm::radians(camYaw)));
 	camFront = glm::normalize(direction);
 
-	//This provides feedback for mouse movement
+	//This provides feedback to console for mouse movement
 	//cout << "X-Position: " << xPos << endl;
 	//cout << "Y-Position: " << yPos << endl;
 	//cout << endl;
@@ -601,6 +605,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		if (GLFW_PRESS == glfwGetKey(gWindow, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(gWindow, 1);
 		}
+
+		//Calculate delta time
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 
 		// first pass
 		// render all geometry to a framebuffer object
