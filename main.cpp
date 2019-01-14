@@ -317,6 +317,7 @@ void CreateFullScreenQuad() {
 
 void CreateTexture() {
 	glGenTextures(1, &texture);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -341,7 +342,7 @@ void CreateTriangleData() {
 	// every six floats, is one vertex.
 	struct TriangleVertex {
 		float x, y, z;
-		float r, g, b;
+		//float r, g, b;
 		float u, v;
 		float myAttr;
 	};
@@ -351,7 +352,7 @@ void CreateTriangleData() {
 	// end up with an array of many of these structs.
 	TriangleVertex triangleVertices[3] = {
 		//|	  POSITIONS	  |		|TEX COORD |
-		{ 0.0f, 0.5f,  0.3f,	1.0f, 1.0f},
+		{ 0.0f, 0.5f,  0.3f,	0.5f, 0.5f},
 		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f},
 		{-0.5f, -0.5f, 0.3f,	0.0f, 0.0f}
 	};
@@ -398,9 +399,9 @@ void CreateTriangleData() {
 
 	// repeat the process for the second attribute.
 	// query which "slot" corresponds to the input vertex_color in the Vertex Shader 
-	GLuint vertexColor = glGetAttribLocation(gShaderProgram, "vertex_texture");
+	GLuint textureLoc = glGetAttribLocation(gShaderProgram, "vertex_texture");
 	glVertexAttribPointer(
-		vertexColor, 
+		textureLoc, 
 		2, 
 		GL_FLOAT, 
 		GL_FALSE, sizeof(TriangleVertex), // distance between two vertexColor 
@@ -408,7 +409,7 @@ void CreateTriangleData() {
 	);
 
 	GLint myAttrLoc = glGetAttribLocation(gShaderProgram, "myAttr");
-	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*5));
+	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*6));
 }
 
 void CreateMatrixData() {
@@ -450,6 +451,7 @@ void Render() {
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
 
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	// tell opengl we are going to use the VAO we described earlier
