@@ -253,14 +253,33 @@ void CreateShaders() {
 		OutputDebugStringA(buff);
 	}
 
-	//link shader program (connect vs and ps)
+	// repeat process for Geometry Shader
+	GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
+	shaderFile.open("GeometryShader.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(gs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(gs);
+	// query information about the compilation (nothing if compilation went fine!)
+	compileResult = GL_FALSE;
+	glGetShaderiv(gs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(gs, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+
+	//link shader program (connect vs, gs and ps)
 	gShaderProgram = glCreateProgram();
 	glAttachShader(gShaderProgram, fs);
 	glAttachShader(gShaderProgram, vs);
+	glAttachShader(gShaderProgram, gs);
 	glLinkProgram(gShaderProgram);
 
-	// check once more, if the Vertex Shader and the Fragment Shader can be used
-	// together
+	// check once more, if the Vertex Shader, Geometry Shader and the Fragment Shader can be used together
 	compileResult = GL_FALSE;
 	glGetProgramiv(gShaderProgram, GL_LINK_STATUS, &compileResult);
 	if (compileResult == GL_FALSE) {
@@ -274,8 +293,10 @@ void CreateShaders() {
 	// Program around, not the shaders.
 	glDetachShader(gShaderProgram, vs);
 	glDetachShader(gShaderProgram, fs);
+	glDetachShader(gShaderProgram, gs);
 	glDeleteShader(vs);
 	glDeleteShader(fs);
+	glDeleteShader(gs);
 }
 
 void CreateFullScreenQuad() {
