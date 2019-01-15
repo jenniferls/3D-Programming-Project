@@ -323,14 +323,15 @@ void CreateTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//	First arg. is target, this case a 2D texture, second is setting we want to edit and axis,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);// last one is what texture wrapping mode we want to use. 
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//Following two lines are for scaling setting it to use (bi)liniear filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//Following two lines are for scaling setting it to use (bi)linear filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, colourChannels;
-	//The stbi_load funcions opens the file, and widht and height values from the image and the amount of colour channels in the image.
-	unsigned char* data = stbi_load("Resources/Textures/container.jpg", &width, &height, &colourChannels, 0); 
+	const char* filePath = "Resources/Textures/container.jpg"; //Path to image file
+	//The stbi_load funcions opens the file, and width and height values from the image and the amount of colour channels in the image.
+	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0); 
 	if (data) {
-		// function args. in order | Target | Mipmap | Image format | Widh | Height | Legacy, need to be 0 | Format | Datatype | Image data | 
+		// function args. in order | Target | Mipmap | Image format | Width | Height | Legacy, need to be 0 | Format | Datatype | Image data | 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D); // Generate the required mipmaps.
 	}
@@ -461,9 +462,9 @@ void Render() {
 	glBindVertexArray(gVertexAttribute);
 	
 	// ask OpenGL to draw 3 vertices starting from index 0 in the vertex array 
-	// currently bound (VAO), with current in-use shader. Use TOPOLOGY GL_TRIANGLES,
+	// currently bound (VAO), with current in-use shader. Using TOPOLOGY GL_TRIANGLE_STRIP,
 	// so for one triangle we need 3 vertices!
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 }
 
 static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -675,7 +676,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		// false
 		glUniform1i(3, renderDepth);  // 0 == false
 		
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6); //Draw quad
 
 		//Render IMGUI interface
 		ImGui::Render();

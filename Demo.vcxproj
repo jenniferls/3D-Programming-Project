@@ -141,6 +141,7 @@
   <ItemGroup>
     <None Include="Fragment.glsl" />
     <None Include="FragmentFS.glsl" />
+    <None Include="GeometryShader.glsl" />
     <None Include="VertexShader.glsl" />
     <None Include="VertexShaderFS.glsl" />
   </ItemGroup>
