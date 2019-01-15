@@ -11,7 +11,7 @@ out vec2 aTexture;
 layout(location=3) out float myAttrOut;
 
 void main() {
-	aTexture = texture_coords;
+	aTexture = texture_coords; //Pass the texture info to the fragment shader
 	myAttrOut = myAttr;
 	// gl_Position = newVertex;//vec4(vec3(newVertex.x + offset, newVertex.yz), 1.0);
 	// gl_Position = vec4(vertex_position, 1.0);

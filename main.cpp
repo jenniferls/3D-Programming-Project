@@ -49,7 +49,7 @@ GLuint gVertexBuffer = 0;
 GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
 
-GLuint texture = 0;
+GLuint texture = 0;//Set and initialize the texture variable.
 
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
@@ -317,25 +317,27 @@ void CreateFullScreenQuad() {
 };
 
 void CreateTexture() {
-	glGenTextures(1, &texture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glGenTextures(1, &texture); //Generate the texture, first input is amt of textures, second is where we store them.
+	glBindTexture(GL_TEXTURE_2D, texture); // We bind the genereated texture to be able to change it.
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//	First arg. is target, this case a 2D texture, second is setting we want to edit and axis,
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);// last one is what texture wrapping mode we want to use. 
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//Following two lines are for scaling setting it to use (bi)liniear filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width, height, nrOfChannels;
-	unsigned char* data = stbi_load("Resources/Textures/container.jpg", &width, &height, &nrOfChannels, 0);
+	int width, height, colourChannels;
+	//The stbi_load funcions opens the file, and widht and height values from the image and the amount of colour channels in the image.
+	unsigned char* data = stbi_load("Resources/Textures/container.jpg", &width, &height, &colourChannels, 0); 
 	if (data) {
+		// function args. in order | Target | Mipmap | Image format | Widh | Height | Legacy, need to be 0 | Format | Datatype | Image data | 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateMipmap(GL_TEXTURE_2D); // Generate the required mipmaps.
 	}
 	else {
-		cout << "Failed to load texture. Reason: " << stbi_failure_reason() << endl;
+		cout << "Failed to load texture. Reason: " << stbi_failure_reason() << endl; //Output error message if texture file is not found
 	}
-	stbi_image_free(data);
+	stbi_image_free(data); // Free image memory
 }
 
 void CreateTriangleData() {
@@ -352,7 +354,7 @@ void CreateTriangleData() {
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
 	TriangleVertex triangleVertices[3] = {
-		// pos and color for each vertex
+		//| Vtx Positions |	   |Tex Coords| 
 		{ 0.0f,  0.5f, 0.3f,	0.5f, 0.5f},
 		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f},
 		{-0.5f, -0.5f, 0.3f,	0.0f, 0.0f}
@@ -399,13 +401,13 @@ void CreateTriangleData() {
 	);
 
 	// repeat the process for the second attribute.
-	// query which "slot" corresponds to the input vertex_color in the Vertex Shader 
+	// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
 	GLuint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
 	glVertexAttribPointer(
 		textureCoord,
 		2, 
 		GL_FLOAT, 
-		GL_FALSE, sizeof(TriangleVertex), // distance between two vertexColor 
+		GL_FALSE, sizeof(TriangleVertex), // distance between two textureCoord 
 		BUFFER_OFFSET(sizeof(float)*3)	// note, the first color starts after the first vertex.
 	);
 
@@ -452,8 +454,8 @@ void Render() {
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
+	glBindTexture(GL_TEXTURE_2D, texture); //Bind the triangle texture
 
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(gVertexAttribute);
