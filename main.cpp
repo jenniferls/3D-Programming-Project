@@ -369,17 +369,17 @@ void CreateTriangleData() {
 		float x, y, z;
 		//float r, g, b;
 		float u, v;
-		float myAttr;
+		float normalX, normalY, normalZ;
 	};
 
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
 	TriangleVertex triangleVertices[3] = {
-		//| Vtx Positions |	   |Tex Coords| 
-		{ 0.0f,  0.5f, 0.3f,	0.5f, 0.5f},
-		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f},
-		{-0.5f, -0.5f, 0.3f,	0.0f, 0.0f}
+		//| Vtx Positions |	   |Tex Coords|			|Normals|
+		{ 0.0f,  0.5f, 0.3f,	0.5f, 0.5f,		0.0f, 0.0f, 1.0f},
+		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
+		{-0.5f, -0.5f, 0.3f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}
 	};
 
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
@@ -424,7 +424,7 @@ void CreateTriangleData() {
 
 	// repeat the process for the second attribute.
 	// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
-	GLuint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
+	GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
 	glVertexAttribPointer(
 		textureCoord,
 		2, 
@@ -433,8 +433,17 @@ void CreateTriangleData() {
 		BUFFER_OFFSET(sizeof(float)*3)	// note, the first color starts after the first vertex.
 	);
 
-	GLint myAttrLoc = glGetAttribLocation(gShaderProgram, "myAttr");
-	glVertexAttribPointer(myAttrLoc, 1, GL_FLOAT, GL_FALSE, sizeof(TriangleVertex), BUFFER_OFFSET(sizeof(float)*6));
+	GLint normals = glGetAttribLocation(gShaderProgram, "normals");
+	if (normals == -1) {
+		OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
+		return;
+	}
+	glVertexAttribPointer(
+		normals,
+		3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(TriangleVertex),
+		BUFFER_OFFSET(sizeof(float)*5));
 }
 
 void CreateMatrixData() {

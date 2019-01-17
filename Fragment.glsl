@@ -1,7 +1,7 @@
 #version 440
 // these values are interpolated at the rasteriser
 in vec2 texUVs;
-layout(location=3) in float myAttrOut;
+layout(location=3) in vec3 myAttrOut;
 
 // this is the final pixel colour
 out vec4 fragment_color;
