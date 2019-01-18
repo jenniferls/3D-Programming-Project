@@ -67,6 +67,10 @@ glm::mat4 view_matrix;
 GLint projection_id = -1;
 glm::mat4 projection_matrix;
 
+//Test
+GLint mvp_id = -1;
+glm::mat4 mvp_matrix;
+
 //Camera variables
 glm::vec3 camPos	= glm::vec3(0.0f, 0.0f, 2.0f); //Default camera position
 glm::vec3 camFront	= glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
@@ -450,12 +454,14 @@ void CreateMatrixData() {
 	//MVP-matrix
 	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
 	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
+	projection_matrix = glm::transpose(projection_matrix); //Transposing the matrix for use in shader
 	if (projection_id == -1) {
 		OutputDebugStringA("Error, cannot find 'projection_id' attribute in Vertex shader\n");
 		return;
 	}
 
 	view_matrix = glm::lookAt(camPos, camPos + camFront, camUp); //Camera position, Looking direction and Up vector
+	view_matrix = glm::transpose(view_matrix); //Transposing the matrix for use in shader
 	view_id = glGetUniformLocation(gShaderProgram, "VIEW_MAT");
 	if (view_id == -1) {
 		OutputDebugStringA("Error, cannot find 'view_id' attribute in Vertex shader\n");
@@ -468,6 +474,11 @@ void CreateMatrixData() {
 		OutputDebugStringA("Error, cannot find 'model_id' attribute in Vertex shader\n");
 		return;
 	}
+
+	//For testing purposes
+	mvp_matrix = projection_matrix * view_matrix * model_matrix;
+	mvp_matrix = glm::transpose(mvp_matrix); //Transposing the matrix makes it work with shader
+	mvp_id = glGetUniformLocation(gShaderProgram, "MVP_MAT");
 }
 
 void SetViewport() {
@@ -678,6 +689,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glUniformMatrix4fv(projection_id, 1, GL_TRUE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix to vertex-shader
 		glUniformMatrix4fv(view_id, 1, GL_TRUE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix to vertex-shader
 		glUniformMatrix4fv(model_id, 1, GL_TRUE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix to vertex-shader
+		glUniformMatrix4fv(mvp_id, 1, GL_TRUE, glm::value_ptr(mvp_matrix));			  //Test
 
 		Render(); //9. Render
 
