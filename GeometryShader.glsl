@@ -6,8 +6,6 @@ uniform mat4 PROJ_MAT;
 uniform mat4 VIEW_MAT;
 uniform mat4 MODEL_MAT;
 
-uniform mat4 MVP_MAT; //Testing
-
 in vec2 aTexture[];
 in vec3 normalsOut[];
 out vec2 texUVs;
@@ -55,9 +53,7 @@ void main(){
 			vec4 offset = gl_in[i].gl_Position * MODEL_MAT;
 			texUVs = aTexture[i];
 			finalNormals = normalsOut[i];
-			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position; //Correct order (works if projection and view matrices are transposed first)
-			//gl_Position = gl_in[i].gl_Position * (MODEL_MAT * VIEW_MAT * PROJ_MAT); //Reversed order (works if matrices aren't transposed)
-			//gl_Position = MVP_MAT * gl_in[i].gl_Position; //Test
+			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
 			diffValue = getDiffVal(-offset, theNormal);
 			EmitVertex();
