@@ -508,20 +508,37 @@ void Render() {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 }
 
+/*
 static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	float movementSpeed = 2.5f * timer.GetDeltaTime();
-	if (key == GLFW_KEY_W)
+	if (GetAsyncKeyState(GLFW_KEY_W))
 		camPos += movementSpeed * camFront;
 	//	keys[0] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-	if (key == GLFW_KEY_A)
+	if (GetAsyncKeyState(GLFW_KEY_A))
 		camPos -= glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
 	//	keys[1] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-	if (key == GLFW_KEY_S)
+	if (GetAsyncKeyState(GLFW_KEY_S))
 		camPos -= movementSpeed * camFront;
 	//	keys[2] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-	if (key == GLFW_KEY_D)
+	if (GetAsyncKeyState(GLFW_KEY_D))
 		camPos += glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
 	//	keys[3] = (action == GLFW_PRESS || action == GLFW_REPEAT);
+}
+*/
+
+void keyboardUpdate() {
+	float movementSpeed = 2.5f * timer.GetDeltaTime();
+	if (GetAsyncKeyState(GLFW_KEY_W))
+		camPos += movementSpeed * camFront;
+
+	if (GetAsyncKeyState(GLFW_KEY_A))
+		camPos -= glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
+
+	if (GetAsyncKeyState(GLFW_KEY_S))
+		camPos -= movementSpeed * camFront;
+
+	if (GetAsyncKeyState(GLFW_KEY_D))
+		camPos += glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
 }
 
 //This function uses output from the mouse wheel
@@ -657,8 +674,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			glfwSetWindowShouldClose(gWindow, 1);
 		}
 
+
 		//Calculate delta time
 		timer.Tick();
+
+		keyboardUpdate();
 
 		// first pass
 		// render all geometry to a framebuffer object
@@ -761,7 +781,7 @@ void initWindow(unsigned int w, unsigned int h) {
 
 	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //Disables mouse cursor (Press ESCAPE to quit application)
 	glfwSetCursorPos(gWindow, mouseLastX, mouseLastY); //Initializes cursor position to the middle of the screen
-	glfwSetKeyCallback(gWindow, keyboard); //Keyboard callback
+	//glfwSetKeyCallback(gWindow, keyboard); //Keyboard callback
 	glfwSetScrollCallback(gWindow, scrollCallback); //Scroll-wheel callback
 	glfwSetCursorPosCallback(gWindow, mouseCallback); //Mouse callback
 
