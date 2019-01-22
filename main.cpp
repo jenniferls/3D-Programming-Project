@@ -528,7 +528,7 @@ static void keyboard(GLFWwindow* window, int key, int scancode, int action, int 
 
 void keyboardUpdate() {
 	float movementSpeed = 2.5f * timer.GetDeltaTime();
-	if (GetAsyncKeyState(GLFW_KEY_W))
+	if (GetAsyncKeyState(GLFW_KEY_W)) //GetAsyncKeyState Determines whether a key is up or down at the time of the function call.
 		camPos += movementSpeed * camFront;
 
 	if (GetAsyncKeyState(GLFW_KEY_A))
