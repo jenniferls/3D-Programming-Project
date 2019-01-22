@@ -44,11 +44,11 @@ void main(){
 	vec3 n = cross(gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz); //Order determines if the resulting vector will be positive or negative.
 	vec3 faceNormal = mat3(VIEW_MAT * MODEL_MAT) * n; //Make sure the normal is in view space
 
-	vec4 theNormal = vec4( n, 1.0f) * MODEL_MAT;
+	vec4 theNormal = MODEL_MAT * vec4( n, 1.0f);
 
 	//Display triangle if it's facing the camera
-	float angle = dot(faceNormal, vec3((PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[0].gl_Position));
-	if(angle >= 0.0f){
+	float angle = dot(normalize(faceNormal), normalize(vec3((VIEW_MAT * MODEL_MAT) * gl_in[0].gl_Position))); //Calculate the dot product between the face normal and camera view (point is in view space)
+	if(angle <= 0.0f){
 		for(int i = 0; i < gl_in.length(); i++){
 			texUVs = aTexture[i];
 			finalNormals = normalsOut[i];
