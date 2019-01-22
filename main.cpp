@@ -28,6 +28,7 @@
 #include "stb_image.h"
 
 #include "GameTimer.h"
+#include "RawModel.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -363,19 +364,10 @@ void CreateTexture() {
 }
 
 void CreateTriangleData() {
-	// this is how we will structure the input data for the vertex shader
-	// every six floats, is one vertex.
-	struct TriangleVertex {
-		float x, y, z;
-		//float r, g, b;
-		float u, v;
-		float normalX, normalY, normalZ;
-	};
-
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
-	TriangleVertex triangleVertices[3] = {
+	RawModel::TriangleVertex triangleVertices[3] = {
 		//| Vtx Positions |	   |Tex Coords|			|Normals|
 		{ 0.0f,  0.5f, 0.3f,	0.5f, 0.5f,		0.0f, 0.0f, 1.0f},
 		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
@@ -418,7 +410,7 @@ void CreateTriangleData() {
 		3,						// how many elements of type (see next argument)
 		GL_FLOAT,				// type of each element
 		GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
-		sizeof(TriangleVertex), // distance between two vertices in memory (stride)
+		sizeof(RawModel::TriangleVertex), // distance between two vertices in memory (stride)
 		BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
 	);
 
@@ -429,7 +421,7 @@ void CreateTriangleData() {
 		textureCoord,
 		2, 
 		GL_FLOAT, 
-		GL_FALSE, sizeof(TriangleVertex), // distance between two textureCoord 
+		GL_FALSE, sizeof(RawModel::TriangleVertex), // distance between two textureCoord 
 		BUFFER_OFFSET(sizeof(float)*3)	// note, the first color starts after the first vertex.
 	);
 
@@ -442,7 +434,7 @@ void CreateTriangleData() {
 		normals,
 		3,
 		GL_FLOAT,
-		GL_FALSE, sizeof(TriangleVertex),
+		GL_FALSE, sizeof(RawModel::TriangleVertex),
 		BUFFER_OFFSET(sizeof(float)*5));
 }
 
