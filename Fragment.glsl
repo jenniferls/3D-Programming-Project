@@ -14,8 +14,7 @@ uniform sampler2D textureSampler;
 
 uniform vec3 viewPos;
 
-void main () {
-	
+void main () {	
 	float amStr = 0.1f; // PF: the ambient strenght 
 	float specStr = 0.5f; // PF: the specular strenght
 
@@ -33,7 +32,4 @@ void main () {
 
 
 	//fragment_color = texture(textureSampler, texUVs);
-
-	//fragment_color = vec4 (color * colourFromImGui, 1.0);
-	//fragment_color = myAttrOut * vec4 (color * colourFromImGui, 1.0);
 }

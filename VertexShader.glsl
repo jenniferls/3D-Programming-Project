@@ -5,7 +5,6 @@ layout(location = 2) in vec3 normals;
 
 out vec2 aTexture;
 layout(location=3) out vec3 normalsOut;
-//out vec4 vertexPos;
 
 void main() {
 	aTexture = texture_coords; //Pass the texture info to the geometry shader

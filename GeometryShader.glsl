@@ -13,8 +13,7 @@ out vec4 fragPos;
 out vec3 finalNormals;
 
 out float diffValue;
-const vec3 light_pos = vec3( 0.0, 1.0, 4.0);
-//in vec4 vertexPos;
+const vec3 light_pos = vec3( 0.0, 1.0, 3.0);
 
 float getDiffVal(vec4 offset, vec4 normal){
 	
@@ -27,15 +26,6 @@ float getDiffVal(vec4 offset, vec4 normal){
 	return diffuseFactor * 4.0f * (1.0/(length(vec4(light_pos, 1.0) - offset)));
 }
 
-//vec4 getNormal(){
-//
-//	vec3 u = vec3(vertexPos[0]) - vec3(vertexPos[1]);
-//	vec3 v = vec3(vertexPos[2]) - vec3(vertexPos[1]);
-//
-//	return vec4(normalize(cross(u,v)), 0.0f);
-//}
-//
-
 void main(){
 	//First determine the normal of the face by calculating the cross product of two vectors created by 3 triangle vertices
 	//This gives us a vector that is perpendicular to the two vectors
@@ -44,18 +34,17 @@ void main(){
 
 	vec3 n2 = normalize(n);
 
-	vec4 theNormal = vec4( n2, 1.0f) * MODEL_MAT;
+	vec4 theNormal = MODEL_MAT * vec4( n2, 1.0f);
 
 	//Display triangle if it's facing the camera
 	float angle = dot(faceNormal, vec3((VIEW_MAT * MODEL_MAT) * gl_in[0].gl_Position)); //Calculate the dot product between the face normal and camera view (point is in view space)
 	if(angle <= 0.0f){
 		for(int i = 0; i < gl_in.length(); i++){
-			vec4 offset = gl_in[i].gl_Position * MODEL_MAT;
 			texUVs = aTexture[i];
 			finalNormals = normalsOut[i];
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
-			diffValue = getDiffVal(-offset, theNormal);
+			diffValue = getDiffVal(-fragPos, theNormal);
 			EmitVertex();
 		}
 		EndPrimitive();
