@@ -367,7 +367,7 @@ void CreateTriangleData() {
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
-	RawModel::TriangleVertex triangleVertices[9] = {
+	RawModel::TriangleVertex triangleVertices[12] = {
 		//| Vtx Positions |	   |Tex Coords|			|Normals|
 		{ 0.4f,  0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f},
 		{ 0.4f, -0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
@@ -379,7 +379,11 @@ void CreateTriangleData() {
 
 		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f},
 		{ 0.4f,  0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
-		{-0.4f,  0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}
+		{-0.4f,  0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f},
+
+		{-0.4f,  0.4f,  0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f},
+		{-0.4f,  0.4f, -0.8f,	0.0f, 1.0f,		0.0f, 0.0f, 1.0f},
+		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f}
 	};
 
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
@@ -494,7 +498,7 @@ void Render() {
 	// ask OpenGL to draw 3 vertices starting from index 0 in the vertex array 
 	// currently bound (VAO), with current in-use shader. Using TOPOLOGY GL_TRIANGLE_STRIP,
 	// so for one triangle we need 3 vertices!
-	glDrawArrays(GL_TRIANGLES, 0, 9);
+	glDrawArrays(GL_TRIANGLES, 0, 12);
 }
 
 /*
@@ -678,6 +682,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glUseProgram(gShaderProgram);
 		glBindVertexArray(gVertexAttribute);
 
+		//glEnable(GL_MULTISAMPLE);
 		glEnable(GL_DEPTH_TEST);
 
 		//Prepare IMGUI output
@@ -758,6 +763,7 @@ void initWindow(unsigned int w, unsigned int h) {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); //Allows for Debug output (should generally be commented out in a release build)
+	//glfwWindowHint(GLFW_SAMPLES, 4);
 
 	gWindow = glfwCreateWindow(w, h, "DV1568 3D-Programming Project", NULL, NULL);
 	if (!gWindow) {

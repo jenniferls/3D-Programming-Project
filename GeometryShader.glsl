@@ -13,7 +13,7 @@ out vec4 fragPos;
 out vec3 finalNormals;
 
 out float diffValue;
-const vec3 light_pos = vec3( 0.0, 3.0, 4.0);
+const vec3 light_pos = vec3( 0.0, 1.0, 4.0);
 //in vec4 vertexPos;
 
 float getDiffVal(vec4 offset, vec4 normal){
