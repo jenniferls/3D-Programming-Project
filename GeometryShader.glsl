@@ -44,6 +44,7 @@ void main(){
 			finalNormals = normalsOut[i];
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
+			//theNormal = MODEL_MAT * vec4(normalize(normalsOut[i]), 1.0f);
 			diffValue = getDiffVal(-fragPos, theNormal);
 			EmitVertex();
 		}
