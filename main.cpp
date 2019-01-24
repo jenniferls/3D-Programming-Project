@@ -34,8 +34,8 @@
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "glfw3.lib")
 
-#define WIDTH 900.0f
-#define HEIGHT 900.0f
+#define WIDTH 1280.0f
+#define HEIGHT 720.0f
 GLFWwindow *gWindow;
 
 using namespace std;
@@ -367,11 +367,19 @@ void CreateTriangleData() {
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
-	RawModel::TriangleVertex triangleVertices[3] = {
+	RawModel::TriangleVertex triangleVertices[9] = {
 		//| Vtx Positions |	   |Tex Coords|			|Normals|
-		{ 0.0f,  0.5f, 0.3f,	0.5f, 0.5f,		0.0f, 0.0f, 1.0f},
-		{ 0.5f, -0.5f, 0.3f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
-		{-0.5f, -0.5f, 0.3f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}
+		{ 0.4f,  0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f},
+		{ 0.4f, -0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
+		{-0.4f, -0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f},
+
+		{-0.4f, -0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f},
+		{-0.4f,	 0.4f, 0.0f,	0.0f, 1.0f,		0.0f, 0.0f, 1.0f},
+		{ 0.4f,	 0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f},
+
+		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f},
+		{ 0.4f,  0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
+		{-0.4f,  0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}
 	};
 
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
@@ -486,7 +494,7 @@ void Render() {
 	// ask OpenGL to draw 3 vertices starting from index 0 in the vertex array 
 	// currently bound (VAO), with current in-use shader. Using TOPOLOGY GL_TRIANGLE_STRIP,
 	// so for one triangle we need 3 vertices!
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 9);
 }
 
 /*
