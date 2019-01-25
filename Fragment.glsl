@@ -8,6 +8,7 @@ out vec4 fragment_color;
 
 // PF: the diffuse value
 in float diffValue;
+in float specValue;
 
 // this is a uniform value, the very same value for ALL pixel shader executions
 uniform sampler2D textureSampler;
@@ -15,14 +16,17 @@ uniform sampler2D textureSampler;
 void main () {	
 	float amStr = 0.1f; // PF: the ambient strenght 
 	float specStr = 0.5f; // PF: the specular strenght
+	vec3 lightColor = vec3(1.0, 1.0, 1.0);
+	float MatSpecIntensity = 1.0f;
 
-	vec3 am = amStr * vec3(1.0, 1.0, 1.0); // PF: the ambient 
+	vec3 am = amStr * lightColor; // PF: the ambient 
 	
 	vec4 texSample = texture( textureSampler, vec2(texUVs.s, 1 - texUVs.t)) * diffValue;
 	//vec4 applyAm = texture( textureSampler, vec2(texUVs.s, 1 - texUVs.t)) * vec4(am, 1.0f);
 
 	vec4 applyAm = texture(textureSampler, texUVs) * vec4(am, 1.0f);
 
+	vec4 applySpec = vec4(lightColor * MatSpecIntensity * specValue, 1.0f);
 
 	fragment_color = applyAm; 
 	fragment_color += texSample;

@@ -13,6 +13,7 @@ out vec4 fragPos;
 out vec3 finalNormals;
 
 out float diffValue;
+out float specValue;
 const vec3 light_pos = vec3( 0.0, 1.0, 3.0);
 
 float getDiffVal(vec4 fragPos, vec3 normal){
@@ -25,6 +26,27 @@ float getDiffVal(vec4 fragPos, vec3 normal){
 		diffuseFactor = 0;
 	
 	return diffuseFactor;
+}
+
+float getSpecVal(vec4 fragPos, vec3 normal){
+	
+	//http://ogldev.atspace.co.uk/www/tutorial19/tutorial19.html
+	vec3 camPos = vec3(0.0f, 0.0f, 2.0f); // <--- temp 
+
+	vec3 lightVec = normalize(light_pos - fragPos.xyz);
+	vec3 viewVec = normalize(fragPos.xyz - camPos);
+
+	vec3 reflection = lightVec - 2 * normal * (dot(normal, lightVec)); // 1.
+	vec3 reflectVec = normalize(reflect(lightVec, normal)); // 2. the reflect funktion does the same as the above in 1. 
+
+	float specularFactor = dot(viewVec, reflectVec);
+
+	float specularPower = 32.0f;
+	if(specularFactor > 0){
+		specularFactor = pow(specularFactor, specularPower); // <- specularPower is how reflective a material is 
+	}
+
+	return specularFactor;
 }
 
 void main(){
@@ -42,6 +64,7 @@ void main(){
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
 			diffValue = getDiffVal(fragPos, normalize(normalsOut[i]));
+			specValue = getSpecVal( fragPos, normalize(normalsOut[i]));
 			EmitVertex();
 		}
 		EndPrimitive();
