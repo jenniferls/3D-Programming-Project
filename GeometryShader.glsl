@@ -15,15 +15,16 @@ out vec3 finalNormals;
 out float diffValue;
 const vec3 light_pos = vec3( 0.0, 1.0, 3.0);
 
-float getDiffVal(vec4 offset, vec4 normal){
+float getDiffVal(vec4 fragPos, vec3 normal){
 	
-	vec4 normalVec = normalize( vec4(light_pos, 1.0));
-	float diffuseFactor = dot(normalVec.xyz, normal.xyz); 
+	vec3 pointToLight = normalize(light_pos - fragPos.xyz);
+
+	float diffuseFactor = dot(pointToLight, normal) / (length(pointToLight)) * length(normal);
 
 	if (diffuseFactor < 0)
 		diffuseFactor = 0;
 	
-	return diffuseFactor * 4.0f * (1.0/(length(vec4(light_pos, 1.0) - offset)));
+	return diffuseFactor;
 }
 
 void main(){
@@ -40,7 +41,7 @@ void main(){
 			finalNormals = normalsOut[i];
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
-			diffValue = getDiffVal(-fragPos, vec4(normalize(normalsOut[i]), 1.0f));
+			diffValue = getDiffVal(fragPos, normalize(normalsOut[i]));
 			EmitVertex();
 		}
 		EndPrimitive();
