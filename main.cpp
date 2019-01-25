@@ -8,6 +8,7 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <vector>
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLEW
 
@@ -378,16 +379,16 @@ void CreateTriangleData() {
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
-	RawModel::TriangleVertex triangleVertices[8] = {
-		//| Vtx Positions |	   |Tex Coords|			|Normals|
-		{ 0.4f,  0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //0
-		{ 0.4f, -0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f}, //1
-		{-0.4f, -0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}, //2
-		{-0.4f,	 0.4f, 0.0f,	0.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //3
-		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 1.0f, 0.0f}, //4
-		{ 0.4f,  0.4f,  0.0f,	1.0f, 0.0f, 	0.0f, 1.0f, 0.0f}, //5
-		{-0.4f,  0.4f,  0.0f,	0.0f, 0.0f,		0.0f, 1.0f, 0.0f}, //6
-		{-0.4f,  0.4f, -0.8f,	0.0f, 1.0f,		0.0f, 1.0f, 0.0f}  //7
+	RawModel::TriangleVertex triangleVertices[] = {
+		//| Vtx Positions |					|Tex Coords|					|Normals|
+		{glm::vec3(0.4f, 0.4f, 0.0f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //0
+		{glm::vec3(0.4f, -0.4f, 0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //1
+		{glm::vec3(-0.4f, -0.4f, 0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //2
+		{glm::vec3(-0.4f, 0.4f, 0.0f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //3
+		{glm::vec3(0.4f, 0.4f, -0.8f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //4
+		{glm::vec3(0.4f, 0.4f,  0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //5
+		{glm::vec3(-0.4f, 0.4f,  0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //6
+		{glm::vec3(-0.4f, 0.4f, -0.8f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}  //7
 	};
 	
 	GLubyte Indices[] = {

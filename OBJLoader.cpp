@@ -30,7 +30,7 @@ void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &verts, st
 			s >> v.z;
 			verts.push_back(v);
 		}
-		else if (line.substr(0, 2) == "vn ") {
+		else if (line.substr(0, 3) == "vn ") {
 			std::istringstream s(line.substr(2));
 			glm::vec3 n;
 			s >> n.x;
@@ -38,7 +38,7 @@ void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &verts, st
 			s >> n.z;
 			normals.push_back(n);
 		}
-		else if (line.substr(0, 2) == "vt ") {
+		else if (line.substr(0, 3) == "vt ") {
 			std::istringstream s(line.substr(2));
 			glm::vec2 uv;
 			s >> uv.x;
