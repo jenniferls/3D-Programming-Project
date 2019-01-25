@@ -29,6 +29,7 @@
 
 #include "GameTimer.h"
 #include "RawModel.h"
+#include "OBJLoader.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -365,6 +366,15 @@ void CreateTexture() {
 }
 
 void CreateTriangleData() {
+	OBJLoader loader;
+	vector<glm::vec3> model_vertices;
+	vector<glm::vec3> model_normals;
+	vector<glm::vec2> model_uvs;
+	int model_faces = 0;
+	const char* filePath = "Resources/Models/cube.obj";
+	loader.loadOBJ(filePath, model_vertices, model_normals, model_uvs, model_faces);
+
+
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
@@ -373,18 +383,11 @@ void CreateTriangleData() {
 		{ 0.4f,  0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //0
 		{ 0.4f, -0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f}, //1
 		{-0.4f, -0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}, //2
-
-		//{-0.4f,-0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}, //2
 		{-0.4f,	 0.4f, 0.0f,	0.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //3
-		//{ 0.4f, 0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //0
-
 		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 1.0f, 0.0f}, //4
 		{ 0.4f,  0.4f,  0.0f,	1.0f, 0.0f, 	0.0f, 1.0f, 0.0f}, //5
 		{-0.4f,  0.4f,  0.0f,	0.0f, 0.0f,		0.0f, 1.0f, 0.0f}, //6
-
-		//{-0.4f, 0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 1.0f, 0.0f}, //6
 		{-0.4f,  0.4f, -0.8f,	0.0f, 1.0f,		0.0f, 1.0f, 0.0f}  //7
-		//{ 0.4f, 0.4f,-0.8f,	1.0f, 1.0f,		0.0f, 1.0f, 0.0f}  //4
 	};
 	
 	GLubyte Indices[] = {
