@@ -371,7 +371,7 @@ void CreateTriangleData() {
 	vector<glm::vec3> model_vertices;
 	vector<glm::vec3> model_normals;
 	vector<glm::vec2> model_uvs;
-	int model_faces = 0;
+	std::vector<GLushort> model_faces;
 	const char* filePath = "Resources/Models/cube.obj";
 	loader.loadOBJ(filePath, model_vertices, model_normals, model_uvs, model_faces);
 

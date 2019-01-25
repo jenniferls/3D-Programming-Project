@@ -15,7 +15,7 @@ OBJLoader::~OBJLoader() {
 
 }
 
-void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &verts, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, int &elements) {
+void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, std::vector<unsigned short> &elements) {
 	std::ifstream in(filename, std::fstream::in);
 	if (!in) {
 		OutputDebugStringA("Cannot load obj-file!");
@@ -28,7 +28,22 @@ void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &verts, st
 			s >> v.x;
 			s >> v.y;
 			s >> v.z;
-			verts.push_back(v);
+			vertPositions.push_back(v);
+		}
+		else if (line.substr(0, 2) == "f ") {
+			std::istringstream s(line.substr(2));
+			unsigned short a, b, c;
+			s >> a;
+			s.ignore(line.length(), '/');
+			s >> b;
+			s.ignore(line.length(), '/');
+			s >> c;
+			a--; //since we need to start from 0
+			b--; //since we need to start from 0
+			c--; //since we need to start from 0
+			elements.push_back(a);
+			elements.push_back(b);
+			elements.push_back(c);
 		}
 		else if (line.substr(0, 3) == "vn ") {
 			std::istringstream s(line.substr(2));
