@@ -49,6 +49,7 @@ void initWindow(unsigned int w, unsigned int h);
 GLuint gVertexBuffer = 0;
 GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
+GLuint gIndexBuffer = 0;
 
 GLuint texture = 0;//Set and initialize the texture variable.
 
@@ -367,24 +368,34 @@ void CreateTriangleData() {
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
-	RawModel::TriangleVertex triangleVertices[12] = {
+	RawModel::TriangleVertex triangleVertices[8] = {
 		//| Vtx Positions |	   |Tex Coords|			|Normals|
-		{ 0.4f,  0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f},
-		{ 0.4f, -0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f},
-		{-0.4f, -0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f},
+		{ 0.4f,  0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //0
+		{ 0.4f, -0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 0.0f, 1.0f}, //1
+		{-0.4f, -0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}, //2
 
-		{-0.4f, -0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f},
-		{-0.4f,	 0.4f, 0.0f,	0.0f, 1.0f,		0.0f, 0.0f, 1.0f},
-		{ 0.4f,	 0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f},
+		//{-0.4f,-0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 0.0f, 1.0f}, //2
+		{-0.4f,	 0.4f, 0.0f,	0.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //3
+		//{ 0.4f, 0.4f, 0.0f,	1.0f, 1.0f,		0.0f, 0.0f, 1.0f}, //0
 
-		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 1.0f, 0.0f},
-		{ 0.4f,  0.4f, 0.0f,	1.0f, 0.0f, 	0.0f, 1.0f, 0.0f},
-		{-0.4f,  0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 1.0f, 0.0f},
+		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 1.0f, 0.0f}, //4
+		{ 0.4f,  0.4f,  0.0f,	1.0f, 0.0f, 	0.0f, 1.0f, 0.0f}, //5
+		{-0.4f,  0.4f,  0.0f,	0.0f, 0.0f,		0.0f, 1.0f, 0.0f}, //6
 
-		{-0.4f,  0.4f,  0.0f,	0.0f, 0.0f,		0.0f, 1.0f, 0.0f},
-		{-0.4f,  0.4f, -0.8f,	0.0f, 1.0f,		0.0f, 1.0f, 0.0f},
-		{ 0.4f,  0.4f, -0.8f,	1.0f, 1.0f,		0.0f, 1.0f, 0.0f}
+		//{-0.4f, 0.4f, 0.0f,	0.0f, 0.0f,		0.0f, 1.0f, 0.0f}, //6
+		{-0.4f,  0.4f, -0.8f,	0.0f, 1.0f,		0.0f, 1.0f, 0.0f}  //7
+		//{ 0.4f, 0.4f,-0.8f,	1.0f, 1.0f,		0.0f, 1.0f, 0.0f}  //4
 	};
+	
+	GLubyte Indices[] = {
+		//First quad
+		0, 1, 2,
+		2, 3, 0,
+		//Second quad
+		4, 5, 6,
+		6, 7, 4
+	};
+
 
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
 	glGenVertexArrays(1, &gVertexAttribute);
@@ -392,9 +403,6 @@ void CreateTriangleData() {
 	glBindVertexArray(gVertexAttribute);
 	// this activates the first and second attributes of this VAO
 	// think of "attributes" as inputs to the Vertex Shader
-	glEnableVertexAttribArray(0); 
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glGenBuffers(1, &gVertexBuffer);
@@ -405,6 +413,16 @@ void CreateTriangleData() {
 	// This "could" imply copying to the GPU, depending on what the driver wants to do, and
 	// the last argument (read the docs!)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0); 
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	
+	glGenBuffers(1, &gIndexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+
+
 
 	// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
 	GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
@@ -498,7 +516,8 @@ void Render() {
 	// ask OpenGL to draw 3 vertices starting from index 0 in the vertex array 
 	// currently bound (VAO), with current in-use shader. Using TOPOLOGY GL_TRIANGLE_STRIP,
 	// so for one triangle we need 3 vertices!
-	glDrawArrays(GL_TRIANGLES, 0, 12);
+	//glDrawArrays(GL_TRIANGLES, 0, 12);
+	glDrawElements(GL_TRIANGLES, 48, GL_UNSIGNED_BYTE, (GLvoid*)0);
 }
 
 /*
@@ -750,6 +769,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
 	glDeleteBuffers(1, &gVertexBuffer);
 	glDeleteBuffers(1, &gVertexBufferFS);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	//glDeleteBuffers(1, &gIndexBuffer);
 	glfwTerminate();
 
 	return 0;
