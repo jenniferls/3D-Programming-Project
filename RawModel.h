@@ -23,7 +23,7 @@ public:
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
-	std::vector<unsigned short> faces;
+	std::vector<unsigned short> vertex_indices, uv_indices, normal_indices;
 
 private:
 	int id;

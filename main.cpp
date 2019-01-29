@@ -369,7 +369,7 @@ void CreateTexture() {
 void CreateTriangleData() {
 	RawModel box(0, 0, "Resources/Models/cube.obj");
 	OBJLoader loader;
-	loader.loadOBJ(box.path, box.positions, box.normals, box.uvs, box.faces);
+	loader.loadOBJ(box.path, box.positions, box.normals, box.uvs, box.vertex_indices, box.uv_indices, box.normal_indices);
 
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 

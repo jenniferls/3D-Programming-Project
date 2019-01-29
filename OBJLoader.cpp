@@ -15,10 +15,12 @@ OBJLoader::~OBJLoader() {
 
 }
 
-void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, std::vector<unsigned short> &elements) {
+bool OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs,
+	std::vector<unsigned short> &vert_indices, std::vector<unsigned short> &uv_indices, std::vector<unsigned short> &norm_indices) {
 	std::ifstream in(filename, std::fstream::in);
 	if (!in) {
 		OutputDebugStringA("Cannot load obj-file!");
+		return false;
 	}
 
 	std::string line;
@@ -33,18 +35,36 @@ void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPosit
 		}
 		else if (line.substr(0, 2) == "f ") {
 			std::istringstream s(line.substr(2));
-			unsigned short a, b, c;
+			unsigned short a, b, c, d, e, f, g, h, i;
 			s >> a;
 			s.ignore(line.length(), '/');
 			s >> b;
 			s.ignore(line.length(), '/');
 			s >> c;
-			a--; //since we need to start from 0
-			b--; //since we need to start from 0
-			c--; //since we need to start from 0
-			elements.push_back(a);
-			elements.push_back(b);
-			elements.push_back(c);
+
+			s >> d;
+			s.ignore(line.length(), '/');
+			s >> e;
+			s.ignore(line.length(), '/');
+			s >> f;
+
+			s >> g;
+			s.ignore(line.length(), '/');
+			s >> h;
+			s.ignore(line.length(), '/');
+			s >> i;
+
+			vert_indices.push_back(a - 1);
+			vert_indices.push_back(d - 1);
+			vert_indices.push_back(g - 1);
+
+			uv_indices.push_back(b - 1);
+			uv_indices.push_back(e - 1);
+			uv_indices.push_back(h - 1);
+
+			norm_indices.push_back(c - 1);
+			norm_indices.push_back(f - 1);
+			norm_indices.push_back(i - 1);
 		}
 		else if (line.substr(0, 3) == "vn ") {
 			std::istringstream s(line.substr(2));
@@ -62,4 +82,5 @@ void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPosit
 			uvs.push_back(uv);
 		}
 	}
+	return true;
 }
