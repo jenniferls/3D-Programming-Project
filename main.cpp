@@ -72,7 +72,7 @@ GLint projection_id = -1;
 glm::mat4 projection_matrix;
 
 //Camera variables
-glm::vec3 camPos	= glm::vec3(0.0f, 0.0f, 2.0f); //Default camera position
+glm::vec3 camPos	= glm::vec3(0.5f, 0.5f, 4.0f); //Default camera position
 glm::vec3 camFront	= glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
 glm::vec3 camUp		= glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
 float FoV = 45.0f; //Field-of-view
@@ -352,7 +352,7 @@ void CreateTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, colourChannels;
-	const char* filePath = "Resources/Textures/container.jpg"; //Path to image file
+	const char* filePath = "Resources/Textures/cruiser.bmp"; //Path to image file
 	//The stbi_load funcions opens the file, and width and height values from the image and the amount of colour channels in the image.
 	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0); 
 	if (data) {
@@ -367,32 +367,39 @@ void CreateTexture() {
 }
 
 void CreateTriangleData() {
-	RawModel box(0, 0, "Resources/Models/cube.obj");
+	RawModel ship(0, 0, "Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	OBJLoader loader;
-	loader.loadOBJ(box.path, box.positions, box.normals, box.uvs, box.vertex_indices, box.uv_indices, box.normal_indices);
+	loader.loadOBJ(ship.path, ship.positions, ship.normals, ship.uvs, ship.vertex_indices, ship.uv_indices, ship.normal_indices);
+
+	RawModel::TriangleVertex shipVertices[8625];
+	for (int i = 0; i < ship.vertex_indices.size(); i++) {
+		shipVertices[i] = {
+			ship.positions[ship.vertex_indices[i]], ship.uvs[ship.uv_indices[i]], ship.normals[ship.normal_indices[i]]
+		};
+	}
 
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
 	// end up with an array of many of these structs.
 	RawModel::TriangleVertex triangleVertices[] = {
 		//| Vtx Positions |					|Tex Coords|					|Normals|
-		{glm::vec3(0.4f, 0.4f, 0.0f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //0
-		{glm::vec3(0.4f, -0.4f, 0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //1
-		{glm::vec3(-0.4f, -0.4f, 0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //2
-		{glm::vec3(-0.4f, 0.4f, 0.0f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //3
-		{glm::vec3(0.4f, 0.4f, -0.8f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //4
-		{glm::vec3(0.4f, 0.4f,  0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //5
-		{glm::vec3(-0.4f, 0.4f,  0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //6
-		{glm::vec3(-0.4f, 0.4f, -0.8f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}  //7
+		{glm::vec3(0.4f, 0.4f, 0.0f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //0 Front, Right, Top
+		{glm::vec3(0.4f, -0.4f, 0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //1 Front, Right, Bottom
+		{glm::vec3(-0.4f, -0.4f, 0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //2 Front, Left,  Bottom
+		{glm::vec3(-0.4f, 0.4f, 0.0f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //3 Front, Left,  Top
+		{glm::vec3(0.4f, 0.4f, -0.8f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //4 Back,  Right, Top
+		{glm::vec3(0.4f, 0.4f,  0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //5 Front, Right, Top
+		{glm::vec3(-0.4f, 0.4f,  0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //6 Front, Left,  Top
+		{glm::vec3(-0.4f, 0.4f, -0.8f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}  //7 Back,  Left,  Top
 	};
 	
 	GLubyte Indices[] = {
 		//First quad
-		0, 1, 2,
-		2, 3, 0,
+		2, 1, 0,
+		0, 3, 2,
 		//Second quad
-		4, 5, 6,
-		6, 7, 4
+		6, 5, 4,
+		4, 7, 6
 	};
 
 
@@ -411,7 +418,8 @@ void CreateTriangleData() {
 
 	// This "could" imply copying to the GPU, depending on what the driver wants to do, and
 	// the last argument (read the docs!)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(shipVertices), shipVertices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0); 
 	glEnableVertexAttribArray(1);
@@ -512,11 +520,9 @@ void Render() {
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(gVertexAttribute);
 	
-	// ask OpenGL to draw 3 vertices starting from index 0 in the vertex array 
-	// currently bound (VAO), with current in-use shader. Using TOPOLOGY GL_TRIANGLES,
-	// so for one triangle we need 3 vertices!
-	//glDrawArrays(GL_TRIANGLES, 0, 12);
-	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, (GLvoid*)0); //Mode, number of indices (integers), type of data in index, offset
+	//Draws the triangles
+	glDrawArrays(GL_TRIANGLES, 0, 8625); //This method doesn't use the index buffer
+	//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, (GLvoid*)0); //Mode, number of indices (integers), type of data in index, offset
 }
 
 /*

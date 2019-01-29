@@ -14,7 +14,7 @@ out vec3 finalNormals;
 
 out float diffValue;
 out float specValue;
-const vec3 light_pos = vec3( 0.0, 1.0, 3.0);
+const vec3 light_pos = vec3( 2.0, 1.5, 3.0);
 
 float getDiffVal(vec4 fragPos, vec3 normal){
 	
@@ -52,7 +52,7 @@ float getSpecVal(vec4 fragPos, vec3 normal){
 void main(){
 	//First determine the normal of the face by calculating the cross product of two vectors created by 3 triangle vertices
 	//This gives us a vector that is perpendicular to the two vectors
-	vec3 n = cross(gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz); //Order determines if the resulting vector will be positive or negative.
+	vec3 n = cross(gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz, gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz); //Order determines if the resulting vector will be positive or negative.
 	vec3 faceNormal = mat3(VIEW_MAT * MODEL_MAT) * n; //Make sure the normal is in view space
 
 	//Display triangle if it's facing the camera
