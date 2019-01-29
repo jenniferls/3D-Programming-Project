@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-OBJLoader::OBJLoader() {
+OBJLoader::OBJLoader() : model(0, 0, ""){
 
 }
 
@@ -20,6 +20,7 @@ void OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPosit
 	if (!in) {
 		OutputDebugStringA("Cannot load obj-file!");
 	}
+
 	std::string line;
 	while (getline(in, line)) {
 		if (line.substr(0, 2) == "v ") {

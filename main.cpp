@@ -367,14 +367,9 @@ void CreateTexture() {
 }
 
 void CreateTriangleData() {
+	RawModel box(0, 0, "Resources/Models/cube.obj");
 	OBJLoader loader;
-	vector<glm::vec3> model_vertices;
-	vector<glm::vec3> model_normals;
-	vector<glm::vec2> model_uvs;
-	std::vector<GLushort> model_faces;
-	const char* filePath = "Resources/Models/cube.obj";
-	loader.loadOBJ(filePath, model_vertices, model_normals, model_uvs, model_faces);
-
+	loader.loadOBJ(box.path, box.positions, box.normals, box.uvs, box.faces);
 
 	// create the actual data in plane Z = 0
 	// This is called an Array of Structs (AoS) because we will 
@@ -422,9 +417,9 @@ void CreateTriangleData() {
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	
-	glGenBuffers(1, &gIndexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+	glGenBuffers(1, &gIndexBuffer); //Generate the index buffer
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer); //Bind the index buffer
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW); //Store data in index buffer
 
 
 
@@ -456,7 +451,7 @@ void CreateTriangleData() {
 		2, 
 		GL_FLOAT, 
 		GL_FALSE, sizeof(RawModel::TriangleVertex), // distance between two textureCoord 
-		BUFFER_OFFSET(sizeof(float)*3)	// note, the first color starts after the first vertex.
+		BUFFER_OFFSET(sizeof(float)*3)
 	);
 
 	GLint normals = glGetAttribLocation(gShaderProgram, "normals");
@@ -518,10 +513,10 @@ void Render() {
 	glBindVertexArray(gVertexAttribute);
 	
 	// ask OpenGL to draw 3 vertices starting from index 0 in the vertex array 
-	// currently bound (VAO), with current in-use shader. Using TOPOLOGY GL_TRIANGLE_STRIP,
+	// currently bound (VAO), with current in-use shader. Using TOPOLOGY GL_TRIANGLES,
 	// so for one triangle we need 3 vertices!
 	//glDrawArrays(GL_TRIANGLES, 0, 12);
-	glDrawElements(GL_TRIANGLES, 48, GL_UNSIGNED_BYTE, (GLvoid*)0);
+	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, (GLvoid*)0); //Mode, number of indices (integers), type of data in index, offset
 }
 
 /*
