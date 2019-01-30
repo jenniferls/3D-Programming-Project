@@ -11,10 +11,10 @@ in vec3 normalsOut[];
 out vec2 texUVs;
 out vec4 fragPos;
 out vec3 finalNormals;
+out vec3 lightToCamera;
 
 out float diffValue;
 out float specValue;
-out vec4 camPos;
 const vec3 light_pos = vec3( 4.0, 0.0, 2.0);
 
 float getDiffVal(vec4 fragPos, vec3 normal){
@@ -32,13 +32,13 @@ float getDiffVal(vec4 fragPos, vec3 normal){
 float getSpecVal(vec4 fragPos, vec3 normal){
 	
 	//http://ogldev.atspace.co.uk/www/tutorial19/tutorial19.html
-	vec3 camPos = vec3(VIEW_MAT[1]); 
+	vec3 camPos = vec3(VIEW_MAT); 
 
 	vec3 lightVec = normalize(light_pos - fragPos.xyz);
 	vec3 viewVec = normalize(fragPos.xyz - camPos);
 
 	//vec3 reflection = lightVec - 2 * normal * (dot(normal, lightVec)); // 1.
-	vec3 reflectVec = normalize(reflect(lightVec, normal)); // 2. the reflect funktion does the same as the above in 1. 
+	vec3 reflectVec = normalize(reflect(lightVec, normal)); // 2. the reflect function does the same as the above in 1. 
 
 	float specularFactor = dot(viewVec, reflectVec);
 
@@ -64,6 +64,7 @@ void main(){
 			finalNormals = normalsOut[i];
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
+			lightToCamera = (inverse(VIEW_MAT) * vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz - fragPos.xyz; //Vector that goes from light to camera
 			diffValue = getDiffVal(fragPos, normalize(normalsOut[i]));
 			specValue = getSpecVal( fragPos, normalize(normalsOut[i]));
 			EmitVertex();
