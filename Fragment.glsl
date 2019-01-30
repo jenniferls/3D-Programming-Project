@@ -14,23 +14,17 @@ in float specValue;
 uniform sampler2D textureSampler;
 
 void main () {	
-	float amStr = 0.1f; // PF: the ambient strenght 
+	float amStr = 0.5f; // PF: the ambient strenght 
 	float specStr = 0.5f; // PF: the specular strenght
 	vec3 lightColor = vec3(1.0, 1.0, 1.0);
 	float MatSpecIntensity = 1.0f;
 
 	vec3 am = amStr * lightColor; // PF: the ambient 
+	vec3 diffuse = diffValue * lightColor; // PF: the diffuse
+	vec3 spec = specStr * specValue * lightColor;
 	
-	vec4 texSample = texture( textureSampler, vec2(texUVs.s, 1 - texUVs.t)) * diffValue;
-	//vec4 applyAm = texture( textureSampler, vec2(texUVs.s, 1 - texUVs.t)) * vec4(am, 1.0f);
+	vec4 texSample = texture( textureSampler, vec2(texUVs.s, 1 - texUVs.t));
 
-	vec4 applyAm = texture(textureSampler, texUVs) * vec4(am, 1.0f);
-
-	vec4 applySpec = vec4(lightColor * MatSpecIntensity * specValue, 1.0f);
-
-	fragment_color = applyAm; 
-	fragment_color += texSample;
-
-
-	//fragment_color = texture(textureSampler, texUVs);
+	vec4 result = vec4(am + diffuse + spec, 1.0 ) * texSample;
+	fragment_color = result;
 }

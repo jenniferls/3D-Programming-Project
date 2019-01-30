@@ -14,10 +14,11 @@ out vec3 finalNormals;
 
 out float diffValue;
 out float specValue;
-const vec3 light_pos = vec3( 2.0, 1.5, 3.0);
+out vec4 camPos;
+const vec3 light_pos = vec3( 4.0, 0.0, 2.0);
 
 float getDiffVal(vec4 fragPos, vec3 normal){
-	
+
 	vec3 pointToLight = normalize(light_pos - fragPos.xyz);
 
 	float diffuseFactor = dot(pointToLight, normal) / (length(pointToLight)) * length(normal);
@@ -31,12 +32,12 @@ float getDiffVal(vec4 fragPos, vec3 normal){
 float getSpecVal(vec4 fragPos, vec3 normal){
 	
 	//http://ogldev.atspace.co.uk/www/tutorial19/tutorial19.html
-	vec3 camPos = vec3(0.0f, 0.0f, 2.0f); // <--- temp 
+	vec3 camPos = vec3(VIEW_MAT[1]); 
 
 	vec3 lightVec = normalize(light_pos - fragPos.xyz);
 	vec3 viewVec = normalize(fragPos.xyz - camPos);
 
-	vec3 reflection = lightVec - 2 * normal * (dot(normal, lightVec)); // 1.
+	//vec3 reflection = lightVec - 2 * normal * (dot(normal, lightVec)); // 1.
 	vec3 reflectVec = normalize(reflect(lightVec, normal)); // 2. the reflect funktion does the same as the above in 1. 
 
 	float specularFactor = dot(viewVec, reflectVec);

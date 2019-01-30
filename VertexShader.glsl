@@ -10,5 +10,6 @@ void main() {
 	aTexture = texture_coords; //Pass the texture info to the geometry shader
 	normalsOut = normals;
 	// gl_Position = newVertex;//vec4(vec3(newVertex.x + offset, newVertex.yz), 1.0);
+
 	gl_Position = vec4(vertex_position, 1.0);
 }
