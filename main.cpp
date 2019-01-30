@@ -36,6 +36,8 @@
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "glfw3.lib")
 
+#define _360_DEGREES 6.2831853072f //In radians
+
 #define WIDTH 1280.0f
 #define HEIGHT 720.0f
 GLFWwindow *gWindow;
@@ -475,7 +477,7 @@ void CreateTriangleData() {
 		BUFFER_OFFSET(sizeof(float)*5));
 }
 
-void CreateMatrixData() {
+void CreateMatrixData(float rotationValue) {
 	//MVP-matrix
 	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
 	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
@@ -491,7 +493,8 @@ void CreateMatrixData() {
 		return;
 	}
 
-	model_matrix = glm::mat4(1.0f);
+	glm::mat4 identity_mat = glm::mat4(1.0f);
+	model_matrix = glm::rotate(identity_mat, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
 	model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
 	if (model_id == -1) {
 		OutputDebugStringA("Error, cannot find 'model_id' attribute in Vertex shader\n");
@@ -685,6 +688,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CreateFullScreenQuad();
 	CreateTexture();
 
+	float rotation = 0.0f;
+
 	while (!glfwWindowShouldClose(gWindow)) {
 		glfwPollEvents();
 		if (GLFW_PRESS == glfwGetKey(gWindow, GLFW_KEY_ESCAPE)) {
@@ -694,6 +699,14 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		//Calculate delta time
 		timer.Tick();
+
+		float increment = 0.6f * timer.GetDeltaTime();
+
+		if (rotation >= _360_DEGREES) {
+			rotation -= _360_DEGREES;
+		}
+
+		rotation += increment;
 
 		keyboardUpdate();
 
@@ -723,7 +736,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(); //Creates mvp-matrix
+		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix to vertex-shader
 		glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix to vertex-shader
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix to vertex-shader
