@@ -31,6 +31,7 @@
 #include "GameTimer.h"
 #include "RawModel.h"
 #include "OBJLoader.h"
+#include "Scene.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -56,7 +57,7 @@ GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
 GLuint gIndexBuffer = 0;
 
-GLuint texture = 0;//Set and initialize the texture variable.
+//GLuint texture = 0;//Set and initialize the texture variable.
 
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
@@ -344,7 +345,8 @@ void CreateFullScreenQuad() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
 
-void CreateTexture() {
+GLuint CreateTexture(const char* path) {
+	GLuint texture = 0;
 	glGenTextures(1, &texture); //Generate the texture, first input is amt of textures, second is where we store them.
 	glBindTexture(GL_TEXTURE_2D, texture); // We bind the genereated texture to be able to change it.
 
@@ -355,7 +357,7 @@ void CreateTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, colourChannels;
-	const char* filePath = "Resources/Textures/cruiser.bmp"; //Path to image file
+	const char* filePath = "Resources/Textures/texture1.jpg"; //Path to image file
 	//The stbi_load funcions opens the file, and width and height values from the image and the amount of colour channels in the image.
 	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0); 
 	if (data) {
@@ -367,39 +369,19 @@ void CreateTexture() {
 		cout << "Failed to load texture. Reason: " << stbi_failure_reason() << endl; //Output error message if texture file is not found
 	}
 	stbi_image_free(data); // Free image memory
+	return texture;
 }
 
-void CreateTriangleData() {
-	RawModel ship(0, "Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
-	OBJLoader loader;
-	if (!loader.loadOBJ(ship)) {
-		cout << "OBJLoader ERROR!" << endl;
-	}
+Scene CreateScene() {
+	//Create a scene object
+	Scene newScene;
 
-	// create the actual data in plane Z = 0
-	// This is called an Array of Structs (AoS) because we will 
-	// end up with an array of many of these structs.
-	RawModel::TriangleVertex triangleVertices[] = {
-		//| Vtx Positions |					|Tex Coords|					|Normals|
-		{glm::vec3(0.4f, 0.4f, 0.0f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //0 Front, Right, Top
-		{glm::vec3(0.4f, -0.4f, 0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //1 Front, Right, Bottom
-		{glm::vec3(-0.4f, -0.4f, 0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //2 Front, Left,  Bottom
-		{glm::vec3(-0.4f, 0.4f, 0.0f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //3 Front, Left,  Top
-		{glm::vec3(0.4f, 0.4f, -0.8f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //4 Back,  Right, Top
-		{glm::vec3(0.4f, 0.4f,  0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //5 Front, Right, Top
-		{glm::vec3(-0.4f, 0.4f,  0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //6 Front, Left,  Top
-		{glm::vec3(-0.4f, 0.4f, -0.8f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}  //7 Back,  Left,  Top
-	};
-	
-	GLubyte Indices[] = {
-		//First quad
-		2, 1, 0,
-		0, 3, 2,
-		//Second quad
-		6, 5, 4,
-		4, 7, 6
-	};
+	//Fill the scene object with models to render
+	newScene.addModel(0, "Resources/Models/ship.obj", "Resources/Textures/texture1.jpg");
+	newScene.addModel(0, "Resources/Models/cruiser.obj", "Resources/Textures/cruiser.bmp"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 
+	//Create textures, right now only rendering of one texture is supported
+	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
 
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
 	glGenVertexArrays(1, &gVertexAttribute);
@@ -416,18 +398,11 @@ void CreateTriangleData() {
 
 	// This "could" imply copying to the GPU, depending on what the driver wants to do, and
 	// the last argument (read the docs!)
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, ship.getVertCount() * VERTEX_SIZE, ship.vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, newScene.models[0].getVertCount() * VERTEX_SIZE, newScene.models[0].vertices.data(), GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(0); 
+	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
-	
-	glGenBuffers(1, &gIndexBuffer); //Generate the index buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer); //Bind the index buffer
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW); //Store data in index buffer
-
-
 
 	// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
 	GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
@@ -436,7 +411,6 @@ void CreateTriangleData() {
 
 	if (vertexPos == -1) {
 		OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
-		return;
 	}
 
 	// tell OpenGL about layout in memory (input assembler information)
@@ -454,24 +428,129 @@ void CreateTriangleData() {
 	GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
 	glVertexAttribPointer(
 		textureCoord,
-		2, 
-		GL_FLOAT, 
+		2,
+		GL_FLOAT,
 		GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
-		BUFFER_OFFSET(sizeof(float)*3)
+		BUFFER_OFFSET(sizeof(float) * 3)
 	);
 
 	GLint normals = glGetAttribLocation(gShaderProgram, "normals");
 	if (normals == -1) {
 		OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
-		return;
 	}
 	glVertexAttribPointer(
 		normals,
 		3,
 		GL_FLOAT,
 		GL_FALSE, VERTEX_SIZE,
-		BUFFER_OFFSET(sizeof(float)*5));
+		BUFFER_OFFSET(sizeof(float) * 5));
+
+	return newScene;
 }
+
+//void CreateTriangleData() {
+//	RawModel ship(0, "Resources/Models/ship.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+//	OBJLoader loader;
+//	if (!loader.loadOBJ(ship)) {
+//		cout << "OBJLoader ERROR!" << endl;
+//	}
+//
+//	// create the actual data in plane Z = 0
+//	// This is called an Array of Structs (AoS) because we will 
+//	// end up with an array of many of these structs.
+//	RawModel::TriangleVertex triangleVertices[] = {
+//		//| Vtx Positions |					|Tex Coords|					|Normals|
+//		{glm::vec3(0.4f, 0.4f, 0.0f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //0 Front, Right, Top
+//		{glm::vec3(0.4f, -0.4f, 0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //1 Front, Right, Bottom
+//		{glm::vec3(-0.4f, -0.4f, 0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //2 Front, Left,  Bottom
+//		{glm::vec3(-0.4f, 0.4f, 0.0f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //3 Front, Left,  Top
+//		{glm::vec3(0.4f, 0.4f, -0.8f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //4 Back,  Right, Top
+//		{glm::vec3(0.4f, 0.4f,  0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //5 Front, Right, Top
+//		{glm::vec3(-0.4f, 0.4f,  0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //6 Front, Left,  Top
+//		{glm::vec3(-0.4f, 0.4f, -0.8f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}  //7 Back,  Left,  Top
+//	};
+//	
+//	GLubyte Indices[] = {
+//		//First quad
+//		2, 1, 0,
+//		0, 3, 2,
+//		//Second quad
+//		6, 5, 4,
+//		4, 7, 6
+//	};
+//
+//
+//	// Vertex Array Object (VAO), description of the inputs to the GPU 
+//	glGenVertexArrays(1, &gVertexAttribute);
+//	// bind is like "enabling" the object to use it
+//	glBindVertexArray(gVertexAttribute);
+//	// this activates the first and second attributes of this VAO
+//	// think of "attributes" as inputs to the Vertex Shader
+//
+//	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
+//	glGenBuffers(1, &gVertexBuffer);
+//
+//	// Bind the buffer ID as an ARRAY_BUFFER
+//	glBindBuffer(GL_ARRAY_BUFFER, gVertexBuffer);
+//
+//	// This "could" imply copying to the GPU, depending on what the driver wants to do, and
+//	// the last argument (read the docs!)
+//	//glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+//	glBufferData(GL_ARRAY_BUFFER, ship.getVertCount() * VERTEX_SIZE, ship.vertices.data(), GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0); 
+//	glEnableVertexAttribArray(1);
+//	glEnableVertexAttribArray(2);
+//	
+//	glGenBuffers(1, &gIndexBuffer); //Generate the index buffer
+//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer); //Bind the index buffer
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW); //Store data in index buffer
+//
+//
+//
+//	// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
+//	GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
+//	// if this returns -1, it means there is a problem, and the program will likely crash.
+//	// examples: the name is different or missing in the shader
+//
+//	if (vertexPos == -1) {
+//		OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
+//		return;
+//	}
+//
+//	// tell OpenGL about layout in memory (input assembler information)
+//	glVertexAttribPointer(
+//		vertexPos,				// location in shader
+//		3,						// how many elements of type (see next argument)
+//		GL_FLOAT,				// type of each element
+//		GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
+//		VERTEX_SIZE,			// distance between two vertices in memory (stride)
+//		BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
+//	);
+//
+//	// repeat the process for the second attribute.
+//	// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
+//	GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
+//	glVertexAttribPointer(
+//		textureCoord,
+//		2, 
+//		GL_FLOAT, 
+//		GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
+//		BUFFER_OFFSET(sizeof(float)*3)
+//	);
+//
+//	GLint normals = glGetAttribLocation(gShaderProgram, "normals");
+//	if (normals == -1) {
+//		OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
+//		return;
+//	}
+//	glVertexAttribPointer(
+//		normals,
+//		3,
+//		GL_FLOAT,
+//		GL_FALSE, VERTEX_SIZE,
+//		BUFFER_OFFSET(sizeof(float)*5));
+//}
 
 void CreateMatrixData(float rotationValue) {
 	//MVP-matrix
@@ -503,7 +582,7 @@ void SetViewport() {
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
 
-void Render() {
+void Render(Scene scene) {
 	// set the color TO BE used (this does not clear the screen right away)
 	glClearColor(gClearColour[0], gClearColour[1],gClearColour[2],1.0);
 
@@ -514,13 +593,15 @@ void Render() {
 	glUseProgram(gShaderProgram);
 
 	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-	glBindTexture(GL_TEXTURE_2D, texture); //Bind the triangle texture
+	glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the triangle texture
 
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(gVertexAttribute);
 	
-	//Draws the triangles
-	glDrawArrays(GL_TRIANGLES, 0, 8625); //This method doesn't use the index buffer
+	//Draws all models in the scene
+	for (int i = 0; i < scene.getModelCount(); i++) {
+		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount()); //This method doesn't use the index buffer
+	}
 	//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, (GLvoid*)0); //Mode, number of indices (integers), type of data in index, offset
 }
 
@@ -662,9 +743,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
 
-	CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
+	//CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
+	Scene gameScene = CreateScene();
 	CreateFullScreenQuad();
-	CreateTexture();
 
 	float rotation = 0.0f;
 
@@ -697,7 +778,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glUseProgram(gShaderProgram);
 		glBindVertexArray(gVertexAttribute);
 
-		//glEnable(GL_MULTISAMPLE);
 		glEnable(GL_DEPTH_TEST);
 
 		//Prepare IMGUI output
@@ -719,7 +799,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix to vertex-shader
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix to vertex-shader
 
-		Render(); //9. Render
+		Render(gameScene); //9. Render
 
 		// first pass is done!
 		// now render a second pass

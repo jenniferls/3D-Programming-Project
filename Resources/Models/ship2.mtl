@@ -1,0 +1,7 @@
+newmtl blinn1SG
+Kd 0.0 0.0 0.0
+Ka 0.0 0.0 0.0
+Ks 0.5 0.5 0.5
+Ni 1.0
+illum 4
+map_Kd texture1.iff

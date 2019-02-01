@@ -1,9 +1,11 @@
 #include "RawModel.h"
 
-RawModel::RawModel(int id, std::string filePath) {
+RawModel::RawModel(int id, const char* filePath, const char* texPath) {
 	this->id = id;
 	this->vertCount = 0;
-	this->path = filePath.c_str();
+	this->path = filePath;
+	this->texturePath = texPath;
+	this->textureID = 0;
 }
 
 RawModel::~RawModel() {
@@ -22,6 +24,18 @@ void RawModel::setVertCount(int count) {
 	this->vertCount = count;
 }
 
-const char * RawModel::getPath() const {
+void RawModel::setTextureID(unsigned int id) {
+	this->textureID = id;
+}
+
+const char* RawModel::getPath() const {
 	return this->path;
+}
+
+const char* RawModel::getTexturePath() const {
+	return this->texturePath;
+}
+
+unsigned int RawModel::getTextureID() const {
+	return this->textureID;
 }
