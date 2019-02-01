@@ -369,12 +369,12 @@ void CreateTexture() {
 }
 
 void CreateTriangleData() {
-	RawModel ship(0, 0, "Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	RawModel ship(0, "Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	OBJLoader loader;
-	loader.loadOBJ(ship.path, ship.positions, ship.normals, ship.uvs, ship.vertex_indices, ship.uv_indices, ship.normal_indices);
+	loader.loadOBJ(ship);
 
 	RawModel::TriangleVertex shipVertices[8625];
-	for (int i = 0; i < ship.vertex_indices.size(); i++) {
+	for (int i = 0; i < ship.getVertCount(); i++) {
 		shipVertices[i] = {
 			ship.positions[ship.vertex_indices[i]], ship.uvs[ship.uv_indices[i]], ship.normals[ship.normal_indices[i]]
 		};

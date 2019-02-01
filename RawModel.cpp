@@ -1,8 +1,8 @@
 #include "RawModel.h"
 
-RawModel::RawModel(int id, int vertCount, std::string filePath) {
+RawModel::RawModel(int id, std::string filePath) {
 	this->id = id;
-	this->vertCount = vertCount;
+	this->vertCount = 0;
 	this->path = filePath.c_str();
 }
 
@@ -16,4 +16,8 @@ int RawModel::getID() const {
 
 int RawModel::getVertCount() const {
 	return this->vertCount;
+}
+
+void RawModel::setVertCount(int count) {
+	this->vertCount = count;
 }

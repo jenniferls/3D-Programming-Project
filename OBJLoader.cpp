@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-OBJLoader::OBJLoader() : model(0, 0, ""){
+OBJLoader::OBJLoader() : model(0, ""){
 
 }
 
@@ -15,9 +15,8 @@ OBJLoader::~OBJLoader() {
 
 }
 
-bool OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs,
-	std::vector<unsigned short> &vert_indices, std::vector<unsigned short> &uv_indices, std::vector<unsigned short> &norm_indices) {
-	std::ifstream in(filename, std::fstream::in);
+bool OBJLoader::loadOBJ(RawModel &model) {
+	std::ifstream in(model.path, std::fstream::in);
 	if (!in) {
 		OutputDebugStringA("Cannot load obj-file!");
 		return false;
@@ -31,7 +30,7 @@ bool OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPosit
 			s >> v.x;
 			s >> v.y;
 			s >> v.z;
-			vertPositions.push_back(v);
+			model.positions.push_back(v);
 		}
 		else if (line.substr(0, 2) == "f ") {
 			std::istringstream s(line.substr(2));
@@ -54,17 +53,17 @@ bool OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPosit
 			s.ignore(line.length(), '/');
 			s >> i;
 
-			vert_indices.push_back(a - 1);
-			vert_indices.push_back(d - 1);
-			vert_indices.push_back(g - 1);
+			model.vertex_indices.push_back(a - 1);
+			model.vertex_indices.push_back(d - 1);
+			model.vertex_indices.push_back(g - 1);
 
-			uv_indices.push_back(b - 1);
-			uv_indices.push_back(e - 1);
-			uv_indices.push_back(h - 1);
+			model.uv_indices.push_back(b - 1);
+			model.uv_indices.push_back(e - 1);
+			model.uv_indices.push_back(h - 1);
 
-			norm_indices.push_back(c - 1);
-			norm_indices.push_back(f - 1);
-			norm_indices.push_back(i - 1);
+			model.normal_indices.push_back(c - 1);
+			model.normal_indices.push_back(f - 1);
+			model.normal_indices.push_back(i - 1);
 		}
 		else if (line.substr(0, 3) == "vn ") {
 			std::istringstream s(line.substr(2));
@@ -72,15 +71,16 @@ bool OBJLoader::loadOBJ(const char * filename, std::vector<glm::vec3> &vertPosit
 			s >> n.x;
 			s >> n.y;
 			s >> n.z;
-			normals.push_back(n);
+			model.normals.push_back(n);
 		}
 		else if (line.substr(0, 3) == "vt ") {
 			std::istringstream s(line.substr(2));
 			glm::vec2 uv;
 			s >> uv.x;
 			s >> uv.y;
-			uvs.push_back(uv);
+			model.uvs.push_back(uv);
 		}
 	}
+	model.setVertCount(model.vertex_indices.size());
 	return true;
 }

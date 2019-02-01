@@ -12,11 +12,12 @@ public:
 		glm::vec3 normals;
 	};
 
-	RawModel(int id, int vertCount, std::string filePath);
+	RawModel(int id, std::string filePath);
 	~RawModel();
 
 	int getID() const;
 	int getVertCount() const;
+	void setVertCount(int count);
 
 	const char* path; //File path
 	std::vector<TriangleVertex> vertices;
