@@ -10,6 +10,7 @@ public:
 	~OBJLoader();
 
 	bool loadOBJ(RawModel &model);
+	bool loadMTL(RawModel &model);
 
 private:
 	RawModel model;

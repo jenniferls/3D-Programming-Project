@@ -30,6 +30,11 @@ public:
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned short> vertex_indices, uv_indices, normal_indices;
 
+	//Used with MTL-files
+	float ambientVal;
+	float specularVal;
+	float diffuseVal;
+
 private:
 	const char* path; //File path
 	const char* texturePath; //File path to texture file

@@ -6,6 +6,9 @@ RawModel::RawModel(int id, const char* filePath, const char* texPath) {
 	this->path = filePath;
 	this->texturePath = texPath;
 	this->textureID = 0;
+	this->ambientVal = 0.0f;
+	this->diffuseVal = 0.0f;
+	this->specularVal = 0.0f;
 }
 
 RawModel::~RawModel() {

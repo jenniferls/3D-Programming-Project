@@ -89,3 +89,8 @@ bool OBJLoader::loadOBJ(RawModel &model) {
 	}
 	return true;
 }
+
+bool OBJLoader::loadMTL(RawModel &model) {
+
+	return true;
+}

@@ -13,10 +13,10 @@ in float specValue;
 // this is a uniform value, the very same value for ALL pixel shader executions
 uniform sampler2D textureSampler;
 
+uniform mat4 MODEL_MAT;
 const vec3 light_pos = vec3( 4.0, 6.0, 2.0);
 in vec4 fragPos;
 in vec3 lightToCamera;
-uniform mat4 MODEL_MAT;
 
 void main () {	
 	float amStr = 0.2f; // PF: the ambient strength 
