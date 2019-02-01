@@ -16,7 +16,7 @@ OBJLoader::~OBJLoader() {
 }
 
 bool OBJLoader::loadOBJ(RawModel &model) {
-	std::ifstream in(model.path, std::fstream::in);
+	std::ifstream in(model.getPath(), std::fstream::in);
 	if (!in) {
 		OutputDebugStringA("Cannot load obj-file!");
 		return false;
@@ -31,6 +31,21 @@ bool OBJLoader::loadOBJ(RawModel &model) {
 			s >> v.y;
 			s >> v.z;
 			model.positions.push_back(v);
+		}
+		else if (line.substr(0, 3) == "vn ") {
+			std::istringstream s(line.substr(2));
+			glm::vec3 n;
+			s >> n.x;
+			s >> n.y;
+			s >> n.z;
+			model.normals.push_back(n);
+		}
+		else if (line.substr(0, 3) == "vt ") {
+			std::istringstream s(line.substr(2));
+			glm::vec2 uv;
+			s >> uv.x;
+			s >> uv.y;
+			model.uvs.push_back(uv);
 		}
 		else if (line.substr(0, 2) == "f ") {
 			std::istringstream s(line.substr(2));
@@ -65,22 +80,12 @@ bool OBJLoader::loadOBJ(RawModel &model) {
 			model.normal_indices.push_back(f - 1);
 			model.normal_indices.push_back(i - 1);
 		}
-		else if (line.substr(0, 3) == "vn ") {
-			std::istringstream s(line.substr(2));
-			glm::vec3 n;
-			s >> n.x;
-			s >> n.y;
-			s >> n.z;
-			model.normals.push_back(n);
-		}
-		else if (line.substr(0, 3) == "vt ") {
-			std::istringstream s(line.substr(2));
-			glm::vec2 uv;
-			s >> uv.x;
-			s >> uv.y;
-			model.uvs.push_back(uv);
-		}
 	}
 	model.setVertCount(model.vertex_indices.size());
+	for (int i = 0; i < model.getVertCount(); i++) {
+		RawModel::TriangleVertex temp;
+		temp = { model.positions[model.vertex_indices[i]], model.uvs[model.uv_indices[i]], model.normals[model.normal_indices[i]] };
+		model.vertices.push_back(temp);
+	}
 	return true;
 }

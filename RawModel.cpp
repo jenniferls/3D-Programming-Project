@@ -21,3 +21,7 @@ int RawModel::getVertCount() const {
 void RawModel::setVertCount(int count) {
 	this->vertCount = count;
 }
+
+const char * RawModel::getPath() const {
+	return this->path;
+}

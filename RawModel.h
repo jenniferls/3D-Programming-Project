@@ -18,15 +18,16 @@ public:
 	int getID() const;
 	int getVertCount() const;
 	void setVertCount(int count);
+	const char* getPath() const;
 
-	const char* path; //File path
-	std::vector<TriangleVertex> vertices;
+	std::vector<TriangleVertex> vertices; //List of all vertices in model file
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned short> vertex_indices, uv_indices, normal_indices;
 
 private:
+	const char* path; //File path
 	int id;
 	int vertCount;
 };

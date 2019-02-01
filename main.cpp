@@ -37,6 +37,7 @@
 #pragma comment(lib, "glfw3.lib")
 
 #define _360_DEGREES 6.2831853072f //In radians
+#define VERTEX_SIZE sizeof(RawModel::TriangleVertex) //Update this value if changes to TriangleVertex are made
 
 #define WIDTH 1280.0f
 #define HEIGHT 720.0f
@@ -371,13 +372,8 @@ void CreateTexture() {
 void CreateTriangleData() {
 	RawModel ship(0, "Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	OBJLoader loader;
-	loader.loadOBJ(ship);
-
-	RawModel::TriangleVertex shipVertices[8625];
-	for (int i = 0; i < ship.getVertCount(); i++) {
-		shipVertices[i] = {
-			ship.positions[ship.vertex_indices[i]], ship.uvs[ship.uv_indices[i]], ship.normals[ship.normal_indices[i]]
-		};
+	if (!loader.loadOBJ(ship)) {
+		cout << "OBJLoader ERROR!" << endl;
 	}
 
 	// create the actual data in plane Z = 0
@@ -421,7 +417,7 @@ void CreateTriangleData() {
 	// This "could" imply copying to the GPU, depending on what the driver wants to do, and
 	// the last argument (read the docs!)
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(shipVertices), shipVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, ship.getVertCount() * VERTEX_SIZE, ship.vertices.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0); 
 	glEnableVertexAttribArray(1);
@@ -449,7 +445,7 @@ void CreateTriangleData() {
 		3,						// how many elements of type (see next argument)
 		GL_FLOAT,				// type of each element
 		GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
-		sizeof(RawModel::TriangleVertex), // distance between two vertices in memory (stride)
+		VERTEX_SIZE,			// distance between two vertices in memory (stride)
 		BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
 	);
 
@@ -460,7 +456,7 @@ void CreateTriangleData() {
 		textureCoord,
 		2, 
 		GL_FLOAT, 
-		GL_FALSE, sizeof(RawModel::TriangleVertex), // distance between two textureCoord 
+		GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
 		BUFFER_OFFSET(sizeof(float)*3)
 	);
 
@@ -473,7 +469,7 @@ void CreateTriangleData() {
 		normals,
 		3,
 		GL_FLOAT,
-		GL_FALSE, sizeof(RawModel::TriangleVertex),
+		GL_FALSE, VERTEX_SIZE,
 		BUFFER_OFFSET(sizeof(float)*5));
 }
 
@@ -527,24 +523,6 @@ void Render() {
 	glDrawArrays(GL_TRIANGLES, 0, 8625); //This method doesn't use the index buffer
 	//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, (GLvoid*)0); //Mode, number of indices (integers), type of data in index, offset
 }
-
-/*
-static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	float movementSpeed = 2.5f * timer.GetDeltaTime();
-	if (GetAsyncKeyState(GLFW_KEY_W))
-		camPos += movementSpeed * camFront;
-	//	keys[0] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-	if (GetAsyncKeyState(GLFW_KEY_A))
-		camPos -= glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
-	//	keys[1] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-	if (GetAsyncKeyState(GLFW_KEY_S))
-		camPos -= movementSpeed * camFront;
-	//	keys[2] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-	if (GetAsyncKeyState(GLFW_KEY_D))
-		camPos += glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
-	//	keys[3] = (action == GLFW_PRESS || action == GLFW_REPEAT);
-}
-*/
 
 void keyboardUpdate() {
 	float movementSpeed = 2.5f * timer.GetDeltaTime();
@@ -814,7 +792,6 @@ void initWindow(unsigned int w, unsigned int h) {
 
 	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //Disables mouse cursor (Press ESCAPE to quit application)
 	glfwSetCursorPos(gWindow, mouseLastX, mouseLastY); //Initializes cursor position to the middle of the screen
-	//glfwSetKeyCallback(gWindow, keyboard); //Keyboard callback
 	glfwSetScrollCallback(gWindow, scrollCallback); //Scroll-wheel callback
 	glfwSetCursorPosCallback(gWindow, mouseCallback); //Mouse callback
 
