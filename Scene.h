@@ -1,4 +1,8 @@
 #pragma once
+#include <windows.h>
+#include "glew/include/GL/glew.h"
+#include <gl/GL.h>
+
 #include <vector>
 #include <string>
 #include "RawModel.h"
@@ -14,6 +18,7 @@ public:
 	int getModelCount() const;
 
 	void addLight(glm::vec3 position, glm::vec3 color);
+	void prepareLights();
 	int getLightCount() const;
 
 	std::vector<RawModel> models;

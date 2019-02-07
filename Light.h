@@ -9,8 +9,6 @@ public:
 	glm::vec3 getPosition() const;
 	glm::vec3 getColor() const;
 
-	int pos_id;
-	int color_id;
 private:
 	glm::vec3 pos;
 	glm::vec3 color;

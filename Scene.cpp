@@ -32,6 +32,19 @@ void Scene::addLight(glm::vec3 position, glm::vec3 color) {
 	this->lightCount++;
 }
 
+void Scene::prepareLights() {
+	//Send arrays of light information to shader
+	lights_pos_id = glGetUniformLocation(this->shaderProg, "light_positions"); //Assign ID
+	if (lights_pos_id == -1) {
+		OutputDebugStringA("Error, cannot find 'lightpos_id' attribute in Fragment shader\n");
+	}
+
+	lights_color_id = glGetUniformLocation(this->shaderProg, "light_colors"); //Assign ID
+	if (lights_color_id == -1) {
+		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
+	}
+}
+
 int Scene::getLightCount() const {
 	return this->lightCount;
 }

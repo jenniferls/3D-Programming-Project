@@ -447,19 +447,11 @@ Scene CreateScene() {
 		BUFFER_OFFSET(sizeof(float) * 5));
 
 
-	//Add lights. Only adds one light at the momemt
+	//Add lights
 	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
 	//newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
 
-	newScene.lights_pos_id = glGetUniformLocation(gShaderProgram, "light_positions"); //Assign ID
-	if (newScene.lights_pos_id == -1) {
-		OutputDebugStringA("Error, cannot find 'lightpos_id' attribute in Fragment shader\n");
-	}
-
-	newScene.lights_color_id = glGetUniformLocation(gShaderProgram, "light_colors"); //Assign ID
-	if (newScene.lights_color_id == -1) {
-		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
-	}
+	newScene.prepareLights(); //Important step! Assigns uniform IDs
 
 	return newScene;
 }
@@ -818,7 +810,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 		glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			//Sends data about model-matrix to geometry-shader
-		//CreateLights();
 
 		Render(gameScene); //9. Render
 
