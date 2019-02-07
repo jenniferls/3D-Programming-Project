@@ -80,6 +80,14 @@ bool OBJLoader::loadOBJ(RawModel &model) {
 			model.normal_indices.push_back(f - 1);
 			model.normal_indices.push_back(i - 1);
 		}
+		else if (line.substr(0, 7) == "mtllib ") {
+			std::istringstream s(line.substr(7));
+			std::string matPath;
+			s >> matPath;
+			matPath = "Resources/Models/" + matPath;
+			model.setMaterialPath(matPath.c_str());
+			//OutputDebugStringA(model.getMaterialPath()); //For debug
+		}
 	}
 	model.setVertCount(model.vertex_indices.size());
 	for (int i = 0; i < model.getVertCount(); i++) {
@@ -91,6 +99,11 @@ bool OBJLoader::loadOBJ(RawModel &model) {
 }
 
 bool OBJLoader::loadMTL(RawModel &model) {
+	std::ifstream in(model.getTexturePath(), std::fstream::in);
+	if (!in) {
+		OutputDebugStringA("Cannot load mtl-file!");
+		return false;
+	}
 
 	return true;
 }

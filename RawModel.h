@@ -19,6 +19,9 @@ public:
 	void setVertCount(int count);
 	const char* getPath() const;
 	const char* getTexturePath() const;
+	void setTexturePath(const char* texPath);
+	void setMaterialPath(const char* matPath);
+	const char* getMaterialPath() const;
 	unsigned int getTextureID() const;
 	void setTextureID(unsigned int id);
 
@@ -37,6 +40,7 @@ public:
 private:
 	const char* path; //File path
 	const char* texturePath; //File path to texture file
+	const char* materialPath; //File path to .mtl-file
 	int id;
 	int vertCount;
 };
