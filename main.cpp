@@ -32,6 +32,7 @@
 #include "RawModel.h"
 #include "OBJLoader.h"
 #include "Scene.h"
+#include "Light.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -445,6 +446,19 @@ Scene CreateScene() {
 		GL_FALSE, VERTEX_SIZE,
 		BUFFER_OFFSET(sizeof(float) * 5));
 
+
+	//Add lights. Only adds one light at the momemt
+	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
+	newScene.lights[0].pos_id = glGetUniformLocation(gShaderProgram, "light_position"); //Assign ID
+	if (newScene.lights[0].pos_id == -1) {
+		OutputDebugStringA("Error, cannot find 'lightpos_id' attribute in Fragment shader\n");
+	}
+
+	newScene.lights[0].color_id = glGetUniformLocation(gShaderProgram, "light_color"); //Assign ID
+	if (newScene.lights[0].color_id == -1) {
+		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
+	}
+
 	return newScene;
 }
 
@@ -557,14 +571,14 @@ void CreateMatrixData(float rotationValue) {
 	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
 	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
 	if (projection_id == -1) {
-		OutputDebugStringA("Error, cannot find 'projection_id' attribute in Vertex shader\n");
+		OutputDebugStringA("Error, cannot find 'projection_id' attribute in Geometry shader\n");
 		return;
 	}
 
 	view_matrix = glm::lookAt(camPos, camPos + camFront, camUp); //Camera position, Looking direction and Up vector
 	view_id = glGetUniformLocation(gShaderProgram, "VIEW_MAT");
 	if (view_id == -1) {
-		OutputDebugStringA("Error, cannot find 'view_id' attribute in Vertex shader\n");
+		OutputDebugStringA("Error, cannot find 'view_id' attribute in Geometry shader\n");
 		return;
 	}
 
@@ -572,7 +586,7 @@ void CreateMatrixData(float rotationValue) {
 	model_matrix = glm::rotate(identity_mat, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
 	model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
 	if (model_id == -1) {
-		OutputDebugStringA("Error, cannot find 'model_id' attribute in Vertex shader\n");
+		OutputDebugStringA("Error, cannot find 'model_id' attribute in Geometry shader\n");
 		return;
 	}
 }
@@ -597,6 +611,10 @@ void Render(Scene scene) {
 
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(gVertexAttribute);
+
+	//Sends information about lights to shader
+	glUniform3fv(scene.lights[0].pos_id, 1, glm::value_ptr(scene.lights[0].getPosition()));  //Sends light position data to fragment-shader
+	glUniform3fv(scene.lights[0].color_id, 1, glm::value_ptr(scene.lights[0].getColor()));  //Sends light color data to fragment-shader
 	
 	//Draws all models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
@@ -795,9 +813,10 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::End();
 
 		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
-		glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix to vertex-shader
-		glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix to vertex-shader
-		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix to vertex-shader
+		glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
+		glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			//Sends data about model-matrix to geometry-shader
+		//CreateLights();
 
 		Render(gameScene); //9. Render
 

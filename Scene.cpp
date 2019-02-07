@@ -19,3 +19,13 @@ void Scene::addModel(int id, const char* path, const char* texPath) {
 int Scene::getModelCount() const {
 	return this->modelCount;
 }
+
+void Scene::addLight(glm::vec3 position, glm::vec3 color) {
+	Light light(position, color); //Initialize with position and color
+	lights.push_back(light);
+	this->lightCount++;
+}
+
+int Scene::getLightCount() const {
+	return this->lightCount;
+}
