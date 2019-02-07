@@ -7,7 +7,7 @@
 
 class Scene {
 public:
-	Scene();
+	Scene(unsigned int shaderProg);
 	~Scene();
 
 	void addModel(int id, const char* path, const char* texPath);
@@ -17,10 +17,16 @@ public:
 	int getLightCount() const;
 
 	std::vector<RawModel> models;
-	std::vector<Light> lights;
+	std::vector<Light> lights; //List of lights
+	std::vector<glm::vec3> lightPositions; //List of all light positions
+	std::vector<glm::vec3> lightColors; //List of all light colors
+
+	int lights_pos_id;
+	int lights_color_id;
 private:
 	OBJLoader loader;
 	int modelCount;
 	int lightCount;
+	unsigned int shaderProg;
 };
 

@@ -375,7 +375,7 @@ GLuint CreateTexture(const char* path) {
 
 Scene CreateScene() {
 	//Create a scene object
-	Scene newScene;
+	Scene newScene(gShaderProgram);
 
 	//Fill the scene object with models to render
 	newScene.addModel(0, "Resources/Models/ship.obj", "Resources/Textures/texture1.jpg");
@@ -449,13 +449,15 @@ Scene CreateScene() {
 
 	//Add lights. Only adds one light at the momemt
 	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
-	newScene.lights[0].pos_id = glGetUniformLocation(gShaderProgram, "light_position"); //Assign ID
-	if (newScene.lights[0].pos_id == -1) {
+	//newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
+
+	newScene.lights_pos_id = glGetUniformLocation(gShaderProgram, "light_positions"); //Assign ID
+	if (newScene.lights_pos_id == -1) {
 		OutputDebugStringA("Error, cannot find 'lightpos_id' attribute in Fragment shader\n");
 	}
 
-	newScene.lights[0].color_id = glGetUniformLocation(gShaderProgram, "light_color"); //Assign ID
-	if (newScene.lights[0].color_id == -1) {
+	newScene.lights_color_id = glGetUniformLocation(gShaderProgram, "light_colors"); //Assign ID
+	if (newScene.lights_color_id == -1) {
 		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
 	}
 
@@ -613,8 +615,8 @@ void Render(Scene scene) {
 	glBindVertexArray(gVertexAttribute);
 
 	//Sends information about lights to shader
-	glUniform3fv(scene.lights[0].pos_id, 1, glm::value_ptr(scene.lights[0].getPosition()));  //Sends light position data to fragment-shader
-	glUniform3fv(scene.lights[0].color_id, 1, glm::value_ptr(scene.lights[0].getColor()));  //Sends light color data to fragment-shader
+	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
+	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));  //Sends light color data to fragment-shader
 	
 	//Draws all models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
