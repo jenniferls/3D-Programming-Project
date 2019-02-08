@@ -20,8 +20,8 @@ public:
 	const char* getPath() const;
 	const char* getTexturePath() const;
 	void setTexturePath(const char* texPath);
-	void setMaterialPath(const char* matPath);
-	const char* getMaterialPath() const;
+	void setMaterialPath(std::string matPath);
+	std::string getMaterialPath() const;
 	unsigned int getTextureID() const;
 	void setTextureID(unsigned int id);
 
@@ -33,14 +33,14 @@ public:
 	std::vector<unsigned short> vertex_indices, uv_indices, normal_indices;
 
 	//Used with MTL-files
-	float ambientVal;
-	float specularVal;
-	float diffuseVal;
+	glm::vec3 ambientVal;
+	glm::vec3 specularVal;
+	glm::vec3 diffuseVal;
 
 private:
 	const char* path; //File path
 	const char* texturePath; //File path to texture file
-	const char* materialPath; //File path to .mtl-file
+	std::string materialPath; //File path to .mtl-file
 	int id;
 	int vertCount;
 };

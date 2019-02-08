@@ -85,8 +85,8 @@ bool OBJLoader::loadOBJ(RawModel &model) {
 			std::string matPath;
 			s >> matPath;
 			matPath = "Resources/Models/" + matPath;
-			model.setMaterialPath(matPath.c_str());
-			//OutputDebugStringA(model.getMaterialPath()); //For debug
+			model.setMaterialPath(matPath);
+			//OutputDebugStringA(model.getMaterialPath().c_str()); //For debug
 		}
 	}
 	model.setVertCount(model.vertex_indices.size());
@@ -99,11 +99,39 @@ bool OBJLoader::loadOBJ(RawModel &model) {
 }
 
 bool OBJLoader::loadMTL(RawModel &model) {
-	std::ifstream in(model.getTexturePath(), std::fstream::in);
+	//OutputDebugStringA(model.getMaterialPath().c_str()); //For debug
+	std::ifstream in(model.getMaterialPath(), std::fstream::in);
 	if (!in) {
 		OutputDebugStringA("Cannot load mtl-file!");
 		return false;
 	}
 
+	std::string line;
+	while (getline(in, line)) {
+		if (line.substr(0, 3) == "Kd ") {
+			std::istringstream s(line.substr(2));
+			glm::vec3 diffuse;
+			s >> diffuse.x;
+			s >> diffuse.y;
+			s >> diffuse.z;
+			model.diffuseVal = { diffuse.x, diffuse.y, diffuse.z };
+		}
+		else if (line.substr(0, 3) == "Ks ") {
+			std::istringstream s(line.substr(2));
+			glm::vec3 spec;
+			s >> spec.x;
+			s >> spec.y;
+			s >> spec.z;
+			model.specularVal = { spec.x, spec.y, spec.z };
+		}
+		else if (line.substr(0, 3) == "Ka ") {
+			std::istringstream s(line.substr(2));
+			glm::vec3 ambient;
+			s >> ambient.x;
+			s >> ambient.y;
+			s >> ambient.z;
+			model.ambientVal = { ambient.x, ambient.y, ambient.z };
+		}
+	}
 	return true;
 }

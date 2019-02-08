@@ -15,7 +15,8 @@ Scene::~Scene() {
 
 void Scene::addModel(int id, const char* path, const char* texPath) {
 	RawModel model(id, path, texPath);
-	loader.loadOBJ(model);
+	loader.loadOBJ(model); //Loads model from file
+	loader.loadMTL(model); //Loads material from file
 	models.push_back(model);
 	this->modelCount++;
 }
