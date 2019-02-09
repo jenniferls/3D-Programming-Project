@@ -11,15 +11,15 @@ public:
 		glm::vec3 normals;
 	};
 
-	RawModel(int id, const char* filePath, const char* texPath);
+	RawModel(int id, const char* filePath);
 	~RawModel();
 
 	int getID() const;
 	int getVertCount() const;
 	void setVertCount(int count);
 	const char* getPath() const;
-	const char* getTexturePath() const;
-	void setTexturePath(const char* texPath);
+	std::string getTexturePath() const;
+	void setTexturePath(std::string texPath);
 	void setMaterialPath(std::string matPath);
 	std::string getMaterialPath() const;
 	unsigned int getTextureID() const;
@@ -39,7 +39,7 @@ public:
 
 private:
 	const char* path; //File path
-	const char* texturePath; //File path to texture file
+	std::string texturePath; //File path to texture file
 	std::string materialPath; //File path to .mtl-file
 	int id;
 	int vertCount;

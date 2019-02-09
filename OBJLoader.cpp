@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-OBJLoader::OBJLoader() : model(0, "", ""){
+OBJLoader::OBJLoader() : model(0, ""){
 
 }
 
@@ -131,6 +131,13 @@ bool OBJLoader::loadMTL(RawModel &model) {
 			s >> ambient.y;
 			s >> ambient.z;
 			model.ambientVal = { ambient.x, ambient.y, ambient.z };
+		}
+		else if (line.substr(0, 7) == "map_Kd ") {
+			std::istringstream s(line.substr(7));
+			std::string tex;
+			s >> tex;
+			tex = "Resources/Textures/" + tex;
+			model.setTexturePath(tex);
 		}
 	}
 	return true;

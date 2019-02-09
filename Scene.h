@@ -14,7 +14,7 @@ public:
 	Scene(unsigned int shaderProg);
 	~Scene();
 
-	void addModel(int id, const char* path, const char* texPath);
+	void addModel(int id, const char* path);
 	int getModelCount() const;
 
 	void addLight(glm::vec3 position, glm::vec3 color);

@@ -1,10 +1,10 @@
 #include "RawModel.h"
 
-RawModel::RawModel(int id, const char* filePath, const char* texPath) {
+RawModel::RawModel(int id, const char* filePath) {
 	this->id = id;
 	this->vertCount = 0;
 	this->path = filePath;
-	this->texturePath = texPath;
+	this->texturePath = "Path not loaded";
 	this->textureID = 0;
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
@@ -36,11 +36,11 @@ const char* RawModel::getPath() const {
 	return this->path;
 }
 
-const char* RawModel::getTexturePath() const {
+std::string RawModel::getTexturePath() const {
 	return this->texturePath;
 }
 
-void RawModel::setTexturePath(const char* texPath) {
+void RawModel::setTexturePath(std::string texPath) {
 	this->texturePath = texPath;
 }
 

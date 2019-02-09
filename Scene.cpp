@@ -13,8 +13,8 @@ Scene::~Scene() {
 
 }
 
-void Scene::addModel(int id, const char* path, const char* texPath) {
-	RawModel model(id, path, texPath);
+void Scene::addModel(int id, const char* path) {
+	RawModel model(id, path);
 	loader.loadOBJ(model); //Loads model from file
 	loader.loadMTL(model); //Loads material from file
 	models.push_back(model);

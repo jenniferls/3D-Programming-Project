@@ -346,7 +346,7 @@ void CreateFullScreenQuad() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
 
-GLuint CreateTexture(const char* path) {
+GLuint CreateTexture(string path) {
 	GLuint texture = 0;
 	glGenTextures(1, &texture); //Generate the texture, first input is amt of textures, second is where we store them.
 	glBindTexture(GL_TEXTURE_2D, texture); // We bind the genereated texture to be able to change it.
@@ -358,7 +358,9 @@ GLuint CreateTexture(const char* path) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, colourChannels;
-	const char* filePath = "Resources/Textures/texture1.jpg"; //Path to image file
+	const char* filePath = path.c_str(); //Path to image file
+	cout << "Texture path: " << filePath << endl; //Debug
+
 	//The stbi_load funcions opens the file, and width and height values from the image and the amount of colour channels in the image.
 	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0); 
 	if (data) {
@@ -370,7 +372,7 @@ GLuint CreateTexture(const char* path) {
 		cout << "Failed to load texture. Reason: " << stbi_failure_reason() << endl; //Output error message if texture file is not found
 	}
 	stbi_image_free(data); // Free image memory
-	return texture;
+	return texture; //Returns an unsigned int/textureID
 }
 
 Scene CreateScene() {
@@ -378,8 +380,8 @@ Scene CreateScene() {
 	Scene newScene(gShaderProgram);
 
 	//Fill the scene object with models to render
-	newScene.addModel(0, "Resources/Models/ship.obj", "Resources/Textures/texture1.jpg");
-	newScene.addModel(0, "Resources/Models/cruiser.obj", "Resources/Textures/cruiser.bmp"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	newScene.addModel(0, "Resources/Models/ship.obj");
+	newScene.addModel(0, "Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 
 	//Create textures, right now only rendering of one texture is supported
 	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
