@@ -49,3 +49,19 @@ void Scene::prepareLights() {
 int Scene::getLightCount() const {
 	return this->lightCount;
 }
+
+GLuint Scene::CreateVAO() {
+	GLuint id = 0;
+	// Vertex Array Object (VAO), description of the inputs to the GPU 
+	glGenVertexArrays(1, &id);
+	// bind is like "enabling" the object to use it
+	glBindVertexArray(id);
+	this->vaos.push_back(id);
+	return id;
+}
+
+void Scene::deleteVAOs() {
+	for (int i = 0; i < vaos.size(); i++) {
+		glDeleteVertexArrays(1, &vaos[i]);
+	}
+}

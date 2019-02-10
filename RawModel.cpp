@@ -16,8 +16,12 @@ RawModel::~RawModel() {
 
 }
 
-int RawModel::getVaoID() const {
+unsigned int RawModel::getVaoID() const {
 	return this->vaoID;
+}
+
+void RawModel::setVaoID(unsigned int id) {
+	this->vaoID = id;
 }
 
 int RawModel::getVertCount() const {

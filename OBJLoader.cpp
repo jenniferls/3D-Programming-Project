@@ -1,5 +1,7 @@
 #include "OBJLoader.h"
 #include <windows.h>
+#include "glew/include/GL/glew.h"
+#include <gl/GL.h>
 #include <iostream>
 #include <fstream>
 #include <streambuf>

@@ -54,7 +54,7 @@ void initWindow(unsigned int w, unsigned int h);
 // For simplicity, we make them global here, but it is
 // safe to put them in a class and pass around...
 GLuint gVertexBuffer = 0;
-GLuint gVertexAttribute = 0;
+//GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
 GLuint gIndexBuffer = 0;
 
@@ -375,17 +375,6 @@ GLuint CreateTexture(string path) {
 	return texture; //Returns an unsigned int/textureID
 }
 
-void createVAO() {
-	// Vertex Array Object (VAO), description of the inputs to the GPU 
-	glGenVertexArrays(1, &gVertexAttribute);
-	// bind is like "enabling" the object to use it
-	glBindVertexArray(gVertexAttribute);
-}
-
-void createVBO() {
-	
-}
-
 Scene CreateScene() {
 	//Create a scene object
 	Scene newScene(gShaderProgram);
@@ -396,8 +385,7 @@ Scene CreateScene() {
 
 	//Create textures, right now only rendering of one texture is supported
 	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
-
-	createVAO(); //Creates a vertex array object
+	newScene.models[0].setVaoID(newScene.CreateVAO()); //Creates a vertex array object
 
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glGenBuffers(1, &gVertexBuffer);
@@ -619,17 +607,16 @@ void Render(Scene scene) {
 	glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the triangle texture
 
 	// tell opengl we are going to use the VAO we described earlier
-	glBindVertexArray(gVertexAttribute);
+	glBindVertexArray(scene.models[0].getVaoID());
 
 	//Sends information about lights to shader
 	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));  //Sends light color data to fragment-shader
+	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
 	
 	//Draws all models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount()); //This method doesn't use the index buffer
 	}
-	//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, (GLvoid*)0); //Mode, number of indices (integers), type of data in index, offset
 }
 
 void keyboardUpdate() {
@@ -862,7 +849,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
-	glDeleteVertexArrays(1, &gVertexAttribute);
+	gameScene.deleteVAOs();
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
 	glDeleteBuffers(1, &gVertexBuffer);
 	glDeleteBuffers(1, &gVertexBufferFS);
