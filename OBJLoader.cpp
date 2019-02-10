@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-OBJLoader::OBJLoader() : model(0, ""){
+OBJLoader::OBJLoader() : model(""){
 
 }
 

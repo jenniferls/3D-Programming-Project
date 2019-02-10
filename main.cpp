@@ -375,23 +375,29 @@ GLuint CreateTexture(string path) {
 	return texture; //Returns an unsigned int/textureID
 }
 
+void createVAO() {
+	// Vertex Array Object (VAO), description of the inputs to the GPU 
+	glGenVertexArrays(1, &gVertexAttribute);
+	// bind is like "enabling" the object to use it
+	glBindVertexArray(gVertexAttribute);
+}
+
+void createVBO() {
+	
+}
+
 Scene CreateScene() {
 	//Create a scene object
 	Scene newScene(gShaderProgram);
 
 	//Fill the scene object with models to render
-	newScene.addModel(0, "Resources/Models/ship.obj");
-	newScene.addModel(0, "Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	newScene.addModel("Resources/Models/ship.obj");
+	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 
 	//Create textures, right now only rendering of one texture is supported
 	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
 
-	// Vertex Array Object (VAO), description of the inputs to the GPU 
-	glGenVertexArrays(1, &gVertexAttribute);
-	// bind is like "enabling" the object to use it
-	glBindVertexArray(gVertexAttribute);
-	// this activates the first and second attributes of this VAO
-	// think of "attributes" as inputs to the Vertex Shader
+	createVAO(); //Creates a vertex array object
 
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glGenBuffers(1, &gVertexBuffer);
@@ -403,6 +409,8 @@ Scene CreateScene() {
 	// the last argument (read the docs!)
 	glBufferData(GL_ARRAY_BUFFER, newScene.models[0].getVertCount() * VERTEX_SIZE, newScene.models[0].vertices.data(), GL_STATIC_DRAW);
 
+	// this activates the first, second and third attributes of this VAO
+	// think of "attributes" as inputs to the Vertex Shader
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -593,14 +601,19 @@ void SetViewport() {
 }
 
 void Render(Scene scene) {
+	// tell opengl we want to use the gShaderProgram
+	glUseProgram(gShaderProgram);
+
 	// set the color TO BE used (this does not clear the screen right away)
 	glClearColor(gClearColour[0], gClearColour[1],gClearColour[2],1.0);
 
 	// use the color to clear the color buffer (clear the color buffer only)
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// tell opengl we want to use the gShaderProgram
-	glUseProgram(gShaderProgram);
+	//Send matrix data
+	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
+	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+	glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			//Sends data about model-matrix to geometry-shader
 
 	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 	glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the triangle texture
@@ -789,9 +802,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], gClearColour[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(gShaderProgram);
-		glBindVertexArray(gVertexAttribute);
-
 		glEnable(GL_DEPTH_TEST);
 
 		//Prepare IMGUI output
@@ -809,9 +819,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::End();
 
 		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
-		glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
-		glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
-		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			//Sends data about model-matrix to geometry-shader
 
 		Render(gameScene); //9. Render
 

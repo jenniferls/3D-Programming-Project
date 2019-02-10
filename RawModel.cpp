@@ -1,7 +1,7 @@
 #include "RawModel.h"
 
-RawModel::RawModel(int id, const char* filePath) {
-	this->id = id;
+RawModel::RawModel(const char* filePath) {
+	this->vaoID = 0;
 	this->vertCount = 0;
 	this->path = filePath;
 	this->texturePath = "Path not loaded";
@@ -16,8 +16,8 @@ RawModel::~RawModel() {
 
 }
 
-int RawModel::getID() const {
-	return this->id;
+int RawModel::getVaoID() const {
+	return this->vaoID;
 }
 
 int RawModel::getVertCount() const {

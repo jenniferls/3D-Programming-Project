@@ -11,10 +11,10 @@ public:
 		glm::vec3 normals;
 	};
 
-	RawModel(int id, const char* filePath);
+	RawModel(const char* filePath);
 	~RawModel();
 
-	int getID() const;
+	int getVaoID() const;
 	int getVertCount() const;
 	void setVertCount(int count);
 	const char* getPath() const;
@@ -41,7 +41,7 @@ private:
 	const char* path; //File path
 	std::string texturePath; //File path to texture file
 	std::string materialPath; //File path to .mtl-file
-	int id;
+	int vaoID;
 	int vertCount;
 };
 
