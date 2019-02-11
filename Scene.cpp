@@ -50,6 +50,14 @@ int Scene::getLightCount() const {
 	return this->lightCount;
 }
 
+void Scene::prepareMaterials() {
+	for (int i = 0; i < getModelCount(); i++) {
+		models[i].ambID = glGetUniformLocation(this->shaderProg, "ambient_val"); //Assign ID
+		models[i].diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
+		models[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
+	}
+}
+
 GLuint Scene::CreateVAO() {
 	GLuint id = 0;
 	// Vertex Array Object (VAO), description of the inputs to the GPU 

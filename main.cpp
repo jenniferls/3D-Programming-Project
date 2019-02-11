@@ -385,7 +385,9 @@ Scene CreateScene() {
 
 	//Create textures, right now only rendering of one texture is supported
 	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
-	newScene.models[0].setVaoID(newScene.CreateVAO()); //Creates a vertex array object
+
+	//Create VAOs
+	newScene.models[0].setVaoID(newScene.CreateVAO());
 
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glGenBuffers(1, &gVertexBuffer);
@@ -603,8 +605,15 @@ void Render(Scene scene) {
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 	glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			//Sends data about model-matrix to geometry-shader
 
+	//Send texture data
 	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-	glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the triangle texture
+	glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the texture
+
+	//Send material data
+	scene.prepareMaterials();
+	glUniform3fv(scene.models[0].ambID, 1, glm::value_ptr(scene.models[0].ambientVal));		//Ambient
+	glUniform3fv(scene.models[0].diffID, 1, glm::value_ptr(scene.models[0].diffuseVal));	//Diffuse
+	glUniform3fv(scene.models[0].specID, 1, glm::value_ptr(scene.models[0].specularVal));	//Specular
 
 	// tell opengl we are going to use the VAO we described earlier
 	glBindVertexArray(scene.models[0].getVaoID());

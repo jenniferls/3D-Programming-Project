@@ -9,6 +9,9 @@ RawModel::RawModel(const char* filePath) {
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
 	this->specularVal = { 0.0f, 0.0f, 0.0f };
+	this->ambID = 0;
+	this->diffID = 0;
+	this->specID = 0;
 	this->materialPath = "Path not loaded";
 }
 

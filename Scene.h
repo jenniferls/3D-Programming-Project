@@ -20,6 +20,7 @@ public:
 	void addLight(glm::vec3 position, glm::vec3 color);
 	void prepareLights();
 	int getLightCount() const;
+	void prepareMaterials();
 
 	GLuint CreateVAO();
 	void deleteVAOs();

@@ -38,6 +38,10 @@ public:
 	glm::vec3 specularVal;
 	glm::vec3 diffuseVal;
 
+	unsigned int ambID;
+	unsigned int specID;
+	unsigned int diffID;
+
 private:
 	const char* path; //File path
 	std::string texturePath; //File path to texture file
