@@ -364,8 +364,15 @@ GLuint CreateTexture(string path) {
 	//The stbi_load funcions opens the file, and width and height values from the image and the amount of colour channels in the image.
 	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0); 
 	if (data) {
+		GLenum format;
+		if (colourChannels == 1)
+			format = GL_RED;
+		else if (colourChannels == 3)
+			format = GL_RGB;
+		else if (colourChannels == 4)
+			format = GL_RGBA;
 		// function args. in order | Target | Mipmap | Image format | Width | Height | Legacy, need to be 0 | Format | Datatype | Image data | 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D); // Generate the required mipmaps.
 	}
 	else {
@@ -382,9 +389,11 @@ Scene CreateScene() {
 	//Fill the scene object with models to render
 	newScene.addModel("Resources/Models/ship.obj");
 	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	newScene.addModel("Resources/Models/normalPlane.obj"); //A plane for testing Normal map
 
 	//Create textures, right now only rendering of one texture is supported
 	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
+
 
 	//Create VAOs
 	newScene.models[0].setVaoID(newScene.CreateVAO());
@@ -448,7 +457,7 @@ Scene CreateScene() {
 
 
 	//Add lights
-	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
+	newScene.addLight(glm::vec3(4.0, 6.0, 5.0), glm::vec3(1.0f, 1.0f, 1.0f));
 	//newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
 
 	newScene.prepareLights(); //Important step! Assigns uniform IDs
@@ -742,6 +751,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	initWindow(WIDTH, HEIGHT);
 	bool shutdown = false;
 
+	//Test for loading normal maps
+	unsigned int normalMap = CreateTexture("Resources/Models/brickwall_normal.jpg");
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -814,7 +826,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
+		CreateMatrixData(0.0f); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
 
 		Render(gameScene); //9. Render
 
