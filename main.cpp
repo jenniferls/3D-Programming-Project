@@ -94,6 +94,7 @@ GameTimer timer;
 
 unsigned int gFbo;
 unsigned int gFboTextureAttachments[2]; // first for colour, second for depth
+const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 int CreateFrameBuffer() {
 	int err = 0;
 	// =================== COLOUR BUFFER =======================================
@@ -107,9 +108,9 @@ int CreateFrameBuffer() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// attach texture to framebuffer object
 
-	// ===================== DEPTH BUFFER ====================================
+	// ===================== DEPTH BUFFER ==================================== 
 	glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -119,7 +120,7 @@ int CreateFrameBuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gFboTextureAttachments[0], 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gFboTextureAttachments[1],0);
-	
+
 	// check if framebuffer is complete (usable):
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -792,6 +793,28 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		keyboardUpdate();
 
+		glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+		glm::mat4 depthViewMatrix = glm::lookAt(gameScene.lightPositions[0], glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		glm::mat4 depthModelMatrix = glm::mat4(1.0);
+		glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+		glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
+			0.0, 0.5, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0,
+			0.5, 0.5, 0.5, 1.0);
+
+		glm::mat4 shadowBiasMVP = shadowBias * depthMVP;
+
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
+		Render(gameScene);
+
+		glViewport(0, 0, WIDTH, HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// first pass
 		// render all geometry to a framebuffer object
 		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
@@ -816,6 +839,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
 
+		
+
+		GLuint depthMatrixID = -1;
+		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
+		glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));
+
 		Render(gameScene); //9. Render
 
 		// first pass is done!
@@ -833,8 +862,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		// bind texture drawn in the first pass!
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[0]);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
+		/*glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);*/
 		
 		glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(scale, scale, scale));
 		glm::mat4 transform = scaleMat;

@@ -5,10 +5,16 @@ layout(location = 2) in vec3 normals;
 
 out vec2 aTexture;
 out vec3 normalsOut;
+out vec4 shadow_coord;
+
+uniform mat4 MODEL_MAT;
+uniform mat4 depthMVP;
 
 void main() {
 	aTexture = texture_coords; //Pass the texture info to the geometry shader
 	normalsOut = normals;
 
 	gl_Position = vec4(vertex_position, 1.0);
+
+	shadow_coord = depthMVP * (MODEL_MAT * vec4(vertex_position, 1.0));
 }
