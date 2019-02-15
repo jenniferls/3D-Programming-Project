@@ -80,6 +80,12 @@
     <None Include="GeometryShader.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="VertexShaderSM.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="FragmentSM.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">

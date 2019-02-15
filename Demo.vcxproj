@@ -145,9 +145,11 @@
   <ItemGroup>
     <None Include="Fragment.glsl" />
     <None Include="FragmentFS.glsl" />
+    <None Include="FragmentSM.glsl" />
     <None Include="GeometryShader.glsl" />
     <None Include="VertexShader.glsl" />
     <None Include="VertexShaderFS.glsl" />
+    <None Include="VertexShaderSM.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameTimer.h" />

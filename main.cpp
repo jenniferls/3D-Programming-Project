@@ -65,6 +65,10 @@ GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
 GLuint gShaderProgramFS = 0;
 
+//PF
+GLuint gVertexBufferSM = 0;
+GLuint gVertexAtrributeSM = 0;
+GLuint gShaderProgramSM = 0;
 
 float gClearColour[3] {};
 
@@ -75,6 +79,8 @@ GLint view_id = -1;
 glm::mat4 view_matrix;
 GLint projection_id = -1;
 glm::mat4 projection_matrix;
+GLuint shadow_id = -1; //PF
+glm::mat4 shadow_matrix; //PF
 
 //Camera variables
 glm::vec3 camPos	= glm::vec3(0.5f, 0.5f, 4.0f); //Default camera position
@@ -110,7 +116,7 @@ int CreateFrameBuffer() {
 
 	// ===================== DEPTH BUFFER ==================================== 
 	glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -125,13 +131,78 @@ int CreateFrameBuffer() {
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
 		err = 0; 
-	}
+	} 
 	else
 		err = -1;
 
 	// bind default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return err;
+}
+
+//PF
+void CreateSMShaders() {
+	char buff[1024];
+	memset(buff, 0, 1024);
+	GLint compileResult = 0;
+
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+
+	ifstream shaderFile("VertexShaderSM.glsl");
+	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+
+	const char* shaderTextPtr = shaderText.c_str();
+
+	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(vs);
+
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+
+		glGetShaderInfoLog(vs, 1024, nullptr, buff);
+
+		OutputDebugStringA(buff);
+	}
+
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	shaderFile.open("FragmentSM.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(fs);
+
+	compileResult = GL_FALSE;
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
+
+	if (compileResult == GL_FALSE) {
+
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(fs, 1024, nullptr, buff);
+
+		OutputDebugStringA(buff);
+	}
+
+	gShaderProgramFS = glCreateProgram();
+	glAttachShader(gShaderProgramFS, fs);
+	glAttachShader(gShaderProgramFS, vs);
+	glLinkProgram(gShaderProgramFS);
+
+	compileResult = GL_FALSE;
+	glGetProgramiv(gShaderProgramFS, GL_LINK_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+
+		memset(buff, 0, 1024);
+		glGetProgramInfoLog(gShaderProgramFS, 1024, nullptr, buff);
+
+		OutputDebugStringA(buff);
+	}
+
+	glDetachShader(gShaderProgramFS, vs);
+	glDetachShader(gShaderProgramFS, fs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
 }
 
 void CreateFSShaders() {
@@ -447,7 +518,6 @@ Scene CreateScene() {
 		GL_FALSE, VERTEX_SIZE,
 		BUFFER_OFFSET(sizeof(float) * 5));
 
-
 	//Add lights
 	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
 	//newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
@@ -586,10 +656,41 @@ void CreateMatrixData(float rotationValue) {
 	}
 }
 
+//PF
+//void CreateShadowMatrixData(glm::vec3 lightPos) {
+//
+//	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+//	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+//	glm::mat4 depthModelMatrix = glm::mat4(1.0);
+//	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+//
+//	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
+//			0.0, 0.5, 0.0, 0.0,
+//			0.0, 0.0, 0.5, 0.0,
+//			0.5, 0.5, 0.5, 1.0);
+//
+//
+//	shadow_matrix = shadowBias * depthMVP;
+//	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
+//	if (shadow_id == -1) {
+//		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
+//		return;
+//	}
+//}
+
 void SetViewport() {
 	// usually (not necessarily) this matches with the window size
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
+
+//PF
+//void RenderShadowMap() {
+//	glUseProgram(gShaderProgramSM);
+//	glClear(GL_DEPTH_BUFFER_BIT);
+//
+//	glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
+//
+//}
 
 void Render(Scene scene) {
 	// tell opengl we want to use the gShaderProgram
@@ -763,6 +864,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	CreateShaders(); //5. Create vertex- and fragment-shaders
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
+	//CreateSMShaders(); //PF
 
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
@@ -793,25 +895,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		keyboardUpdate();
 
-		/*glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
-		glm::mat4 depthViewMatrix = glm::lookAt(gameScene.lightPositions[0], glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		glm::mat4 depthModelMatrix = glm::mat4(1.0);
-		glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-
-		glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
-			0.0, 0.5, 0.0, 0.0,
-			0.0, 0.0, 0.5, 0.0,
-			0.5, 0.5, 0.5, 1.0);
-
-		glm::mat4 shadowBiasMVP = shadowBias * depthMVP;*/
-
-		/*glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
-		Render(gameScene);*/
-
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -837,11 +920,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
-
-		/*GLuint depthMatrixID = -1;*/
-		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
-		/*glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));*/
+		CreateMatrixData(0.0f); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
+		//CreateShadowMatrixData(gameScene.lightPositions[0]); //PF
 
 		Render(gameScene); //9. Render
 
