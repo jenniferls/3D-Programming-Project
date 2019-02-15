@@ -146,6 +146,8 @@
     <None Include="Fragment.glsl" />
     <None Include="FragmentFS.glsl" />
     <None Include="GeometryShader.glsl" />
+    <None Include="Normal[FS].glsl" />
+    <None Include="Normal[VS].glsl" />
     <None Include="VertexShader.glsl" />
     <None Include="VertexShaderFS.glsl" />
   </ItemGroup>
