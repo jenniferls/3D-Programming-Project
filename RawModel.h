@@ -20,13 +20,18 @@ public:
 	void setVertCount(int count);
 	const char* getPath() const;
 	std::string getTexturePath() const;
+	std::string getNormalTexPath() const;
 	void setTexturePath(std::string texPath);
+	void setNormalTexPath(std::string normPath);
 	void setMaterialPath(std::string matPath);
 	std::string getMaterialPath() const;
 	unsigned int getTextureID() const;
+	unsigned int getNormalID() const;
 	void setTextureID(unsigned int id);
+	void setNormalID(unsigned int id);
 
 	unsigned int textureID;
+	unsigned int normalID;
 	std::vector<TriangleVertex> vertices; //List of all vertices in model file
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
@@ -45,6 +50,7 @@ public:
 private:
 	const char* path; //File path
 	std::string texturePath; //File path to texture file
+	std::string normalTexPath; //File path to normal texture file
 	std::string materialPath; //File path to .mtl-file
 	int vertCount;
 	unsigned int vaoID;

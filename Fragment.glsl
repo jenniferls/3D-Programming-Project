@@ -7,6 +7,7 @@ in vec3 finalNormals;
 out vec4 fragment_color;
 
 // this is a uniform value, the very same value for ALL pixel shader executions
+uniform sampler2D normalMap;
 uniform sampler2D textureSampler;
 uniform mat4 MODEL_MAT;
 uniform vec3 light_positions[];
@@ -16,11 +17,18 @@ uniform vec3 ambient_val;	//Ambient color
 uniform vec3 diffuse_val;	//Diffuse color (Not used because of texture)
 uniform vec3 specular_val;	//Specular color
 
+
 in vec4 fragPos;
 in vec3 lightToCamera;
 
+
 void main () {
 	vec3 am = ambient_val * light_colors[0]; // PF: the ambient 
+	vec4 normal;
+
+	
+	normal = texture(normalMap, vec2(texUVs.s, 1-texUVs.t));
+	normal = normalize(normal * 2.0 - 1.0);
 	
 	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
 

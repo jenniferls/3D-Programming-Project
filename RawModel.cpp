@@ -6,6 +6,7 @@ RawModel::RawModel(const char* filePath) {
 	this->path = filePath;
 	this->texturePath = "Path not loaded";
 	this->textureID = 0;
+	this->normalID = 0;
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
 	this->specularVal = { 0.0f, 0.0f, 0.0f };
@@ -39,6 +40,11 @@ void RawModel::setTextureID(unsigned int id) {
 	this->textureID = id;
 }
 
+void RawModel::setNormalID(unsigned int id)
+{
+	this->normalID = id;
+}
+
 const char* RawModel::getPath() const {
 	return this->path;
 }
@@ -47,8 +53,18 @@ std::string RawModel::getTexturePath() const {
 	return this->texturePath;
 }
 
+std::string RawModel::getNormalTexPath() const
+{
+	return this->normalTexPath;
+}
+
 void RawModel::setTexturePath(std::string texPath) {
 	this->texturePath = texPath;
+}
+
+void RawModel::setNormalTexPath(std::string normPath)
+{
+	this->normalTexPath = normPath;
 }
 
 void RawModel::setMaterialPath(std::string matPath) {
@@ -61,4 +77,9 @@ std::string RawModel::getMaterialPath() const {
 
 unsigned int RawModel::getTextureID() const {
 	return this->textureID;
+}
+
+unsigned int RawModel::getNormalID() const
+{
+	return this->normalID;
 }

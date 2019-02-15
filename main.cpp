@@ -88,6 +88,8 @@ float mouseLastY = HEIGHT / 2; //At centre of the screen
 
 GameTimer timer;
 
+GLuint normalTexID = 0;
+
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
@@ -379,6 +381,7 @@ GLuint CreateTexture(string path) {
 		cout << "Failed to load texture. Reason: " << stbi_failure_reason() << endl; //Output error message if texture file is not found
 	}
 	stbi_image_free(data); // Free image memory
+	cout << "Texture ID: " << texture << endl; //DEBUG code
 	return texture; //Returns an unsigned int/textureID
 }
 
@@ -387,13 +390,14 @@ Scene CreateScene() {
 	Scene newScene(gShaderProgram);
 
 	//Fill the scene object with models to render
-	newScene.addModel("Resources/Models/ship.obj");
-	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	//newScene.addModel("Resources/Models/ship.obj");
+	//newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	newScene.addModel("Resources/Models/normalPlane.obj"); //A plane for testing Normal map
 
 	//Create textures, right now only rendering of one texture is supported
 	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
-
+	//Create the normal map texture
+	newScene.models[0].setNormalID(CreateTexture(newScene.models[0].getNormalTexPath()));
 
 	//Create VAOs
 	newScene.models[0].setVaoID(newScene.CreateVAO());
@@ -617,6 +621,8 @@ void Render(Scene scene) {
 	//Send texture data
 	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 	glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the texture
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, scene.models[0].getNormalID()); // Bind the normal map texture
 
 	//Send material data
 	scene.prepareMaterials();
@@ -752,7 +758,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	bool shutdown = false;
 
 	//Test for loading normal maps
-	unsigned int normalMap = CreateTexture("Resources/Models/brickwall_normal.jpg");
+	//unsigned int normalMap = CreateTexture("Resources/Models/brickwall_normal.jpg");
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
