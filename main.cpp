@@ -94,7 +94,7 @@ GameTimer timer;
 
 unsigned int gFbo;
 unsigned int gFboTextureAttachments[2]; // first for colour, second for depth
-const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+//const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 int CreateFrameBuffer() {
 	int err = 0;
 	// =================== COLOUR BUFFER =======================================
@@ -793,7 +793,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		keyboardUpdate();
 
-		glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+		/*glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
 		glm::mat4 depthViewMatrix = glm::lookAt(gameScene.lightPositions[0], glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		glm::mat4 depthModelMatrix = glm::mat4(1.0);
 		glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
@@ -803,14 +803,14 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			0.0, 0.0, 0.5, 0.0,
 			0.5, 0.5, 0.5, 1.0);
 
-		glm::mat4 shadowBiasMVP = shadowBias * depthMVP;
+		glm::mat4 shadowBiasMVP = shadowBias * depthMVP;*/
 
-		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		/*glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
-		Render(gameScene);
+		Render(gameScene);*/
 
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -839,11 +839,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
 
-		
-
-		GLuint depthMatrixID = -1;
+		/*GLuint depthMatrixID = -1;*/
 		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
-		glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));
+		/*glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));*/
 
 		Render(gameScene); //9. Render
 
@@ -862,8 +860,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		// bind texture drawn in the first pass!
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[0]);
-		/*glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);*/
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
 		
 		glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(scale, scale, scale));
 		glm::mat4 transform = scaleMat;

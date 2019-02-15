@@ -18,18 +18,18 @@ uniform vec3 specular_val;	//Specular color
 
 in vec4 fragPos;
 in vec3 lightToCamera;
-in vec4 shadow_coord;
-uniform sampler2D shadowMap;
+//in vec4 shadow_coord;
+//uniform sampler2D shadowMap;
 
-float shadowCalc(vec4 shadow_coord){
-	
-	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
-	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
-	float currentDepth = proj_coord.z;
-	float shadow = currentDepth > closetsDepth ? 1.0 : 0.0;
-
-	return shadow;
-}
+//float shadowCalc(vec4 shadow_coord){
+//	
+//	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
+//	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
+//	float currentDepth = proj_coord.z;
+//	float shadow = currentDepth > closetsDepth ? 1.0 : 0.0;
+//
+//	return shadow;
+//}
 
 void main () {
 	vec3 am = ambient_val * light_colors[0]; // PF: the ambient 
@@ -54,7 +54,7 @@ void main () {
 	float dampedSpec = pow(specFactor, shineDamper);
 	vec3 specular = dampedSpec * reflectivity * specular_val * light_colors[0];
 
-	float shadow = shadowCalc(shadow_coord);
+//	float shadow = shadowCalc(shadow_coord);
 
 	vec4 result = vec4(am + diffuse, 1.0 ) * texSample + vec4(specular, 1.0f);
 	fragment_color = result;
