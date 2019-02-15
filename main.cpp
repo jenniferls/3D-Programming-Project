@@ -28,6 +28,8 @@
 
 #include "stb_image.h"
 
+#include <assimp/include/assimp/Importer.hpp>
+
 #include "GameTimer.h"
 #include "RawModel.h"
 #include "OBJLoader.h"
