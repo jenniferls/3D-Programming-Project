@@ -73,3 +73,19 @@ void Scene::deleteVAOs() {
 		glDeleteVertexArrays(1, &vaos[i]);
 	}
 }
+
+GLuint Scene::CreateVBO() {
+	GLuint vbo = 0;
+	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
+	glGenBuffers(1, &vbo);
+	// Bind the buffer ID as an ARRAY_BUFFER
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	return vbo;
+}
+
+void Scene::deleteVBOs() {
+	for (int i = 0; i < vbos.size(); i++) {
+		glDeleteBuffers(1, &vbos[i]);
+	}
+}

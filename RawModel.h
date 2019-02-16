@@ -16,6 +16,9 @@ public:
 
 	unsigned int getVaoID() const;
 	void setVaoID(unsigned int id);
+	unsigned int getVboID() const;
+	void setVboID(unsigned int id);
+
 	int getVertCount() const;
 	void setVertCount(int count);
 	const char* getPath() const;
@@ -48,5 +51,6 @@ private:
 	std::string materialPath; //File path to .mtl-file
 	int vertCount;
 	unsigned int vaoID;
+	unsigned int vboID;
 };
 

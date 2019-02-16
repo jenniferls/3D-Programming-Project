@@ -2,6 +2,7 @@
 
 RawModel::RawModel(const char* filePath) {
 	this->vaoID = 0;
+	this->vboID = 0;
 	this->vertCount = 0;
 	this->path = filePath;
 	this->texturePath = "Path not loaded";
@@ -25,6 +26,14 @@ unsigned int RawModel::getVaoID() const {
 
 void RawModel::setVaoID(unsigned int id) {
 	this->vaoID = id;
+}
+
+unsigned int RawModel::getVboID() const {
+	return this->vboID;
+}
+
+void RawModel::setVboID(unsigned int id) {
+	this->vboID = id;
 }
 
 int RawModel::getVertCount() const {
