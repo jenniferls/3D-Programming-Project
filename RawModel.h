@@ -29,6 +29,9 @@ public:
 	unsigned int getTextureID() const;
 	void setTextureID(unsigned int id);
 
+	glm::vec3 getWorldPosition() const;
+	void setWorldPosition(glm::vec3 position);
+
 	unsigned int textureID;
 	std::vector<TriangleVertex> vertices; //List of all vertices in model file
 	std::vector<glm::vec3> positions;
@@ -52,5 +55,6 @@ private:
 	int vertCount;
 	unsigned int vaoID;
 	unsigned int vboID;
+	glm::vec3 worldPosition;
 };
 

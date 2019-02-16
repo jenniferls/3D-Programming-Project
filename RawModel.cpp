@@ -14,6 +14,7 @@ RawModel::RawModel(const char* filePath) {
 	this->diffID = 0;
 	this->specID = 0;
 	this->materialPath = "Path not loaded";
+	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 RawModel::~RawModel() {
@@ -46,6 +47,14 @@ void RawModel::setVertCount(int count) {
 
 void RawModel::setTextureID(unsigned int id) {
 	this->textureID = id;
+}
+
+glm::vec3 RawModel::getWorldPosition() const {
+	return this->worldPosition;
+}
+
+void RawModel::setWorldPosition(glm::vec3 position) {
+	this->worldPosition = position;
 }
 
 const char* RawModel::getPath() const {

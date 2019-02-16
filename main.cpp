@@ -55,9 +55,7 @@ void initWindow(unsigned int w, unsigned int h);
 // created resources (shaders, vertices, textures, etc)
 // For simplicity, we make them global here, but it is
 // safe to put them in a class and pass around...
-//GLuint gVertexBuffer = 0;
 GLuint gShaderProgram = 0;
-//GLuint gIndexBuffer = 0;
 
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
@@ -452,8 +450,7 @@ Scene CreateScene() {
 	return newScene;
 }
 
-void CreateMatrixData(float rotationValue) {
-	//MVP-matrix
+void CreateMatrixData() {
 	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
 	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
 	if (projection_id == -1) {
@@ -467,9 +464,12 @@ void CreateMatrixData(float rotationValue) {
 		OutputDebugStringA("Error, cannot find 'view_id' attribute in Geometry shader\n");
 		return;
 	}
+}
 
+void CreateModelMatrix(float rotationValue, glm::vec3 translation) {
 	glm::mat4 identity_mat = glm::mat4(1.0f);
-	model_matrix = glm::rotate(identity_mat, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
+	model_matrix = glm::translate(identity_mat, translation);
+	model_matrix = glm::rotate(model_matrix, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
 	model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
 	if (model_id == -1) {
 		OutputDebugStringA("Error, cannot find 'model_id' attribute in Geometry shader\n");
@@ -482,7 +482,7 @@ void SetViewport() {
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
 
-void Render(Scene scene) {
+void Render(Scene scene, float rotationVal) {
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
 
@@ -495,7 +495,6 @@ void Render(Scene scene) {
 	//Send matrix data
 	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
-	glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			//Sends data about model-matrix to geometry-shader
 
 	//Send material data for all models
 	scene.prepareMaterials();
@@ -504,8 +503,15 @@ void Render(Scene scene) {
 	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
 	
+	//Choose model placement (default is origo)
+	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+
 	//Draws all models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
+		//Send model matrix data per model
+		CreateModelMatrix(rotationVal, scene.models[i].getWorldPosition());			//Exchange rotation for "0.0f" to stop rotation
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));	//Sends data about model-matrix to geometry-shader
+
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 		glBindTexture(GL_TEXTURE_2D, scene.models[i].getTextureID()); //Bind the texture
@@ -659,7 +665,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
 
-	//CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
 	Scene gameScene = CreateScene();
 	CreateFullScreenQuad();
 
@@ -729,13 +734,13 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
+		CreateMatrixData(); //Creates projection and view-matrix
 
 		/*GLuint depthMatrixID = -1;*/
 		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
 		/*glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));*/
 
-		Render(gameScene); //9. Render
+		Render(gameScene, rotation); //9. Render
 
 		// first pass is done!
 		// now render a second pass
