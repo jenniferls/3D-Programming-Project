@@ -16,6 +16,9 @@ public:
 
 	unsigned int getVaoID() const;
 	void setVaoID(unsigned int id);
+	unsigned int getVboID() const;
+	void setVboID(unsigned int id);
+
 	int getVertCount() const;
 	void setVertCount(int count);
 	const char* getPath() const;
@@ -25,6 +28,9 @@ public:
 	std::string getMaterialPath() const;
 	unsigned int getTextureID() const;
 	void setTextureID(unsigned int id);
+
+	glm::vec3 getWorldPosition() const;
+	void setWorldPosition(glm::vec3 position);
 
 	unsigned int textureID;
 	std::vector<TriangleVertex> vertices; //List of all vertices in model file
@@ -48,5 +54,7 @@ private:
 	std::string materialPath; //File path to .mtl-file
 	int vertCount;
 	unsigned int vaoID;
+	unsigned int vboID;
+	glm::vec3 worldPosition;
 };
 

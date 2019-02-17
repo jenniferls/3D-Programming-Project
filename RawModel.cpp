@@ -2,6 +2,7 @@
 
 RawModel::RawModel(const char* filePath) {
 	this->vaoID = 0;
+	this->vboID = 0;
 	this->vertCount = 0;
 	this->path = filePath;
 	this->texturePath = "Path not loaded";
@@ -13,6 +14,7 @@ RawModel::RawModel(const char* filePath) {
 	this->diffID = 0;
 	this->specID = 0;
 	this->materialPath = "Path not loaded";
+	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 RawModel::~RawModel() {
@@ -27,6 +29,14 @@ void RawModel::setVaoID(unsigned int id) {
 	this->vaoID = id;
 }
 
+unsigned int RawModel::getVboID() const {
+	return this->vboID;
+}
+
+void RawModel::setVboID(unsigned int id) {
+	this->vboID = id;
+}
+
 int RawModel::getVertCount() const {
 	return this->vertCount;
 }
@@ -37,6 +47,14 @@ void RawModel::setVertCount(int count) {
 
 void RawModel::setTextureID(unsigned int id) {
 	this->textureID = id;
+}
+
+glm::vec3 RawModel::getWorldPosition() const {
+	return this->worldPosition;
+}
+
+void RawModel::setWorldPosition(glm::vec3 position) {
+	this->worldPosition = position;
 }
 
 const char* RawModel::getPath() const {
