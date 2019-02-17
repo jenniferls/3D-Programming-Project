@@ -333,6 +333,7 @@ void CreateFullScreenQuad() {
 	glEnableVertexAttribArray(0); 
 	glEnableVertexAttribArray(1);
 
+
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glGenBuffers(1, &gVertexBufferFS);
 
@@ -346,6 +347,10 @@ void CreateFullScreenQuad() {
 	// tell OpenGL about layout in memory (input assembler information)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(0));
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
+
+//	glDisableVertexAttribArray(0);
+//	glDisableVertexAttribArray(1);
+
 };
 
 GLuint CreateTexture(string path) {
@@ -401,6 +406,8 @@ Scene CreateScene() {
 
 	//Create VAOs
 	newScene.models[0].setVaoID(newScene.CreateVAO());
+	
+
 
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glGenBuffers(1, &gVertexBuffer);
@@ -601,6 +608,65 @@ void CreateMatrixData(float rotationValue) {
 void SetViewport() {
 	// usually (not necessarily) this matches with the window size
 	glViewport(0, 0, WIDTH, HEIGHT);
+}
+
+void CalculateTangents(Scene scene) {
+	//This code ONLY works on shapes with two triangles tops. This is a w.i.p
+	glm::vec3 tangent1,
+		biTangent1,
+		tangent2,
+		biTangent2;
+
+	//Vertex positions
+	glm::vec3 pos1 = scene.models[0].vertices[0].positions;
+	glm::vec3 pos2 = scene.models[0].vertices[1].positions;
+	glm::vec3 pos3 = scene.models[0].vertices[2].positions;
+	glm::vec3 pos4 = scene.models[0].vertices[3].positions;
+
+	//Texture Coords
+	glm::vec2 uv1 = scene.models[0].vertices[0].UVs;
+	glm::vec2 uv2 = scene.models[0].vertices[1].UVs;
+	glm::vec2 uv3 = scene.models[0].vertices[2].UVs;
+	glm::vec2 uv4 = scene.models[0].vertices[3].UVs;
+
+	//Normal Vector
+	glm::vec3 normVec = scene.models[0].vertices[0].normals;
+
+	//Triangle 1
+	glm::vec3 edge1 = pos2 - pos1;
+	glm::vec3 edge2 = pos3 - pos1;
+	glm::vec2 deltaUV1 = uv2 - uv1;
+	glm::vec2 deltaUV2 = uv3 - uv1;
+
+	float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+	
+	tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+	tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+	tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+	tangent1 = glm::normalize(tangent1);
+
+	biTangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+	biTangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+	biTangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+	biTangent1 = glm::normalize(biTangent1);
+
+	//Triangle 2
+	edge1 = pos3 - pos1;
+	edge2 = pos4 - pos1;
+	deltaUV1 = uv3 - uv1;
+	deltaUV2 = uv4 - uv1;
+
+	f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+	tangent2.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+	tangent2.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+	tangent2.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+	tangent2 = glm::normalize(tangent2);
+
+	biTangent2.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+	biTangent2.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+	biTangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+	biTangent2 = glm::normalize(biTangent2);
 }
 
 void Render(Scene scene) {
@@ -833,6 +899,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::End();
 
 		CreateMatrixData(0.0f); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
+		
+		CalculateTangents(gameScene);
 
 		Render(gameScene); //9. Render
 
