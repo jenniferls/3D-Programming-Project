@@ -55,12 +55,7 @@ void initWindow(unsigned int w, unsigned int h);
 // created resources (shaders, vertices, textures, etc)
 // For simplicity, we make them global here, but it is
 // safe to put them in a class and pass around...
-GLuint gVertexBuffer = 0;
-//GLuint gVertexAttribute = 0;
 GLuint gShaderProgram = 0;
-GLuint gIndexBuffer = 0;
-
-//GLuint texture = 0;//Set and initialize the texture variable.
 
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
@@ -457,68 +452,65 @@ Scene CreateScene() {
 	newScene.addModel("Resources/Models/ship.obj");
 	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 
-	//Create textures, right now only rendering of one texture is supported
-	newScene.models[0].setTextureID(CreateTexture(newScene.models[0].getTexturePath()));
+	for (int i = 0; i < newScene.getModelCount(); i++) {
+		//Create textures
+		newScene.models[i].setTextureID(CreateTexture(newScene.models[i].getTexturePath()));
 
-	//Create VAOs
-	newScene.models[0].setVaoID(newScene.CreateVAO());
+		//Create first VAO and VBO
+		newScene.models[i].setVaoID(newScene.CreateVAO());
+		newScene.models[i].setVboID(newScene.CreateVBO());
 
-	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
-	glGenBuffers(1, &gVertexBuffer);
+		// This "could" imply copying to the GPU, depending on what the driver wants to do, and
+		// the last argument (read the docs!)
+		glBufferData(GL_ARRAY_BUFFER, newScene.models[i].getVertCount() * VERTEX_SIZE, newScene.models[i].vertices.data(), GL_STATIC_DRAW);
 
-	// Bind the buffer ID as an ARRAY_BUFFER
-	glBindBuffer(GL_ARRAY_BUFFER, gVertexBuffer);
+		// this activates the first, second and third attributes of this VAO
+		// think of "attributes" as inputs to the Vertex Shader
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 
-	// This "could" imply copying to the GPU, depending on what the driver wants to do, and
-	// the last argument (read the docs!)
-	glBufferData(GL_ARRAY_BUFFER, newScene.models[0].getVertCount() * VERTEX_SIZE, newScene.models[0].vertices.data(), GL_STATIC_DRAW);
+		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
+		GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
+		// if this returns -1, it means there is a problem, and the program will likely crash.
+		// examples: the name is different or missing in the shader
 
-	// this activates the first, second and third attributes of this VAO
-	// think of "attributes" as inputs to the Vertex Shader
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
+		if (vertexPos == -1) {
+			OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
+		}
 
-	// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-	GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
-	// if this returns -1, it means there is a problem, and the program will likely crash.
-	// examples: the name is different or missing in the shader
+		// tell OpenGL about layout in memory (input assembler information)
+		glVertexAttribPointer(
+			vertexPos,				// location in shader
+			3,						// how many elements of type (see next argument)
+			GL_FLOAT,				// type of each element
+			GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
+			VERTEX_SIZE,			// distance between two vertices in memory (stride)
+			BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
+		);
 
-	if (vertexPos == -1) {
-		OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
+		// repeat the process for the second attribute.
+		// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
+		GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
+		glVertexAttribPointer(
+			textureCoord,
+			2,
+			GL_FLOAT,
+			GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
+			BUFFER_OFFSET(sizeof(float) * 3)
+		);
+
+		GLint normals = glGetAttribLocation(gShaderProgram, "normals");
+		if (normals == -1) {
+			OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
+		}
+		glVertexAttribPointer(
+			normals,
+			3,
+			GL_FLOAT,
+			GL_FALSE, VERTEX_SIZE,
+			BUFFER_OFFSET(sizeof(float) * 5));
 	}
-
-	// tell OpenGL about layout in memory (input assembler information)
-	glVertexAttribPointer(
-		vertexPos,				// location in shader
-		3,						// how many elements of type (see next argument)
-		GL_FLOAT,				// type of each element
-		GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
-		VERTEX_SIZE,			// distance between two vertices in memory (stride)
-		BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
-	);
-
-	// repeat the process for the second attribute.
-	// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
-	GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
-	glVertexAttribPointer(
-		textureCoord,
-		2,
-		GL_FLOAT,
-		GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
-		BUFFER_OFFSET(sizeof(float) * 3)
-	);
-
-	GLint normals = glGetAttribLocation(gShaderProgram, "normals");
-	if (normals == -1) {
-		OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
-	}
-	glVertexAttribPointer(
-		normals,
-		3,
-		GL_FLOAT,
-		GL_FALSE, VERTEX_SIZE,
-		BUFFER_OFFSET(sizeof(float) * 5));
 
 	//Add lights
 	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
@@ -529,112 +521,7 @@ Scene CreateScene() {
 	return newScene;
 }
 
-//void CreateTriangleData() {
-//	RawModel ship(0, "Resources/Models/ship.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
-//	OBJLoader loader;
-//	if (!loader.loadOBJ(ship)) {
-//		cout << "OBJLoader ERROR!" << endl;
-//	}
-//
-//	// create the actual data in plane Z = 0
-//	// This is called an Array of Structs (AoS) because we will 
-//	// end up with an array of many of these structs.
-//	RawModel::TriangleVertex triangleVertices[] = {
-//		//| Vtx Positions |					|Tex Coords|					|Normals|
-//		{glm::vec3(0.4f, 0.4f, 0.0f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //0 Front, Right, Top
-//		{glm::vec3(0.4f, -0.4f, 0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //1 Front, Right, Bottom
-//		{glm::vec3(-0.4f, -0.4f, 0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //2 Front, Left,  Bottom
-//		{glm::vec3(-0.4f, 0.4f, 0.0f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 0.0f, 1.0f)}, //3 Front, Left,  Top
-//		{glm::vec3(0.4f, 0.4f, -0.8f),	glm::vec2(1.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //4 Back,  Right, Top
-//		{glm::vec3(0.4f, 0.4f,  0.0f),	glm::vec2(1.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //5 Front, Right, Top
-//		{glm::vec3(-0.4f, 0.4f,  0.0f),	glm::vec2(0.0f, 0.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}, //6 Front, Left,  Top
-//		{glm::vec3(-0.4f, 0.4f, -0.8f),	glm::vec2(0.0f, 1.0f),	glm::vec3(0.0f, 1.0f, 0.0f)}  //7 Back,  Left,  Top
-//	};
-//	
-//	GLubyte Indices[] = {
-//		//First quad
-//		2, 1, 0,
-//		0, 3, 2,
-//		//Second quad
-//		6, 5, 4,
-//		4, 7, 6
-//	};
-//
-//
-//	// Vertex Array Object (VAO), description of the inputs to the GPU 
-//	glGenVertexArrays(1, &gVertexAttribute);
-//	// bind is like "enabling" the object to use it
-//	glBindVertexArray(gVertexAttribute);
-//	// this activates the first and second attributes of this VAO
-//	// think of "attributes" as inputs to the Vertex Shader
-//
-//	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
-//	glGenBuffers(1, &gVertexBuffer);
-//
-//	// Bind the buffer ID as an ARRAY_BUFFER
-//	glBindBuffer(GL_ARRAY_BUFFER, gVertexBuffer);
-//
-//	// This "could" imply copying to the GPU, depending on what the driver wants to do, and
-//	// the last argument (read the docs!)
-//	//glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
-//	glBufferData(GL_ARRAY_BUFFER, ship.getVertCount() * VERTEX_SIZE, ship.vertices.data(), GL_STATIC_DRAW);
-//
-//	glEnableVertexAttribArray(0); 
-//	glEnableVertexAttribArray(1);
-//	glEnableVertexAttribArray(2);
-//	
-//	glGenBuffers(1, &gIndexBuffer); //Generate the index buffer
-//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer); //Bind the index buffer
-//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW); //Store data in index buffer
-//
-//
-//
-//	// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-//	GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
-//	// if this returns -1, it means there is a problem, and the program will likely crash.
-//	// examples: the name is different or missing in the shader
-//
-//	if (vertexPos == -1) {
-//		OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
-//		return;
-//	}
-//
-//	// tell OpenGL about layout in memory (input assembler information)
-//	glVertexAttribPointer(
-//		vertexPos,				// location in shader
-//		3,						// how many elements of type (see next argument)
-//		GL_FLOAT,				// type of each element
-//		GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
-//		VERTEX_SIZE,			// distance between two vertices in memory (stride)
-//		BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
-//	);
-//
-//	// repeat the process for the second attribute.
-//	// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
-//	GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
-//	glVertexAttribPointer(
-//		textureCoord,
-//		2, 
-//		GL_FLOAT, 
-//		GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
-//		BUFFER_OFFSET(sizeof(float)*3)
-//	);
-//
-//	GLint normals = glGetAttribLocation(gShaderProgram, "normals");
-//	if (normals == -1) {
-//		OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
-//		return;
-//	}
-//	glVertexAttribPointer(
-//		normals,
-//		3,
-//		GL_FLOAT,
-//		GL_FALSE, VERTEX_SIZE,
-//		BUFFER_OFFSET(sizeof(float)*5));
-//}
-
-void CreateMatrixData(float rotationValue) {
-	//MVP-matrix
+void CreateMatrixData() {
 	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
 	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
 	if (projection_id == -1) {
@@ -648,9 +535,12 @@ void CreateMatrixData(float rotationValue) {
 		OutputDebugStringA("Error, cannot find 'view_id' attribute in Geometry shader\n");
 		return;
 	}
+}
 
+void CreateModelMatrix(float rotationValue, glm::vec3 translation) {
 	glm::mat4 identity_mat = glm::mat4(1.0f);
-	model_matrix = glm::rotate(identity_mat, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
+	model_matrix = glm::translate(identity_mat, translation);
+	model_matrix = glm::rotate(model_matrix, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
 	model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
 	if (model_id == -1) {
 		OutputDebugStringA("Error, cannot find 'model_id' attribute in Geometry shader\n");
@@ -685,15 +575,6 @@ void SetViewport() {
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
 
-//PF
-//void RenderShadowMap() {
-//	glUseProgram(gShaderProgramSM);
-//	glClear(GL_DEPTH_BUFFER_BIT);
-//
-//	glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
-//
-//}
-
 void Render(Scene scene) {
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
@@ -707,27 +588,34 @@ void Render(Scene scene) {
 	//Send matrix data
 	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
-	glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));			//Sends data about model-matrix to geometry-shader
 
-	//Send texture data
-	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-	glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the texture
-
-	//Send material data
+	//Send material data for all models
 	scene.prepareMaterials();
-	glUniform3fv(scene.models[0].ambID, 1, glm::value_ptr(scene.models[0].ambientVal));		//Ambient
-	glUniform3fv(scene.models[0].diffID, 1, glm::value_ptr(scene.models[0].diffuseVal));	//Diffuse
-	glUniform3fv(scene.models[0].specID, 1, glm::value_ptr(scene.models[0].specularVal));	//Specular
-
-	// tell opengl we are going to use the VAO we described earlier
-	glBindVertexArray(scene.models[0].getVaoID());
 
 	//Sends information about lights to shader
 	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
 	
+	//Choose model placement (default is origo)
+	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+
 	//Draws all models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
+		//Send model matrix data per model
+		CreateModelMatrix(rotationVal, scene.models[i].getWorldPosition());			//Exchange rotation for "0.0f" to stop rotation
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));	//Sends data about model-matrix to geometry-shader
+
+		//Send texture data
+		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
+		glBindTexture(GL_TEXTURE_2D, scene.models[i].getTextureID()); //Bind the texture
+
+		glUniform3fv(scene.models[i].ambID, 1, glm::value_ptr(scene.models[i].ambientVal));		//Ambient
+		glUniform3fv(scene.models[i].diffID, 1, glm::value_ptr(scene.models[i].diffuseVal));	//Diffuse
+		glUniform3fv(scene.models[i].specID, 1, glm::value_ptr(scene.models[i].specularVal));	//Specular
+
+		// tell opengl we are going to use the VAO we described earlier
+		glBindVertexArray(scene.models[i].getVaoID());
+
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount()); //This method doesn't use the index buffer
 	}
 }
@@ -871,7 +759,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
 
-	//CreateTriangleData(); //6. Definiera triangelvertiser, 7. Skapa vertex buffer object (VBO), 8.Skapa vertex array object (VAO)
 	Scene gameScene = CreateScene();
 	CreateFullScreenQuad();
 
@@ -922,10 +809,13 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(0.0f); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
-		//CreateShadowMatrixData(gameScene.lightPositions[0]); //PF
+		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
 
-		Render(gameScene); //9. Render
+		/*GLuint depthMatrixID = -1;*/
+		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
+		/*glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));*/
+
+		Render(gameScene, rotation); //9. Render
 
 		// first pass is done!
 		// now render a second pass
@@ -968,11 +858,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
 	gameScene.deleteVAOs();
+	gameScene.deleteVBOs();
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
-	glDeleteBuffers(1, &gVertexBuffer);
 	glDeleteBuffers(1, &gVertexBufferFS);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	//glDeleteBuffers(1, &gIndexBuffer);
 	glfwTerminate();
 
 	return 0;
