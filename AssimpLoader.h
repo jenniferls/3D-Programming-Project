@@ -1,6 +1,7 @@
 #pragma once
-//#include <assimp/include/assimp/Importer.hpp>
-//#include <assimp/include/assimp/scene.h>
+#include <assimp/include/assimp/Importer.hpp>
+#include <assimp/include/assimp/scene.h>
+#include <assimp/include/assimp/postprocess.h>
 #include "RawModel.h"
 #include <vector>
 
@@ -9,9 +10,9 @@ public:
 	AssimpLoader();
 	~AssimpLoader();
 
-//	bool LoadModel(RawModel &model);
-//
+	bool LoadModel(RawModel &model);
+
 private:
-	/*Assimp::Importer importer;*/
+	Assimp::Importer importer;
 };
 

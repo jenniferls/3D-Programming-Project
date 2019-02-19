@@ -15,6 +15,7 @@ RawModel::RawModel(const char* filePath) {
 	this->specID = 0;
 	this->materialPath = "Path not loaded";
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+	this->worldRotation = 0.0f;
 }
 
 RawModel::~RawModel() {
@@ -55,6 +56,14 @@ glm::vec3 RawModel::getWorldPosition() const {
 
 void RawModel::setWorldPosition(glm::vec3 position) {
 	this->worldPosition = position;
+}
+
+float RawModel::getWorldRotation() const {
+	return this->worldRotation;
+}
+
+void RawModel::setWorldRotation(float rotation) {
+	this->worldRotation = rotation;
 }
 
 const char* RawModel::getPath() const {

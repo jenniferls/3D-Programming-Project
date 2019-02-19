@@ -34,8 +34,6 @@
 #include "Scene.h"
 #include "Light.h"
 
-#include <assimp/include/assimp/Importer.hpp>
-
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "glfw3.lib")
@@ -56,8 +54,6 @@ void initWindow(unsigned int w, unsigned int h);
 // For simplicity, we make them global here, but it is
 // safe to put them in a class and pass around...
 GLuint gShaderProgram = 0;
-
-Assimp::Importer importer; //For testing assimp
 
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
@@ -82,7 +78,7 @@ GLuint shadow_id = -1; //PF
 glm::mat4 shadow_matrix; //PF
 
 //Camera variables
-glm::vec3 camPos	= glm::vec3(0.5f, 0.5f, 4.0f); //Default camera position
+glm::vec3 camPos	= glm::vec3(0.5f, 0.5f, 8.0f); //Default camera position
 glm::vec3 camFront	= glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
 glm::vec3 camUp		= glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
 float FoV = 45.0f; //Field-of-view
@@ -453,6 +449,7 @@ Scene CreateScene() {
 	//Fill the scene object with models to render
 	newScene.addModel("Resources/Models/ship.obj");
 	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	newScene.addModel("Resources/Models/plane.obj");
 
 	for (int i = 0; i < newScene.getModelCount(); i++) {
 		//Create textures
@@ -600,11 +597,15 @@ void Render(Scene scene, float rotationVal) {
 	
 	//Choose model placement (default is origo)
 	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	scene.models[2].setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+
+	//Chose model rotations (default is 0.0f)
+	scene.models[0].setWorldRotation(rotationVal);
 
 	//Draws all models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
-		CreateModelMatrix(rotationVal, scene.models[i].getWorldPosition());			//Exchange rotation for "0.0f" to stop rotation
+		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition());			//Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));	//Sends data about model-matrix to geometry-shader
 
 		//Send texture data
