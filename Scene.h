@@ -7,6 +7,7 @@
 #include <string>
 #include "RawModel.h"
 #include "OBJLoader.h"
+#include "AssimpLoader.h"
 #include "Light.h"
 
 class Scene {
@@ -15,6 +16,7 @@ public:
 	~Scene();
 
 	void addModel(const char* path);
+	void addAnimatedModel(const char* path);
 	int getModelCount() const;
 
 	void addLight(glm::vec3 position, glm::vec3 color);
@@ -38,6 +40,7 @@ public:
 	int lights_color_id;
 private:
 	OBJLoader loader;
+	AssimpLoader animLoader;
 	int modelCount;
 	int lightCount;
 	unsigned int shaderProg;

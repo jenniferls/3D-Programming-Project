@@ -28,13 +28,13 @@
 
 #include "stb_image.h"
 
-#include <assimp/include/assimp/Importer.hpp>
-
 #include "GameTimer.h"
 #include "RawModel.h"
 #include "OBJLoader.h"
 #include "Scene.h"
 #include "Light.h"
+
+#include <assimp/include/assimp/Importer.hpp>
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -56,6 +56,8 @@ void initWindow(unsigned int w, unsigned int h);
 // For simplicity, we make them global here, but it is
 // safe to put them in a class and pass around...
 GLuint gShaderProgram = 0;
+
+Assimp::Importer importer; //For testing assimp
 
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
@@ -585,14 +587,14 @@ void Render(Scene scene, float rotationVal) {
 	// use the color to clear the color buffer (clear the color buffer only)
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	//Send matrix data
+	//Send matrix data (Same for all models in scene)
 	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 
-	//Send material data for all models
+	//Assign material data IDs for all models
 	scene.prepareMaterials();
 
-	//Sends information about lights to shader
+	//Send information about lights to shader
 	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
 	
@@ -857,8 +859,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
-	gameScene.deleteVAOs();
-	gameScene.deleteVBOs();
+	gameScene.deleteVAOs(); //Deletes all vaos in the scene
+	gameScene.deleteVBOs(); //Deletes all vbos in the scene
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
 	glDeleteBuffers(1, &gVertexBufferFS);
 	glfwTerminate();

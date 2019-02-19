@@ -21,6 +21,14 @@ void Scene::addModel(const char* path) {
 	this->modelCount++;
 }
 
+void Scene::addAnimatedModel(const char* path) {
+	RawModel model(path); //Create a model
+	//animLoader.LoadModel(model);//Load the model
+	////Load the texture
+	//models.push_back(model); //Push back the model for rendering
+	this->modelCount++;
+}
+
 int Scene::getModelCount() const {
 	return this->modelCount;
 }
