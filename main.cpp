@@ -513,7 +513,7 @@ Scene CreateScene() {
 
 	//Add lights
 	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
-	//newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
+	newScene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
 
 	newScene.prepareLights(); //Important step! Assigns uniform IDs
 

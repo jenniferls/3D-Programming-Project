@@ -1,4 +1,6 @@
 #version 440
+
+#define NUM_LIGHTS 2;
 // these values are interpolated at the rasteriser
 in vec2 texUVs;
 in vec3 finalNormals;
@@ -18,6 +20,7 @@ uniform vec3 specular_val;	//Specular color
 
 in vec4 fragPos;
 in vec3 lightToCamera;
+
 //in vec4 shadow_coord;
 //uniform sampler2D shadowMap;
 
@@ -31,31 +34,42 @@ in vec3 lightToCamera;
 //	return shadow;
 //}
 
-void main () {
-	vec3 am = ambient_val * light_colors[0]; // PF: the ambient 
-	
-	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
-
+vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
+	vec3 am = ambient_val * light_color; // PF: the ambient 
 	//Diffuse shading
-	vec3 pointToLight = normalize(light_positions[0] - fragPos.xyz);
-	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
-	float diffuseFactor = dot(pointToLight, norm) / (length(pointToLight) * length(norm));
+	vec3 pointToLight = normalize(light_pos - fragPos.xyz);
+	float diffuseFactor = dot(pointToLight, normal) / (length(pointToLight) * length(normal));
 	diffuseFactor = clamp(diffuseFactor, 0, 1); //Make sure the diffuse factor isn't negative or above 1
-	vec3 diffuse = diffuseFactor * light_colors[0];
+	vec3 diffuse = diffuseFactor * light_color;
+	vec4 final = vec4(am + diffuse, 1.0 );
+	return final;
+}
 
+vec4 calcSpecular(vec3 light_pos, vec3 light_color, vec3 normal){
 	//Specularity
 	vec3 unitLightToCam = normalize(lightToCamera);
-	vec3 lightDir = -pointToLight;
-	vec3 reflectedLightDir = reflect(lightDir, norm);
+	vec3 lightDir = -normalize(light_pos - fragPos.xyz);
+	vec3 reflectedLightDir = reflect(lightDir, normal);
 	float specFactor = dot(reflectedLightDir, unitLightToCam);
 	specFactor = clamp(specFactor, 0, 1); //Make sure the specular factor isn't negative or above 1
 	float shineDamper = 32f;
 	float reflectivity = 0.8f;
 	float dampedSpec = pow(specFactor, shineDamper);
-	vec3 specular = dampedSpec * reflectivity * specular_val * light_colors[0];
+	vec3 specular = dampedSpec * reflectivity * specular_val * light_color;
+	vec4 final = vec4(specular, 1.0f);
+	return final;
+}
+
+void main () {
+	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
+
+	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
 //	float shadow = shadowCalc(shadow_coord);
 
-	vec4 result = vec4(am + diffuse, 1.0 ) * texSample + vec4(specular, 1.0f);
+	vec4 result = vec4(0.0f);
+	result += calcDiffuse(light_positions[0], light_colors[0], norm) * texSample + calcSpecular(light_positions[0], light_colors[0], norm);
+	result += calcDiffuse(light_positions[1], light_colors[1], norm) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
+
 	fragment_color = result;
 }
