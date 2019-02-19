@@ -1,2 +1,16 @@
-﻿  main.cpp
-  Demo.vcxproj -> H:\My Documents\BTH Studies\Inlämningsuppgifter\3D-Programming\Project\3DProject\x64\Debug\3DProject.exe
+﻿  GameTimer.cpp
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_glfw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_impl_win32.cpp
+  imgui_widgets.cpp
+  Light.cpp
+  main.cpp
+  OBJLoader.cpp
+  RawModel.cpp
+  Scene.cpp
+  stb_image.cpp
+  Generating Code...
+  Demo.vcxproj -> D:\My Documents\BTH Studies\Inlämningsuppgifter\3D-Programming\Project\3DProject\x64\Debug\3DProject.exe

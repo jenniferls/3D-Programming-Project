@@ -575,7 +575,7 @@ void SetViewport() {
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
 
-void Render(Scene scene) {
+void Render(Scene scene, float rotationVal) {
 	// tell opengl we want to use the gShaderProgram
 	glUseProgram(gShaderProgram);
 
@@ -809,7 +809,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(rotation); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
+		CreateMatrixData(); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
 
 		/*GLuint depthMatrixID = -1;*/
 		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
