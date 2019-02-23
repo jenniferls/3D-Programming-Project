@@ -26,11 +26,15 @@ public:
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
+	std::vector<unsigned int> indices;
+
+	unsigned int numIndices;
 
 private:
 	std::string path; //File path
 	unsigned int vertCount;
 	unsigned int vaoID;
 	unsigned int vboID;
+	unsigned int iboID; //Index buffer
 };
 

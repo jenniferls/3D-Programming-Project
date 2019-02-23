@@ -938,6 +938,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	glDeleteTextures(2, gFboTextureAttachments);
 	gameScene.deleteVAOs(); //Deletes all vaos in the scene
 	gameScene.deleteVBOs(); //Deletes all vbos in the scene
+	gameScene.deleteIBOs(); //Deletes all index buffers in the scene
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
 	glDeleteBuffers(1, &gVertexBufferFS);
 	glfwTerminate();

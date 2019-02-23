@@ -30,11 +30,14 @@ public:
 	void deleteVAOs();
 	GLuint CreateVBO();
 	void deleteVBOs();
+	GLuint CreateIBO();
+	void deleteIBOs();
 
 	std::vector<RawModel> models;
 	std::vector<AnimatedModel> animatedModels;
 	std::vector<unsigned int> vaos;
 	std::vector<unsigned int> vbos;
+	std::vector<unsigned int> ibos;
 	std::vector<Light> lights; //List of lights
 	std::vector<glm::vec3> lightPositions; //List of all light positions
 	std::vector<glm::vec3> lightColors; //List of all light colors

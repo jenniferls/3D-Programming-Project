@@ -4,7 +4,9 @@ AnimatedModel::AnimatedModel(std::string filePath) {
 	this->path = filePath;
 	this->vaoID = 0;
 	this->vboID = 0;
+	this->iboID = 0;
 	this->vertCount = 0;
+	this->numIndices = 0;
 }
 
 AnimatedModel::~AnimatedModel() {

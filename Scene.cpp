@@ -93,12 +93,27 @@ GLuint Scene::CreateVBO() {
 	glGenBuffers(1, &vbo);
 	// Bind the buffer ID as an ARRAY_BUFFER
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
+	this->vbos.push_back(vbo);
 	return vbo;
 }
 
 void Scene::deleteVBOs() {
 	for (int i = 0; i < vbos.size(); i++) {
 		glDeleteBuffers(1, &vbos[i]);
+	}
+}
+
+GLuint Scene::CreateIBO() {
+	GLuint ibo = 0;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	this->ibos.push_back(ibo);
+	return ibo;
+}
+
+void Scene::deleteIBOs() {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	for (int i = 0; i < ibos.size(); i++) {
+		glDeleteBuffers(1, &ibos[i]);
 	}
 }

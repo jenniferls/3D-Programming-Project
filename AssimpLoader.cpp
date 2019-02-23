@@ -27,12 +27,19 @@ bool AssimpLoader::LoadModel(AnimatedModel &model) {
 				temp = { model.positions[j], model.uvs[j], model.normals[j] };
 				model.vertices.push_back(temp);
 			}
-			model.setVertCount(model.vertices.size());
 
-			//for (int i = 0; i < mesh->mNumFaces; i++) {
-			//	temp = { model.positions[model.vertex_indices[i]], model.uvs[model.uv_indices[i]], model.normals[model.normal_indices[i]] };
-			//	model.vertices.push_back(temp);
-			//}
+			for (int i = 0; i < mesh->mNumFaces; i++) {
+				if (mesh->mFaces[i].mNumIndices == 3) {
+					model.indices.push_back(mesh->mFaces[i].mIndices[0]);
+					model.indices.push_back(mesh->mFaces[i].mIndices[1]);
+					model.indices.push_back(mesh->mFaces[i].mIndices[2]);
+				}
+				else {
+					OutputDebugStringA("ASSIMP: Model-loading failure! Mesh is not triangulated.");
+					return false;
+				}
+			}
+			model.setVertCount(model.vertices.size());
 		}
 	}
 	else {
