@@ -21,6 +21,8 @@ public:
 	void setVaoID(unsigned int id);
 	unsigned int getVboID() const;
 	void setVboID(unsigned int id);
+	unsigned int getIboID() const;
+	void setIboID(unsigned int id);
 
 	std::vector<Vertex> vertices; //List of all vertices in model file
 	std::vector<glm::vec3> positions;

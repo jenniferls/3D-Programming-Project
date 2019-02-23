@@ -39,6 +39,7 @@ bool AssimpLoader::LoadModel(AnimatedModel &model) {
 					return false;
 				}
 			}
+			model.numIndices = model.indices.size();
 			model.setVertCount(model.vertices.size());
 		}
 	}

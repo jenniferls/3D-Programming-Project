@@ -527,46 +527,18 @@ Scene CreateScene() {
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 
+		newScene.animatedModels[i].setIboID(newScene.CreateIBO());
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, newScene.animatedModels[i].numIndices * sizeof(unsigned int), newScene.animatedModels[i].indices.data(), GL_STATIC_DRAW);
+
 		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
 		GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
-		// if this returns -1, it means there is a problem, and the program will likely crash.
-		// examples: the name is different or missing in the shader
-
-		if (vertexPos == -1) {
-			OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
-		}
+		GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
+		GLint normals = glGetAttribLocation(gShaderProgram, "normals");
 
 		// tell OpenGL about layout in memory (input assembler information)
-		glVertexAttribPointer(
-			vertexPos,				// location in shader
-			3,						// how many elements of type (see next argument)
-			GL_FLOAT,				// type of each element
-			GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
-			VERTEX_SIZE,			// distance between two vertices in memory (stride)
-			BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
-		);
-
-		// repeat the process for the second attribute.
-		// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
-		GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
-		glVertexAttribPointer(
-			textureCoord,
-			2,
-			GL_FLOAT,
-			GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
-			BUFFER_OFFSET(sizeof(float) * 3)
-		);
-
-		GLint normals = glGetAttribLocation(gShaderProgram, "normals");
-		if (normals == -1) {
-			OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
-		}
-		glVertexAttribPointer(
-			normals,
-			3,
-			GL_FLOAT,
-			GL_FALSE, VERTEX_SIZE,
-			BUFFER_OFFSET(sizeof(float) * 5));
+		glVertexAttribPointer(vertexPos, 3,	GL_FLOAT, GL_FALSE,	VERTEX_SIZE, BUFFER_OFFSET(0));
+		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
+		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 	}
 
 	//Add lights
@@ -695,7 +667,7 @@ void Render(Scene scene, float rotationVal) {
 		// tell opengl we are going to use the VAO we described earlier
 		glBindVertexArray(scene.animatedModels[i].getVaoID());
 
-		glDrawArrays(GL_TRIANGLES, 0, scene.animatedModels[i].getVertCount());
+		glDrawElements(GL_TRIANGLES, scene.animatedModels[i].numIndices, GL_UNSIGNED_INT, 0);
 	}
 }
 

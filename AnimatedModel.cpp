@@ -40,3 +40,11 @@ unsigned int AnimatedModel::getVboID() const {
 void AnimatedModel::setVboID(unsigned int id) {
 	this->vboID = id;
 }
+
+unsigned int AnimatedModel::getIboID() const {
+	return this->iboID;
+}
+
+void AnimatedModel::setIboID(unsigned int id) {
+	this->iboID = id;
+}
