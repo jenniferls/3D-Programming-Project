@@ -451,7 +451,7 @@ Scene CreateScene() {
 	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	newScene.addModel("Resources/Models/plane.obj");
 
-	newScene.addAnimatedModel("Resources/Models/sphere.fbx");
+	newScene.addAnimatedModel("Resources/Models/sphere_earth.fbx");
 
 	for (int i = 0; i < newScene.getModelCount(); i++) {
 		//Create textures
@@ -514,6 +514,8 @@ Scene CreateScene() {
 	}
 
 	for (int i = 0; i < newScene.getAnimModelCount(); i++) {
+		newScene.animatedModels[i].setTextureID(CreateTexture(newScene.animatedModels[i].getTexturePath()));
+
 		newScene.animatedModels[i].setVaoID(newScene.CreateVAO());
 		newScene.animatedModels[i].setVboID(newScene.CreateVBO());
 
@@ -628,11 +630,13 @@ void Render(Scene scene, float rotationVal) {
 	//Choose model placement (default is origo)
 	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
 	scene.models[2].setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+	scene.animatedModels[0].setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0].setWorldRotation(rotationVal);
+	scene.animatedModels[0].setWorldRotation(-rotationVal);
 
-	//Draws all models in the scene
+	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition());  //Exchange rotation for "0.0f" to stop rotation
@@ -652,17 +656,18 @@ void Render(Scene scene, float rotationVal) {
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount());
 	}
 
+	//Draws all animated models in the scene
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
-		CreateModelMatrix(0.0f, glm::vec3(2.0f, 1.0f, -5.0f));
+		CreateModelMatrix(scene.animatedModels[i].getWorldRotation(), scene.animatedModels[i].getWorldPosition());
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-		glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the texture
+		glBindTexture(GL_TEXTURE_2D, scene.animatedModels[i].getTextureID()); //Bind the texture
 
-		glUniform3fv(scene.models[0].ambID, 1, glm::value_ptr(scene.models[0].ambientVal));		//Ambient
-		glUniform3fv(scene.models[0].diffID, 1, glm::value_ptr(scene.models[0].diffuseVal));	//Diffuse
-		glUniform3fv(scene.models[0].specID, 1, glm::value_ptr(scene.models[0].specularVal));	//Specular
+		glUniform3fv(scene.animatedModels[i].ambID, 1, glm::value_ptr(scene.animatedModels[i].ambientVal));		//Ambient
+		glUniform3fv(scene.animatedModels[i].diffID, 1, glm::value_ptr(scene.animatedModels[i].diffuseVal));	//Diffuse
+		glUniform3fv(scene.animatedModels[i].specID, 1, glm::value_ptr(scene.animatedModels[i].specularVal));	//Specular
 
 		// tell opengl we are going to use the VAO we described earlier
 		glBindVertexArray(scene.animatedModels[i].getVaoID());

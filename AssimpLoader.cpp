@@ -1,5 +1,6 @@
 #include "AssimpLoader.h"
 #include <windows.h>
+#include <string>
 
 AssimpLoader::AssimpLoader() {
 
@@ -11,7 +12,7 @@ AssimpLoader::~AssimpLoader() {
 
 bool AssimpLoader::LoadModel(AnimatedModel &model) {
 	const aiScene* scene;
-	scene = importer.ReadFile(model.getPath(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights); //Path and post processing flags
+	scene = importer.ReadFile(model.getPath(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_JoinIdenticalVertices); //Path and post processing flags
 	if (scene) {
 		//m_GlobalInverseTransform = scene->mRootNode->mTransformation;
 		//m_GlobalInverseTransform.Inverse();
@@ -19,6 +20,21 @@ bool AssimpLoader::LoadModel(AnimatedModel &model) {
 		AnimatedModel::Vertex temp; //Temporary vertex for storing data
 		for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
 			const aiMesh* mesh = scene->mMeshes[i];
+			const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+			aiColor3D diff, amb, spec;
+			material->Get(AI_MATKEY_COLOR_DIFFUSE, diff);
+			material->Get(AI_MATKEY_COLOR_AMBIENT, amb);
+			material->Get(AI_MATKEY_COLOR_SPECULAR, spec);
+			model.diffuseVal = glm::vec3(diff.r, diff.g, diff.b);
+			model.ambientVal = glm::vec3(amb.r, amb.g, amb.b);
+			model.specularVal = glm::vec3(spec.r, spec.g, spec.b);
+
+			aiString path;
+			material->GetTexture(aiTextureType_DIFFUSE, 0, &path, NULL, NULL, NULL, NULL, NULL);
+			std::string fileName = path.data;
+			std::string fullPath = "Resources/Textures/" + fileName;
+			model.setTexturePath(fullPath);
 
 			for (int j = 0; j < mesh->mNumVertices; j++) {
 				model.positions.push_back(glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z));

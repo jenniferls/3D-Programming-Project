@@ -14,6 +14,8 @@ public:
 	~AnimatedModel();
 
 	std::string getPath() const;
+	std::string getTexturePath() const;
+	void setTexturePath(std::string texPath);
 	void setVertCount(unsigned int count);
 	unsigned int getVertCount() const;
 
@@ -23,6 +25,8 @@ public:
 	void setVboID(unsigned int id);
 	unsigned int getIboID() const;
 	void setIboID(unsigned int id);
+	unsigned int getTextureID() const;
+	void setTextureID(unsigned int id);
 
 	std::vector<Vertex> vertices; //List of all vertices in model file
 	std::vector<glm::vec3> positions;
@@ -30,13 +34,25 @@ public:
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned int> indices;
 
+	glm::vec3 getWorldPosition() const;
+	void setWorldPosition(glm::vec3 position);
+	float getWorldRotation() const;
+	void setWorldRotation(float rotation);
+
+	glm::vec3 ambientVal, specularVal, diffuseVal;
+
 	unsigned int numIndices;
+	unsigned int ambID, specID, diffID;
 
 private:
 	std::string path; //File path
+	std::string texturePath; //File path to texture file
+	unsigned int textureID;
 	unsigned int vertCount;
 	unsigned int vaoID;
 	unsigned int vboID;
 	unsigned int iboID; //Index buffer
+	glm::vec3 worldPosition;
+	float worldRotation;
 };
 

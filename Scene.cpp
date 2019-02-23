@@ -69,6 +69,11 @@ void Scene::prepareMaterials() {
 		models[i].diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
 		models[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
 	}
+	for (int i = 0; i < getAnimModelCount(); i++) {
+		animatedModels[i].ambID = glGetUniformLocation(this->shaderProg, "ambient_val"); //Assign ID
+		animatedModels[i].diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
+		animatedModels[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
+	}
 }
 
 GLuint Scene::CreateVAO() {
