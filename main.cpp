@@ -451,6 +451,8 @@ Scene CreateScene() {
 	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	newScene.addModel("Resources/Models/plane.obj");
 
+	newScene.addAnimatedModel("Resources/Models/sphere.fbx");
+
 	for (int i = 0; i < newScene.getModelCount(); i++) {
 		//Create textures
 		newScene.models[i].setTextureID(CreateTexture(newScene.models[i].getTexturePath()));
@@ -462,6 +464,62 @@ Scene CreateScene() {
 		// This "could" imply copying to the GPU, depending on what the driver wants to do, and
 		// the last argument (read the docs!)
 		glBufferData(GL_ARRAY_BUFFER, newScene.models[i].getVertCount() * VERTEX_SIZE, newScene.models[i].vertices.data(), GL_STATIC_DRAW);
+
+		// this activates the first, second and third attributes of this VAO
+		// think of "attributes" as inputs to the Vertex Shader
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+
+		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
+		GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
+		// if this returns -1, it means there is a problem, and the program will likely crash.
+		// examples: the name is different or missing in the shader
+
+		if (vertexPos == -1) {
+			OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
+		}
+
+		// tell OpenGL about layout in memory (input assembler information)
+		glVertexAttribPointer(
+			vertexPos,				// location in shader
+			3,						// how many elements of type (see next argument)
+			GL_FLOAT,				// type of each element
+			GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
+			VERTEX_SIZE,			// distance between two vertices in memory (stride)
+			BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
+		);
+
+		// repeat the process for the second attribute.
+		// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
+		GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
+		glVertexAttribPointer(
+			textureCoord,
+			2,
+			GL_FLOAT,
+			GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
+			BUFFER_OFFSET(sizeof(float) * 3)
+		);
+
+		GLint normals = glGetAttribLocation(gShaderProgram, "normals");
+		if (normals == -1) {
+			OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
+		}
+		glVertexAttribPointer(
+			normals,
+			3,
+			GL_FLOAT,
+			GL_FALSE, VERTEX_SIZE,
+			BUFFER_OFFSET(sizeof(float) * 5));
+	}
+
+	for (int i = 0; i < newScene.getAnimModelCount(); i++) {
+		newScene.animatedModels[i].setVaoID(newScene.CreateVAO());
+		newScene.animatedModels[i].setVboID(newScene.CreateVBO());
+
+		// This "could" imply copying to the GPU, depending on what the driver wants to do, and
+		// the last argument (read the docs!)
+		glBufferData(GL_ARRAY_BUFFER, newScene.animatedModels[i].getVertCount() * VERTEX_SIZE, newScene.animatedModels[i].vertices.data(), GL_STATIC_DRAW);
 
 		// this activates the first, second and third attributes of this VAO
 		// think of "attributes" as inputs to the Vertex Shader
@@ -605,8 +663,8 @@ void Render(Scene scene, float rotationVal) {
 	//Draws all models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
-		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition());			//Exchange rotation for "0.0f" to stop rotation
-		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));	//Sends data about model-matrix to geometry-shader
+		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition());  //Exchange rotation for "0.0f" to stop rotation
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));					//Sends data about model-matrix to geometry-shader
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -619,7 +677,25 @@ void Render(Scene scene, float rotationVal) {
 		// tell opengl we are going to use the VAO we described earlier
 		glBindVertexArray(scene.models[i].getVaoID());
 
-		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount()); //This method doesn't use the index buffer
+		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount());
+	}
+
+	for (int i = 0; i < scene.getAnimModelCount(); i++) {
+		CreateModelMatrix(0.0f, glm::vec3(2.0f, 1.0f, -5.0f));
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+		//Send texture data
+		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
+		glBindTexture(GL_TEXTURE_2D, scene.models[0].getTextureID()); //Bind the texture
+
+		glUniform3fv(scene.models[0].ambID, 1, glm::value_ptr(scene.models[0].ambientVal));		//Ambient
+		glUniform3fv(scene.models[0].diffID, 1, glm::value_ptr(scene.models[0].diffuseVal));	//Diffuse
+		glUniform3fv(scene.models[0].specID, 1, glm::value_ptr(scene.models[0].specularVal));	//Specular
+
+		// tell opengl we are going to use the VAO we described earlier
+		glBindVertexArray(scene.animatedModels[i].getVaoID());
+
+		glDrawArrays(GL_TRIANGLES, 0, scene.animatedModels[i].getVertCount());
 	}
 }
 

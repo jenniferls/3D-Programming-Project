@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include "RawModel.h"
+#include "AnimatedModel.h"
 #include "OBJLoader.h"
 #include "AssimpLoader.h"
 #include "Light.h"
@@ -16,8 +17,9 @@ public:
 	~Scene();
 
 	void addModel(const char* path);
-	void addAnimatedModel(const char* path);
+	void addAnimatedModel(std::string path);
 	int getModelCount() const;
+	unsigned int getAnimModelCount() const;
 
 	void addLight(glm::vec3 position, glm::vec3 color);
 	void prepareLights();
@@ -30,6 +32,7 @@ public:
 	void deleteVBOs();
 
 	std::vector<RawModel> models;
+	std::vector<AnimatedModel> animatedModels;
 	std::vector<unsigned int> vaos;
 	std::vector<unsigned int> vbos;
 	std::vector<Light> lights; //List of lights
@@ -42,6 +45,7 @@ private:
 	OBJLoader loader;
 	AssimpLoader animLoader;
 	int modelCount;
+	unsigned int animatedModelCount;
 	int lightCount;
 	unsigned int shaderProg;
 };

@@ -2,6 +2,7 @@
 
 Scene::Scene(unsigned int shaderProg) {
 	this->modelCount = 0;
+	this->animatedModelCount = 0;
 	this->lightCount = 0;
 	this->shaderProg = shaderProg;
 	this->lights_pos_id = -1;
@@ -21,16 +22,20 @@ void Scene::addModel(const char* path) {
 	this->modelCount++;
 }
 
-void Scene::addAnimatedModel(const char* path) {
-	RawModel model(path); //Create a model
-	//animLoader.LoadModel(model);//Load the model
+void Scene::addAnimatedModel(std::string path) {
+	AnimatedModel model(path); //Create a model
+	animLoader.LoadModel(model);//Load the model
 	////Load the texture
-	//models.push_back(model); //Push back the model for rendering
-	this->modelCount++;
+	animatedModels.push_back(model); //Push back the model for rendering
+	this->animatedModelCount++;
 }
 
 int Scene::getModelCount() const {
 	return this->modelCount;
+}
+
+unsigned int Scene::getAnimModelCount() const {
+	return this->animatedModelCount;
 }
 
 void Scene::addLight(glm::vec3 position, glm::vec3 color) {
