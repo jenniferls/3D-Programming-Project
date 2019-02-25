@@ -31,6 +31,8 @@ public:
 
 	glm::vec3 getWorldPosition() const;
 	void setWorldPosition(glm::vec3 position);
+	float getWorldRotation() const;
+	void setWorldRotation(float rotation);
 
 	unsigned int textureID;
 	std::vector<TriangleVertex> vertices; //List of all vertices in model file
@@ -56,5 +58,6 @@ private:
 	unsigned int vaoID;
 	unsigned int vboID;
 	glm::vec3 worldPosition;
+	float worldRotation;
 };
 

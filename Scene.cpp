@@ -2,6 +2,7 @@
 
 Scene::Scene(unsigned int shaderProg) {
 	this->modelCount = 0;
+	this->animatedModelCount = 0;
 	this->lightCount = 0;
 	this->shaderProg = shaderProg;
 	this->lights_pos_id = -1;
@@ -21,8 +22,20 @@ void Scene::addModel(const char* path) {
 	this->modelCount++;
 }
 
+void Scene::addAnimatedModel(std::string path) {
+	AnimatedModel model(path); //Create a model
+	animLoader.LoadModel(model);//Load the model
+	////Load the texture
+	animatedModels.push_back(model); //Push back the model for rendering
+	this->animatedModelCount++;
+}
+
 int Scene::getModelCount() const {
 	return this->modelCount;
+}
+
+unsigned int Scene::getAnimModelCount() const {
+	return this->animatedModelCount;
 }
 
 void Scene::addLight(glm::vec3 position, glm::vec3 color) {
@@ -56,6 +69,11 @@ void Scene::prepareMaterials() {
 		models[i].diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
 		models[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
 	}
+	for (int i = 0; i < getAnimModelCount(); i++) {
+		animatedModels[i].ambID = glGetUniformLocation(this->shaderProg, "ambient_val"); //Assign ID
+		animatedModels[i].diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
+		animatedModels[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
+	}
 }
 
 GLuint Scene::CreateVAO() {
@@ -80,12 +98,27 @@ GLuint Scene::CreateVBO() {
 	glGenBuffers(1, &vbo);
 	// Bind the buffer ID as an ARRAY_BUFFER
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
+	this->vbos.push_back(vbo);
 	return vbo;
 }
 
 void Scene::deleteVBOs() {
 	for (int i = 0; i < vbos.size(); i++) {
 		glDeleteBuffers(1, &vbos[i]);
+	}
+}
+
+GLuint Scene::CreateIBO() {
+	GLuint ibo = 0;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	this->ibos.push_back(ibo);
+	return ibo;
+}
+
+void Scene::deleteIBOs() {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	for (int i = 0; i < ibos.size(); i++) {
+		glDeleteBuffers(1, &ibos[i]);
 	}
 }

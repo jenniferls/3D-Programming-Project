@@ -6,7 +6,9 @@
 #include <vector>
 #include <string>
 #include "RawModel.h"
+#include "AnimatedModel.h"
 #include "OBJLoader.h"
+#include "AssimpLoader.h"
 #include "Light.h"
 
 class Scene {
@@ -15,7 +17,9 @@ public:
 	~Scene();
 
 	void addModel(const char* path);
+	void addAnimatedModel(std::string path);
 	int getModelCount() const;
+	unsigned int getAnimModelCount() const;
 
 	void addLight(glm::vec3 position, glm::vec3 color);
 	void prepareLights();
@@ -26,10 +30,14 @@ public:
 	void deleteVAOs();
 	GLuint CreateVBO();
 	void deleteVBOs();
+	GLuint CreateIBO();
+	void deleteIBOs();
 
 	std::vector<RawModel> models;
+	std::vector<AnimatedModel> animatedModels;
 	std::vector<unsigned int> vaos;
 	std::vector<unsigned int> vbos;
+	std::vector<unsigned int> ibos;
 	std::vector<Light> lights; //List of lights
 	std::vector<glm::vec3> lightPositions; //List of all light positions
 	std::vector<glm::vec3> lightColors; //List of all light colors
@@ -38,7 +46,9 @@ public:
 	int lights_color_id;
 private:
 	OBJLoader loader;
+	AssimpLoader animLoader;
 	int modelCount;
+	unsigned int animatedModelCount;
 	int lightCount;
 	unsigned int shaderProg;
 };

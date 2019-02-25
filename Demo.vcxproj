@@ -68,13 +68,13 @@
     <LibraryPath>glew-1.11.0/lib/Release/win32;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>glew-1.11.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>glew-1.11.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>assimp\include\assimp;glew-1.11.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>assimp\lib;glew-1.11.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>glew-1.11.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>glew-1.11.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>assimp\include\assimp;glew-1.11.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>assimp\lib;glew-1.11.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +115,8 @@
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>glew\lib\Release\x64;glfw\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>assimp\lib;glew\lib\Release\x64;glfw\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc140-mt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,10 +124,13 @@
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>glew\lib\Release\x64;glfw\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>assimp\lib;glew\lib\Release\x64;glfw\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc140-mt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AnimatedModel.cpp" />
+    <ClCompile Include="AssimpLoader.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
@@ -152,6 +156,8 @@
     <None Include="VertexShaderSM.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimatedModel.h" />
+    <ClInclude Include="AssimpLoader.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
