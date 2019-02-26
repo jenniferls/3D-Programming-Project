@@ -55,6 +55,9 @@ void initWindow(unsigned int w, unsigned int h);
 // safe to put them in a class and pass around...
 GLuint gShaderProgram = 0;
 
+//Shader for animated models
+GLuint gShaderProgramAnim = 0;
+
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
@@ -375,6 +378,104 @@ void CreateShaders() {
 	glDeleteShader(gs);
 }
 
+void CreateAnimShaders() {
+	// local buffer to store error strings when compiling.
+	char buff[1024];
+	memset(buff, 0, 1024);
+	GLint compileResult = 0;
+
+	//create vertex shader "name" and store it in "vs"
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+
+	// open .glsl file and put it in a string
+	ifstream shaderFile("VertexShaderAnim.glsl");
+	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+
+	// glShaderSource requires a double pointer.
+	// get the pointer to the c style string stored in the string object.
+	const char* shaderTextPtr = shaderText.c_str();
+
+	// ask GL to use this string a shader code source
+	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
+
+	// try to compile this shader source.
+	glCompileShader(vs);
+
+	// check for compilation error
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		glGetShaderInfoLog(vs, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+
+	// repeat process for Fragment Shader (or Pixel Shader)
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	shaderFile.open("FragmentAnim.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(fs);
+	// query information about the compilation (nothing if compilation went fine!)
+	compileResult = GL_FALSE;
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(fs, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+
+	// repeat process for Geometry Shader
+	GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
+	shaderFile.open("GeometryShaderAnim.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(gs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(gs);
+	// query information about the compilation (nothing if compilation went fine!)
+	compileResult = GL_FALSE;
+	glGetShaderiv(gs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(gs, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+
+	//link shader program (connect vs, gs and ps)
+	gShaderProgramAnim = glCreateProgram();
+	glAttachShader(gShaderProgramAnim, fs);
+	glAttachShader(gShaderProgramAnim, vs);
+	glAttachShader(gShaderProgramAnim, gs);
+	glLinkProgram(gShaderProgramAnim);
+
+	// check once more, if the Vertex Shader, Geometry Shader and the Fragment Shader can be used together
+	compileResult = GL_FALSE;
+	glGetProgramiv(gShaderProgramAnim, GL_LINK_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetProgramInfoLog(gShaderProgramAnim, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+	// in any case (compile sucess or not), we only want to keep the 
+	// Program around, not the shaders.
+	glDetachShader(gShaderProgramAnim, vs);
+	glDetachShader(gShaderProgramAnim, fs);
+	glDetachShader(gShaderProgramAnim, gs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+	glDeleteShader(gs);
+}
+
 void CreateFullScreenQuad() {
 	struct Pos2UV {
 		float x,y;
@@ -656,6 +757,14 @@ void Render(Scene scene, float rotationVal) {
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount());
 	}
 
+	//Render animated models using another shader program
+	glUseProgram(gShaderProgramAnim);
+	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
+	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
+	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
+
+
 	//Draws all animated models in the scene
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
 		CreateModelMatrix(scene.animatedModels[i].getWorldRotation(), scene.animatedModels[i].getWorldPosition());
@@ -809,6 +918,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	}
 
 	CreateShaders(); //5. Create vertex- and fragment-shaders
+	CreateAnimShaders(); //5. Create shaders for animated models
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
 	//CreateSMShaders(); //PF
 

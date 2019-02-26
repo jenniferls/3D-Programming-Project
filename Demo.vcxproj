@@ -148,10 +148,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Fragment.glsl" />
+    <None Include="FragmentAnim.glsl" />
     <None Include="FragmentFS.glsl" />
     <None Include="FragmentSM.glsl" />
     <None Include="GeometryShader.glsl" />
+    <None Include="GeometryShaderAnim.glsl" />
     <None Include="VertexShader.glsl" />
+    <None Include="VertexShaderAnim.glsl" />
     <None Include="VertexShaderFS.glsl" />
     <None Include="VertexShaderSM.glsl" />
   </ItemGroup>

@@ -92,6 +92,15 @@
     <None Include="FragmentSM.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="VertexShaderAnim.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="FragmentAnim.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="GeometryShaderAnim.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">

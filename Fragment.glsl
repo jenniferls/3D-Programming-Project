@@ -1,6 +1,5 @@
 #version 440
 
-#define NUM_LIGHTS 2;
 // these values are interpolated at the rasteriser
 in vec2 texUVs;
 in vec3 finalNormals;
