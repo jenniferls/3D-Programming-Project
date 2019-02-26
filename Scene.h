@@ -13,7 +13,7 @@
 
 class Scene {
 public:
-	Scene(unsigned int shaderProg);
+	Scene(unsigned int shaderProg, unsigned int shaderProgAnim);
 	~Scene();
 
 	void addModel(const char* path);
@@ -44,6 +44,8 @@ public:
 
 	int lights_pos_id;
 	int lights_color_id;
+	int anim_lights_pos_id; //ID in FBX-shader
+	int anim_lights_color_id; //ID in FBX-shader
 private:
 	OBJLoader loader;
 	AssimpLoader animLoader;
@@ -51,5 +53,6 @@ private:
 	unsigned int animatedModelCount;
 	int lightCount;
 	unsigned int shaderProg;
+	unsigned int shaderProgAnim;
 };
 

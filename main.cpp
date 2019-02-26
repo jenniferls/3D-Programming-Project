@@ -72,10 +72,13 @@ float gClearColour[3] {};
 
 //MVP-Matrix
 GLint model_id = -1;
+GLint model_id_anim = -1;
 glm::mat4 model_matrix;
 GLint view_id = -1;
+GLint view_id_anim = -1;
 glm::mat4 view_matrix;
 GLint projection_id = -1;
+GLint projection_id_anim = -1;
 glm::mat4 projection_matrix;
 GLuint shadow_id = -1; //PF
 glm::mat4 shadow_matrix; //PF
@@ -182,23 +185,23 @@ void CreateSMShaders() {
 		OutputDebugStringA(buff);
 	}
 
-	gShaderProgramFS = glCreateProgram();
-	glAttachShader(gShaderProgramFS, fs);
-	glAttachShader(gShaderProgramFS, vs);
-	glLinkProgram(gShaderProgramFS);
+	gShaderProgramSM = glCreateProgram();
+	glAttachShader(gShaderProgramSM, fs);
+	glAttachShader(gShaderProgramSM, vs);
+	glLinkProgram(gShaderProgramSM);
 
 	compileResult = GL_FALSE;
-	glGetProgramiv(gShaderProgramFS, GL_LINK_STATUS, &compileResult);
+	glGetProgramiv(gShaderProgramSM, GL_LINK_STATUS, &compileResult);
 	if (compileResult == GL_FALSE) {
 
 		memset(buff, 0, 1024);
-		glGetProgramInfoLog(gShaderProgramFS, 1024, nullptr, buff);
+		glGetProgramInfoLog(gShaderProgramSM, 1024, nullptr, buff);
 
 		OutputDebugStringA(buff);
 	}
 
-	glDetachShader(gShaderProgramFS, vs);
-	glDetachShader(gShaderProgramFS, fs);
+	glDetachShader(gShaderProgramSM, vs);
+	glDetachShader(gShaderProgramSM, fs);
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 }
@@ -545,7 +548,7 @@ GLuint CreateTexture(string path) {
 
 Scene CreateScene() {
 	//Create a scene object
-	Scene newScene(gShaderProgram);
+	Scene newScene(gShaderProgram, gShaderProgramAnim);
 
 	//Fill the scene object with models to render
 	newScene.addModel("Resources/Models/ship.obj");
@@ -580,7 +583,6 @@ Scene CreateScene() {
 		if (vertexPos == -1) {
 			OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
 		}
-
 		// tell OpenGL about layout in memory (input assembler information)
 		glVertexAttribPointer(
 			vertexPos,				// location in shader
@@ -594,24 +596,13 @@ Scene CreateScene() {
 		// repeat the process for the second attribute.
 		// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
 		GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
-		glVertexAttribPointer(
-			textureCoord,
-			2,
-			GL_FLOAT,
-			GL_FALSE, VERTEX_SIZE, // distance between two textureCoord 
-			BUFFER_OFFSET(sizeof(float) * 3)
-		);
+		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
 
 		GLint normals = glGetAttribLocation(gShaderProgram, "normals");
 		if (normals == -1) {
 			OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
 		}
-		glVertexAttribPointer(
-			normals,
-			3,
-			GL_FLOAT,
-			GL_FALSE, VERTEX_SIZE,
-			BUFFER_OFFSET(sizeof(float) * 5));
+		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 	}
 
 	for (int i = 0; i < newScene.getAnimModelCount(); i++) {
@@ -620,12 +611,8 @@ Scene CreateScene() {
 		newScene.animatedModels[i].setVaoID(newScene.CreateVAO());
 		newScene.animatedModels[i].setVboID(newScene.CreateVBO());
 
-		// This "could" imply copying to the GPU, depending on what the driver wants to do, and
-		// the last argument (read the docs!)
 		glBufferData(GL_ARRAY_BUFFER, newScene.animatedModels[i].getVertCount() * VERTEX_SIZE, newScene.animatedModels[i].vertices.data(), GL_STATIC_DRAW);
 
-		// this activates the first, second and third attributes of this VAO
-		// think of "attributes" as inputs to the Vertex Shader
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
@@ -634,9 +621,9 @@ Scene CreateScene() {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, newScene.animatedModels[i].numIndices * sizeof(unsigned int), newScene.animatedModels[i].indices.data(), GL_STATIC_DRAW);
 
 		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-		GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
-		GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
-		GLint normals = glGetAttribLocation(gShaderProgram, "normals");
+		GLint vertexPos = glGetAttribLocation(gShaderProgramAnim, "vertex_position");
+		GLint textureCoord = glGetAttribLocation(gShaderProgramAnim, "texture_coords");
+		GLint normals = glGetAttribLocation(gShaderProgramAnim, "normals");
 
 		// tell OpenGL about layout in memory (input assembler information)
 		glVertexAttribPointer(vertexPos, 3,	GL_FLOAT, GL_FALSE,	VERTEX_SIZE, BUFFER_OFFSET(0));
@@ -653,28 +640,28 @@ Scene CreateScene() {
 	return newScene;
 }
 
-void CreateMatrixData() {
+void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
 	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
-	projection_id = glGetUniformLocation(gShaderProgram, "PROJ_MAT");
-	if (projection_id == -1) {
+	projectionID = glGetUniformLocation(shaderProg, "PROJ_MAT");
+	if (projectionID == -1) {
 		OutputDebugStringA("Error, cannot find 'projection_id' attribute in Geometry shader\n");
 		return;
 	}
 
 	view_matrix = glm::lookAt(camPos, camPos + camFront, camUp); //Camera position, Looking direction and Up vector
-	view_id = glGetUniformLocation(gShaderProgram, "VIEW_MAT");
-	if (view_id == -1) {
+	viewID = glGetUniformLocation(shaderProg, "VIEW_MAT");
+	if (viewID == -1) {
 		OutputDebugStringA("Error, cannot find 'view_id' attribute in Geometry shader\n");
 		return;
 	}
 }
 
-void CreateModelMatrix(float rotationValue, glm::vec3 translation) {
+void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shaderProg, GLint &modelID) {
 	glm::mat4 identity_mat = glm::mat4(1.0f);
 	model_matrix = glm::translate(identity_mat, translation);
 	model_matrix = glm::rotate(model_matrix, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
-	model_id = glGetUniformLocation(gShaderProgram, "MODEL_MAT");
-	if (model_id == -1) {
+	modelID = glGetUniformLocation(shaderProg, "MODEL_MAT");
+	if (modelID == -1) {
 		OutputDebugStringA("Error, cannot find 'model_id' attribute in Geometry shader\n");
 		return;
 	}
@@ -708,26 +695,14 @@ void SetViewport() {
 }
 
 void Render(Scene scene, float rotationVal) {
-	// tell opengl we want to use the gShaderProgram
-	glUseProgram(gShaderProgram);
-
 	// set the color TO BE used (this does not clear the screen right away)
 	glClearColor(gClearColour[0], gClearColour[1],gClearColour[2],1.0);
-
 	// use the color to clear the color buffer (clear the color buffer only)
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	//Send matrix data (Same for all models in scene)
-	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
-	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 
 	//Assign material data IDs for all models
 	scene.prepareMaterials();
 
-	//Send information about lights to shader
-	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
-	
 	//Choose model placement (default is origo)
 	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
 	scene.models[2].setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
@@ -737,11 +712,19 @@ void Render(Scene scene, float rotationVal) {
 	scene.models[0].setWorldRotation(rotationVal);
 	scene.animatedModels[0].setWorldRotation(-rotationVal);
 
+	////////// Render static models //////////
+	glUseProgram(gShaderProgram); //Choose a shader
+	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
+	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+
+	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
+	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
+
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
-		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition());  //Exchange rotation for "0.0f" to stop rotation
-		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));					//Sends data about model-matrix to geometry-shader
+		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));									//Sends data about model-matrix to geometry-shader
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -757,18 +740,18 @@ void Render(Scene scene, float rotationVal) {
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount());
 	}
 
-	//Render animated models using another shader program
-	glUseProgram(gShaderProgramAnim);
-	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
-	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
-	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
+	////////// Render animated models using another shader program //////////
+	glUseProgram(gShaderProgramAnim); //Choose a shader
+	glUniformMatrix4fv(projection_id_anim, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
+	glUniformMatrix4fv(view_id_anim, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 
+	glUniform3fv(scene.anim_lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
+	glUniform3fv(scene.anim_lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
 
 	//Draws all animated models in the scene
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
-		CreateModelMatrix(scene.animatedModels[i].getWorldRotation(), scene.animatedModels[i].getWorldPosition());
-		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));
+		CreateModelMatrix(scene.animatedModels[i].getWorldRotation(), scene.animatedModels[i].getWorldPosition(), gShaderProgramAnim, model_id_anim);
+		glUniformMatrix4fv(model_id_anim, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -975,7 +958,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
+		CreateMatrixData(gShaderProgram, projection_id, view_id); //Creates mvp-matrix for normal shader
+		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim); //Creates mvp-matrix for FBX-shader
 
 		/*GLuint depthMatrixID = -1;*/
 		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 

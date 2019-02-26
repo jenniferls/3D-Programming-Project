@@ -1,12 +1,15 @@
 #include "Scene.h"
 
-Scene::Scene(unsigned int shaderProg) {
+Scene::Scene(unsigned int shaderProg, unsigned int shaderProgAnim) {
 	this->modelCount = 0;
 	this->animatedModelCount = 0;
 	this->lightCount = 0;
 	this->shaderProg = shaderProg;
+	this->shaderProgAnim = shaderProgAnim;
 	this->lights_pos_id = -1;
 	this->lights_color_id = -1;
+	this->anim_lights_pos_id = -1;
+	this->anim_lights_color_id = -1;
 }
 
 
@@ -25,7 +28,6 @@ void Scene::addModel(const char* path) {
 void Scene::addAnimatedModel(std::string path) {
 	AnimatedModel model(path); //Create a model
 	animLoader.LoadModel(model);//Load the model
-	////Load the texture
 	animatedModels.push_back(model); //Push back the model for rendering
 	this->animatedModelCount++;
 }
@@ -57,6 +59,16 @@ void Scene::prepareLights() {
 	if (lights_color_id == -1) {
 		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
 	}
+
+	anim_lights_pos_id = glGetUniformLocation(this->shaderProgAnim, "light_positions"); //Assign ID
+	if (lights_pos_id == -1) {
+		OutputDebugStringA("Error, cannot find 'lightpos_id' attribute in Fragment shader\n");
+	}
+
+	anim_lights_color_id = glGetUniformLocation(this->shaderProgAnim, "light_colors"); //Assign ID
+	if (lights_color_id == -1) {
+		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
+	}
 }
 
 int Scene::getLightCount() const {
@@ -70,9 +82,9 @@ void Scene::prepareMaterials() {
 		models[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
 	}
 	for (int i = 0; i < getAnimModelCount(); i++) {
-		animatedModels[i].ambID = glGetUniformLocation(this->shaderProg, "ambient_val"); //Assign ID
-		animatedModels[i].diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
-		animatedModels[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
+		animatedModels[i].ambID = glGetUniformLocation(this->shaderProgAnim, "ambient_val"); //Assign ID
+		animatedModels[i].diffID = glGetUniformLocation(this->shaderProgAnim, "diffuse_val");
+		animatedModels[i].specID = glGetUniformLocation(this->shaderProgAnim, "specular_val");
 	}
 }
 
