@@ -13,7 +13,7 @@
 
 class Scene {
 public:
-	Scene(unsigned int shaderProg);
+	Scene(unsigned int shaderProg, unsigned int shaderProgSM);
 	~Scene();
 
 	void addModel(const char* path);
@@ -51,5 +51,6 @@ private:
 	unsigned int animatedModelCount;
 	int lightCount;
 	unsigned int shaderProg;
+	unsigned int shaderProgSM;
 };
 

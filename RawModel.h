@@ -50,6 +50,9 @@ public:
 	unsigned int specID;
 	unsigned int diffID;
 
+	unsigned int vaoID_SM;
+	unsigned int vboID_SM;
+
 private:
 	const char* path; //File path
 	std::string texturePath; //File path to texture file

@@ -16,6 +16,8 @@ RawModel::RawModel(const char* filePath) {
 	this->materialPath = "Path not loaded";
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->worldRotation = 0.0f;
+	this->vaoID_SM = 0;
+	this->vboID_SM = 0;
 }
 
 RawModel::~RawModel() {

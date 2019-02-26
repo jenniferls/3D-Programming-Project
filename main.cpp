@@ -179,23 +179,23 @@ void CreateSMShaders() {
 		OutputDebugStringA(buff);
 	}
 
-	gShaderProgramFS = glCreateProgram();
-	glAttachShader(gShaderProgramFS, fs);
-	glAttachShader(gShaderProgramFS, vs);
-	glLinkProgram(gShaderProgramFS);
+	gShaderProgramSM = glCreateProgram();
+	glAttachShader(gShaderProgramSM, fs);
+	glAttachShader(gShaderProgramSM, vs);
+	glLinkProgram(gShaderProgramSM);
 
 	compileResult = GL_FALSE;
-	glGetProgramiv(gShaderProgramFS, GL_LINK_STATUS, &compileResult);
+	glGetProgramiv(gShaderProgramSM, GL_LINK_STATUS, &compileResult);
 	if (compileResult == GL_FALSE) {
 
 		memset(buff, 0, 1024);
-		glGetProgramInfoLog(gShaderProgramFS, 1024, nullptr, buff);
+		glGetProgramInfoLog(gShaderProgramSM, 1024, nullptr, buff);
 
 		OutputDebugStringA(buff);
 	}
 
-	glDetachShader(gShaderProgramFS, vs);
-	glDetachShader(gShaderProgramFS, fs);
+	glDetachShader(gShaderProgramSM, vs);
+	glDetachShader(gShaderProgramSM, fs);
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 }
@@ -444,7 +444,7 @@ GLuint CreateTexture(string path) {
 
 Scene CreateScene() {
 	//Create a scene object
-	Scene newScene(gShaderProgram);
+	Scene newScene(gShaderProgram, gShaderProgramSM);
 
 	//Fill the scene object with models to render
 	newScene.addModel("Resources/Models/ship.obj");
@@ -511,6 +511,42 @@ Scene CreateScene() {
 			GL_FLOAT,
 			GL_FALSE, VERTEX_SIZE,
 			BUFFER_OFFSET(sizeof(float) * 5));
+
+
+
+		newScene.models[i].vaoID_SM = newScene.CreateVAO();
+		newScene.models[i].vboID_SM = newScene.CreateVBO();
+		glBufferData(GL_ARRAY_BUFFER, newScene.models[i].getVertCount() * VERTEX_SIZE, newScene.models[i].vertices.data(), GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		GLint vertexPosSM = glGetAttribLocation(gShaderProgramSM, "vertex_position");
+		glVertexAttribPointer(
+			vertexPosSM,			// location in shader
+			3,						// how many elements of type (see next argument)
+			GL_FLOAT,				// type of each element
+			GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
+			VERTEX_SIZE,			// distance between two vertices in memory (stride)
+			BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
+		);
+		GLint textureCoordSM = glGetAttribLocation(gShaderProgramSM, "texture_coords_SM");
+		glVertexAttribPointer(
+			textureCoordSM, //1,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			VERTEX_SIZE, // distance between two textureCoord 
+			BUFFER_OFFSET(sizeof(float) * 3)
+		);
+		GLint normalsSM = glGetAttribLocation(gShaderProgramSM, "normals_SM");
+		glVertexAttribPointer(
+			normalsSM, //2,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			VERTEX_SIZE,
+			BUFFER_OFFSET(sizeof(float) * 5)
+		);
 	}
 
 	for (int i = 0; i < newScene.getAnimModelCount(); i++) {
@@ -580,26 +616,26 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation) {
 }
 
 //PF
-//void CreateShadowMatrixData(glm::vec3 lightPos) {
-//
-//	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
-//	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-//	glm::mat4 depthModelMatrix = glm::mat4(1.0);
-//	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-//
-//	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
-//			0.0, 0.5, 0.0, 0.0,
-//			0.0, 0.0, 0.5, 0.0,
-//			0.5, 0.5, 0.5, 1.0);
-//
-//
-//	shadow_matrix = shadowBias * depthMVP;
-//	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
-//	if (shadow_id == -1) {
-//		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
-//		return;
-//	}
-//}
+void CreateShadowMatrixData(glm::vec3 lightPos) {
+
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	glm::mat4 depthModelMatrix = glm::mat4(1.0);
+	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
+			0.0, 0.5, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0,
+			0.5, 0.5, 0.5, 1.0);
+
+
+	shadow_matrix = shadowBias * depthMVP;
+	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
+	if (shadow_id == -1) {
+		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
+		return;
+	}
+}
 
 void SetViewport() {
 	// usually (not necessarily) this matches with the window size
@@ -810,7 +846,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	CreateShaders(); //5. Create vertex- and fragment-shaders
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
-	//CreateSMShaders(); //PF
+	CreateSMShaders(); //PF
 
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;

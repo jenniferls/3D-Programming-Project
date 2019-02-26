@@ -1,10 +1,11 @@
 #include "Scene.h"
 
-Scene::Scene(unsigned int shaderProg) {
+Scene::Scene(unsigned int shaderProg, unsigned int shaderProgSM) {
 	this->modelCount = 0;
 	this->animatedModelCount = 0;
 	this->lightCount = 0;
 	this->shaderProg = shaderProg;
+	this->shaderProgSM = shaderProgSM;
 	this->lights_pos_id = -1;
 	this->lights_color_id = -1;
 }
