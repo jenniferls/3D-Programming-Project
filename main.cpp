@@ -45,6 +45,8 @@
 #define HEIGHT 720.0f
 GLFWwindow *gWindow;
 
+GLuint MAX_PARTICLES = 100000;
+
 using namespace std;
 
 void initWindow(unsigned int w, unsigned int h);
@@ -516,6 +518,32 @@ void CreateFullScreenQuad() {
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(0));
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
+
+void CreateParticles() {
+	//VBO containing 4 vertices
+	static const GLfloat vertexBufferData[] = {
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		-0.5f, 0.5f, 0.0f,
+		0.5f, 0.5f, 0.0f,
+	};
+	GLuint billboardVertexBuffer;
+	glGenBuffers(1, &billboardVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, billboardVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexBufferData), vertexBufferData, GL_STATIC_DRAW);
+
+	//VBO containing the positions and sizes of the particles
+	GLuint particlesPosBuffer;
+	glGenBuffers(1, &particlesPosBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, particlesPosBuffer);
+	glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
+
+	//VBO containing the colors for the particles
+	GLuint particlesColorBuffer;
+	glGenBuffers(1, &particlesColorBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, particlesColorBuffer);
+	glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
+}
 
 GLuint CreateTexture(string path) {
 	GLuint texture = 0;
