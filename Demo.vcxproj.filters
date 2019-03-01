@@ -101,6 +101,12 @@
     <None Include="GeometryShaderAnim.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="VertexShaderPS.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="FragmentShaderPS.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">

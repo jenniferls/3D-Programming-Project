@@ -45,8 +45,6 @@
 #define HEIGHT 720.0f
 GLFWwindow *gWindow;
 
-GLuint MAX_PARTICLES = 100000;
-
 using namespace std;
 
 void initWindow(unsigned int w, unsigned int h);
@@ -69,6 +67,11 @@ GLuint gShaderProgramFS = 0;
 GLuint gVertexBufferSM = 0;
 GLuint gVertexAtrributeSM = 0;
 GLuint gShaderProgramSM = 0;
+
+//Shader for particle system
+GLuint gVertexBufferPS = 0;
+GLuint gVertexAttributePS = 0;
+GLuint gShaderProgramPS = 0;
 
 float gClearColour[3] {};
 
@@ -96,6 +99,17 @@ float mouseLastX = WIDTH / 2; //At centre of the screen
 float mouseLastY = HEIGHT / 2; //At centre of the screen
 
 GameTimer timer;
+
+struct Particle {
+	glm::vec3 pos;
+	glm::vec3 velocity;
+	unsigned char r, g, b, a;
+	float size,
+		angle,
+		weight,
+		life;
+};
+const GLuint MAX_PARTICLES = 100000;
 
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
@@ -481,6 +495,70 @@ void CreateAnimShaders() {
 	glDeleteShader(gs);
 }
 
+void CreateParticleShaders() {
+	char buff[1024];
+	memset(buff, 0, 1024);
+	GLint compileResult = 0;
+
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	ifstream shaderFile("VertexShaderPS.glsl");
+	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+
+	const char* shaderTextPtr = shaderText.c_str();
+	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(vs);
+
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		glGetShaderInfoLog(vs, 1024, nullptr, buff);
+		OutputDebugStringA(buff);
+	}
+
+	// repeat process for Fragment Shader (or Pixel Shader)
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	shaderFile.open("FragmentShaderPS.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(fs);
+	// query information about the compilation (nothing if compilation went fine!)
+	compileResult = GL_FALSE;
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(fs, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	} 
+
+	//link shader program (connect vs, gs and ps)
+	gShaderProgramAnim = glCreateProgram();
+	glAttachShader(gShaderProgramPS, fs);
+	glAttachShader(gShaderProgramPS, vs);
+	glLinkProgram(gShaderProgramPS);
+
+	// check once more, if the Vertex Shader, Geometry Shader and the Fragment Shader can be used together
+	compileResult = GL_FALSE;
+	glGetProgramiv(gShaderProgramAnim, GL_LINK_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetProgramInfoLog(gShaderProgramAnim, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+	// in any case (compile sucess or not), we only want to keep the 
+	// Program around, not the shaders.
+	glDetachShader(gShaderProgramAnim, vs);
+	glDetachShader(gShaderProgramAnim, fs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+}
+
 void CreateFullScreenQuad() {
 	struct Pos2UV {
 		float x,y;
@@ -519,7 +597,8 @@ void CreateFullScreenQuad() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
 
-void CreateParticles() {
+void CreateParticles(GLuint &particleCount) {
+
 	//VBO containing 4 vertices
 	static const GLfloat vertexBufferData[] = {
 		-0.5f, -0.5f, 0.0f,
@@ -527,6 +606,18 @@ void CreateParticles() {
 		-0.5f, 0.5f, 0.0f,
 		0.5f, 0.5f, 0.0f,
 	};
+
+	const GLfloat particlePositionSizeData[] = {
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		-0.5f, 0.5f, 0.0f,
+		0.5f, 0.5f, 0.0f
+	};
+
+	const GLfloat particleColorData[] = {
+		0.0f, 0.0f, 0.0f, 0.0f
+	};
+
 	GLuint billboardVertexBuffer;
 	glGenBuffers(1, &billboardVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, billboardVertexBuffer);
@@ -543,6 +634,50 @@ void CreateParticles() {
 	glGenBuffers(1, &particlesColorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, particlesColorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
+
+	//Update
+	glBindBuffer(GL_ARRAY_BUFFER, particlesPosBuffer);
+	glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, particleCount * sizeof(GLubyte) * 4, particlePositionSizeData);
+
+	glBindBuffer(GL_ARRAY_BUFFER, particlesColorBuffer);
+	glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, particleCount * sizeof(GLubyte) * 4, particleColorData);
+
+	//Before render
+	//First attrib buffer: Vertices
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, billboardVertexBuffer);
+	glVertexAttribPointer( 
+		0, 
+		3, 
+		GL_FLOAT, 
+		GL_FALSE, 
+		0, 
+		(void*)0 
+	);
+	//Second attrib buffer: Centers
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, particlesPosBuffer);
+	glVertexAttribPointer(
+		1,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		0,
+		(void*)0
+	);
+	//Third attrib buffer: Colors
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, particlesColorBuffer);
+	glVertexAttribPointer(
+		2,
+		4,
+		GL_UNSIGNED_BYTE,
+		GL_TRUE,
+		0,
+		(void*)0
+	);
 }
 
 GLuint CreateTexture(string path) {
@@ -858,6 +993,24 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
 	//cout << endl;
 }
 
+int getUnusedParticle(int &lastUsedParticle, Particle particleContainer[]) {
+	for (int i = lastUsedParticle; i < MAX_PARTICLES; i++) {
+		if (particleContainer[i].life < 0) {
+			lastUsedParticle = i;
+			return i;
+		}
+	}
+
+	for (int i = 0; i < lastUsedParticle; i++) {
+		if (particleContainer[i].life < 0) {
+			lastUsedParticle = i;
+			return i;
+		}
+	}
+
+	return 0;
+}
+
 //This function specifies the layout of debug messages
 void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
 	//Take out 131185 for example to test debug messages
@@ -919,6 +1072,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	ImGui::StyleColorsDark();
 
+	//Partice stuff
+	//Particle ParticlesContainer[MAX_PARTICLES];
+	GLuint particleCount = 0;
+	int LastUsedParticle = 0;
+
 	//Enable OpenGL debug context if context allows for debug context
 	GLint flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
@@ -932,12 +1090,14 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CreateAnimShaders(); //5. Create shaders for animated models
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
 	//CreateSMShaders(); //PF
+	//CreateParticleShaders();
 
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
 
 	Scene gameScene = CreateScene();
 	CreateFullScreenQuad();
+	//CreateParticles(particleCount);
 
 	float rotation = 0.0f;
 
@@ -1006,6 +1166,16 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glBindVertexArray(gVertexAttributeFS);
 
 		glDisable(GL_DEPTH_TEST);
+
+
+		//Particle render
+	//	glVertexAttribDivisor(0, 0);
+	//	glVertexAttribDivisor(1, 1);
+	//	glVertexAttribDivisor(2, 1);
+
+		//glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, particleCount);
+
+		//getUnusedParticle(LastUsedParticle, ParticlesContainer);
 
 		// bind texture drawn in the first pass!
 		glActiveTexture(GL_TEXTURE0);
