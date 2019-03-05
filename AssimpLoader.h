@@ -28,8 +28,5 @@ private:
 	aiVector3D CalcInterpolatedScaling(float animationTime, const aiNodeAnim* anim);
 	aiQuaternion CalcInterpolatedRotation(float animationTime, const aiNodeAnim* anim);
 	aiVector3D CalcInterpolatedTranslation(float animationTime, const aiNodeAnim* anim);
-
-	//Assimp::Importer importer;
-	//const aiScene* scene;
 };
 

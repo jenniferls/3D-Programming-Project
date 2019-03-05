@@ -15,16 +15,10 @@ Scene::Scene(unsigned int shaderProg, unsigned int shaderProgAnim) {
 
 Scene::~Scene() {
 	OutputDebugStringA("Destructor is run for scene\n");
-	/*for (int i = 0; i < this->animatedModelCount; i++) {
-		delete animatedModels[i];
-	}*/
-	//animatedModels.clear();
-}
-
-void Scene::cleanup() {
 	for (int i = 0; i < this->animatedModelCount; i++) {
 		delete animatedModels[i];
 	}
+	animatedModels.clear();
 }
 
 void Scene::addModel(const char* path) {
@@ -36,12 +30,9 @@ void Scene::addModel(const char* path) {
 }
 
 void Scene::addAnimatedModel(std::string path) {
-	//AnimatedModel model(path); //Create a model
-	//AnimatedModel* model = new AnimatedModel(path);
 	animatedModels.push_back(new AnimatedModel(path));
 	animLoader.LoadModel(animatedModels[this->animatedModelCount]);//Load the model
 	this->animatedModelCount++;
-	//animatedModels.push_back(model); //Push back the model for rendering
 }
 
 int Scene::getModelCount() const {

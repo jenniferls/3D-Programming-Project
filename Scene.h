@@ -17,8 +17,6 @@ public:
 	Scene(unsigned int shaderProg, unsigned int shaderProgAnim);
 	~Scene();
 
-	void cleanup(); //this functions frees all AnimatedModel-pointers
-
 	void addModel(const char* path);
 	void addAnimatedModel(std::string path);
 	int getModelCount() const;

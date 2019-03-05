@@ -705,7 +705,7 @@ void SetViewport() {
 	glViewport(0, 0, WIDTH, HEIGHT);
 }
 
-void Render(Scene scene, float rotationVal) {
+void Render(Scene& scene, float rotationVal) {
 	// set the color TO BE used (this does not clear the screen right away)
 	glClearColor(gClearColour[0], gClearColour[1],gClearColour[2],1.0);
 	// use the color to clear the color buffer (clear the color buffer only)
@@ -1026,7 +1026,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
-	gameScene.cleanup(); //Deletes all Animated Models in the scene
+	//gameScene.cleanup(); //Deletes all Animated Models in the scene
 	gameScene.deleteVAOs(); //Deletes all vaos in the scene
 	gameScene.deleteVBOs(); //Deletes all vbos in the scene
 	gameScene.deleteIBOs(); //Deletes all index buffers in the scene
