@@ -19,6 +19,9 @@
     <Filter Include="Resource Files\stb_image">
       <UniqueIdentifier>{43bb3603-be8d-4713-ac2b-c05e14f2ed27}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{3cb45826-2e8a-4a79-921e-ac9d2ba929ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -71,35 +74,35 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="VertexShader.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="Fragment.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="FragmentFS.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="VertexShaderFS.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="GeometryShader.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="VertexShaderSM.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="FragmentSM.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="VertexShaderAnim.glsl">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="FragmentAnim.glsl">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="FragmentFS.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="FragmentSM.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="VertexShader.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="VertexShaderAnim.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="VertexShaderFS.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="VertexShaderSM.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="GeometryShader.glsl">
+      <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="GeometryShaderAnim.glsl">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -39,12 +39,13 @@
 #pragma comment(lib, "glfw3.lib")
 
 #define _360_DEGREES 6.2831853072f //In radians
-#define VERTEX_SIZE sizeof(RawModel::TriangleVertex) //Update this value if changes to TriangleVertex are made
+#define VERTEX_SIZE sizeof(RawModel::TriangleVertex)
+#define ANIM_VERTEX_SIZE sizeof(AnimatedModel::Vertex)
+#define VERTEX_JOINT_DATA_SIZE sizeof(AnimatedModel::VertexJointData)
 
 #define WIDTH 1280.0f
 #define HEIGHT 720.0f
 GLFWwindow *gWindow;
-
 using namespace std;
 
 void initWindow(unsigned int w, unsigned int h);
@@ -546,28 +547,30 @@ GLuint CreateTexture(string path) {
 	return texture; //Returns an unsigned int/textureID
 }
 
-Scene CreateScene() {
-	//Create a scene object
-	Scene newScene(gShaderProgram, gShaderProgramAnim);
-
+void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
-	newScene.addModel("Resources/Models/ship.obj");
-	newScene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
-	newScene.addModel("Resources/Models/plane.obj");
+	scene.addModel("Resources/Models/ship.obj");
+	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	scene.addModel("Resources/Models/plane.obj");
 
-	newScene.addAnimatedModel("Resources/Models/sphere_earth.fbx");
+	scene.addAnimatedModel("Resources/Models/anim_test2.dae");
+	//scene.addAnimatedModel("Resources/Models/anim_test2.dae");
 
-	for (int i = 0; i < newScene.getModelCount(); i++) {
+	//scene.addAnimatedModel("Resources/Models/model.dae");
+
+	scene.prepareJoints(); //Important step! Get IDs for all joints
+
+	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Create textures
-		newScene.models[i].setTextureID(CreateTexture(newScene.models[i].getTexturePath()));
+		scene.models[i].setTextureID(CreateTexture(scene.models[i].getTexturePath()));
 
-		//Create first VAO and VBO
-		newScene.models[i].setVaoID(newScene.CreateVAO());
-		newScene.models[i].setVboID(newScene.CreateVBO());
+		//Create VAO and VBO
+		scene.models[i].setVaoID(scene.CreateVAO());
+		scene.models[i].setVboID(scene.CreateVBO());
 
 		// This "could" imply copying to the GPU, depending on what the driver wants to do, and
 		// the last argument (read the docs!)
-		glBufferData(GL_ARRAY_BUFFER, newScene.models[i].getVertCount() * VERTEX_SIZE, newScene.models[i].vertices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, scene.models[i].getVertCount() * VERTEX_SIZE, scene.models[i].vertices.data(), GL_STATIC_DRAW);
 
 		// this activates the first, second and third attributes of this VAO
 		// think of "attributes" as inputs to the Vertex Shader
@@ -605,20 +608,20 @@ Scene CreateScene() {
 		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 	}
 
-	for (int i = 0; i < newScene.getAnimModelCount(); i++) {
-		newScene.animatedModels[i].setTextureID(CreateTexture(newScene.animatedModels[i].getTexturePath()));
+	for (int i = 0; i < scene.getAnimModelCount(); i++) {
+		scene.animatedModels[i].setTextureID(CreateTexture(scene.animatedModels[i].getTexturePath())); //Create textures
 
-		newScene.animatedModels[i].setVaoID(newScene.CreateVAO());
-		newScene.animatedModels[i].setVboID(newScene.CreateVBO());
+		scene.animatedModels[i].setVaoID(scene.CreateVAO());
+		scene.animatedModels[i].setVboID(scene.CreateVBO());
 
-		glBufferData(GL_ARRAY_BUFFER, newScene.animatedModels[i].getVertCount() * VERTEX_SIZE, newScene.animatedModels[i].vertices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i].getVertCount() * ANIM_VERTEX_SIZE, scene.animatedModels[i].vertices.data(), GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 
-		newScene.animatedModels[i].setIboID(newScene.CreateIBO());
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, newScene.animatedModels[i].numIndices * sizeof(unsigned int), newScene.animatedModels[i].indices.data(), GL_STATIC_DRAW);
+		scene.animatedModels[i].setIboID(scene.CreateIBO());
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, scene.animatedModels[i].numIndices * sizeof(unsigned int), scene.animatedModels[i].indices.data(), GL_STATIC_DRAW);
 
 		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
 		GLint vertexPos = glGetAttribLocation(gShaderProgramAnim, "vertex_position");
@@ -626,18 +629,26 @@ Scene CreateScene() {
 		GLint normals = glGetAttribLocation(gShaderProgramAnim, "normals");
 
 		// tell OpenGL about layout in memory (input assembler information)
-		glVertexAttribPointer(vertexPos, 3,	GL_FLOAT, GL_FALSE,	VERTEX_SIZE, BUFFER_OFFSET(0));
-		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
-		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
+		glVertexAttribPointer(vertexPos, 3,	GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(0));
+		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
+		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
+
+		scene.animatedModels[i].setVboIDJoints(scene.CreateVBO());
+		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i].perVertexJointData.size() * VERTEX_JOINT_DATA_SIZE, scene.animatedModels[i].perVertexJointData.data(), GL_STATIC_DRAW);
+		glEnableVertexAttribArray(3);
+		glEnableVertexAttribArray(4);
+		GLint jointIDs = glGetAttribLocation(gShaderProgramAnim, "joint_indices");
+		GLint weights = glGetAttribLocation(gShaderProgramAnim, "weights");
+		glVertexAttribIPointer(jointIDs, 4, GL_INT, VERTEX_JOINT_DATA_SIZE, BUFFER_OFFSET(0)); //Int pointer
+		glVertexAttribPointer(weights, 4, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(unsigned int) * 4));
+
 	}
 
 	//Add lights
-	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
-	newScene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
+	scene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
+	scene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
 
-	newScene.prepareLights(); //Important step! Assigns uniform IDs
-
-	return newScene;
+	scene.prepareLights(); //Important step! Assigns uniform IDs
 }
 
 void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
@@ -710,7 +721,7 @@ void Render(Scene scene, float rotationVal) {
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0].setWorldRotation(rotationVal);
-	scene.animatedModels[0].setWorldRotation(-rotationVal);
+	//scene.animatedModels[0].setWorldRotation(-rotationVal);
 
 	////////// Render static models //////////
 	glUseProgram(gShaderProgram); //Choose a shader
@@ -752,6 +763,11 @@ void Render(Scene scene, float rotationVal) {
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
 		CreateModelMatrix(scene.animatedModels[i].getWorldRotation(), scene.animatedModels[i].getWorldPosition(), gShaderProgramAnim, model_id_anim);
 		glUniformMatrix4fv(model_id_anim, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+		scene.animLoader.CalcJointTransform((double)/*0.328000069*/glfwGetTime(), scene.animatedModels[i]); //Calculate joint transforms
+		for (int j = 0; j < scene.animatedModels[i].jointCount; j++) {
+			glUniformMatrix4fv(scene.animatedModels[i].jointLocations[j], 1, GL_TRUE, (const GLfloat*)&scene.animatedModels[i].jointTransforms[j]); //Send the matrices to the shader (the transpose is intentional)
+		}
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -908,7 +924,10 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
 
-	Scene gameScene = CreateScene();
+	//Create a scene object and fill it
+	Scene gameScene(gShaderProgram, gShaderProgramAnim);
+	CreateScene(gameScene);
+
 	CreateFullScreenQuad();
 
 	float rotation = 0.0f;

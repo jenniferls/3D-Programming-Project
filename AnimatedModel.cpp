@@ -1,25 +1,40 @@
 #include "AnimatedModel.h"
+#include <windows.h>
 
 AnimatedModel::AnimatedModel(std::string filePath) {
 	this->path = filePath;
 	this->texturePath = "Path not loaded";
 	this->vaoID = 0;
 	this->vboID = 0;
+	this->vboIDJoints = 0;
 	this->iboID = 0;
+	this->textureID = 0;
 	this->ambID = 0;
 	this->diffID = 0;
 	this->specID = 0;
 	this->vertCount = 0;
+	this->jointCount = 0;
 	this->numIndices = 0;
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->worldRotation = 0.0f;
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
 	this->specularVal = { 0.0f, 0.0f, 0.0f };
+	//this->scene = nullptr;
 }
 
 AnimatedModel::~AnimatedModel() {
+	OutputDebugStringA("Destructor is run for AnimatedModel\n");
+}
 
+void AnimatedModel::VertexJointData::addJointData(unsigned int id, float weight) {
+	for (int i = 0; i < JOINTS_PER_VERTEX; i++) {
+		if (weights[i] == 0.0f) {
+			jointIDs[i] = id;
+			weights[i] = weight;
+			return;
+		}
+	}
 }
 
 std::string AnimatedModel::getPath() const {
@@ -56,6 +71,14 @@ unsigned int AnimatedModel::getVboID() const {
 
 void AnimatedModel::setVboID(unsigned int id) {
 	this->vboID = id;
+}
+
+unsigned int AnimatedModel::getVboIDJoints() const {
+	return this->vboIDJoints;
+}
+
+void AnimatedModel::setVboIDJoints(unsigned int id) {
+	this->vboIDJoints = id;
 }
 
 unsigned int AnimatedModel::getIboID() const {

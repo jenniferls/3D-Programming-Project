@@ -9,7 +9,6 @@ out vec4 fragment_color;
 
 // this is a uniform value, the very same value for ALL pixel shader executions
 uniform sampler2D textureSampler;
-uniform mat4 MODEL_MAT;
 uniform vec3 light_positions[];
 uniform vec3 light_colors[];
 
@@ -49,9 +48,9 @@ vec4 calcSpecular(vec3 light_pos, vec3 light_color, vec3 normal){
 void main () {
 	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
 
-	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
+	vec3 norm = normalize(finalNormals); //Make sure the vectors are normalized in world space
 
-	vec4 result = vec4(0.5f); //This value should be 0.0f but is right now used to verify that this shader is being used
+	vec4 result = vec4(0.0f); //This value should be 0.0f but is right now used to verify that this shader is being used
 	result += calcDiffuse(light_positions[0], light_colors[0], norm) * texSample + calcSpecular(light_positions[0], light_colors[0], norm);
 	result += calcDiffuse(light_positions[1], light_colors[1], norm) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 

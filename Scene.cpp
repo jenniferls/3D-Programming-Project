@@ -14,7 +14,7 @@ Scene::Scene(unsigned int shaderProg, unsigned int shaderProgAnim) {
 
 
 Scene::~Scene() {
-
+	OutputDebugStringA("Destructor is run for scene\n");
 }
 
 void Scene::addModel(const char* path) {
@@ -85,6 +85,15 @@ void Scene::prepareMaterials() {
 		animatedModels[i].ambID = glGetUniformLocation(this->shaderProgAnim, "ambient_val"); //Assign ID
 		animatedModels[i].diffID = glGetUniformLocation(this->shaderProgAnim, "diffuse_val");
 		animatedModels[i].specID = glGetUniformLocation(this->shaderProgAnim, "specular_val");
+	}
+}
+
+void Scene::prepareJoints() {
+	for (int i = 0; i < this->animatedModelCount; i++) {
+		for (int j = 0; j < MAX_JOINTS; j++) {
+			std::string name = "jointTransforms[" + std::to_string(j) + "]"; //Name in shader
+			animatedModels[i].jointLocations[j] = glGetUniformLocation(this->shaderProgAnim, name.c_str()); //Get an ID for all the possible joints to be used in shader
+		}
 	}
 }
 
