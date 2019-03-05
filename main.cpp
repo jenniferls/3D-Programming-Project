@@ -556,7 +556,7 @@ void CreateScene(Scene& scene) {
 	scene.addAnimatedModel("Resources/Models/anim_test2.dae");
 	//scene.addAnimatedModel("Resources/Models/anim_test2.dae");
 
-	//scene.addAnimatedModel("Resources/Models/model.dae");
+	scene.addAnimatedModel("Resources/Models/model.dae");
 
 	scene.prepareJoints(); //Important step! Get IDs for all joints
 
@@ -609,19 +609,19 @@ void CreateScene(Scene& scene) {
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
-		scene.animatedModels[i].setTextureID(CreateTexture(scene.animatedModels[i].getTexturePath())); //Create textures
+		scene.animatedModels[i]->setTextureID(CreateTexture(scene.animatedModels[i]->getTexturePath())); //Create textures
 
-		scene.animatedModels[i].setVaoID(scene.CreateVAO());
-		scene.animatedModels[i].setVboID(scene.CreateVBO());
+		scene.animatedModels[i]->setVaoID(scene.CreateVAO());
+		scene.animatedModels[i]->setVboID(scene.CreateVBO());
 
-		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i].getVertCount() * ANIM_VERTEX_SIZE, scene.animatedModels[i].vertices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i]->getVertCount() * ANIM_VERTEX_SIZE, scene.animatedModels[i]->vertices.data(), GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 
-		scene.animatedModels[i].setIboID(scene.CreateIBO());
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, scene.animatedModels[i].numIndices * sizeof(unsigned int), scene.animatedModels[i].indices.data(), GL_STATIC_DRAW);
+		scene.animatedModels[i]->setIboID(scene.CreateIBO());
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, scene.animatedModels[i]->numIndices * sizeof(unsigned int), scene.animatedModels[i]->indices.data(), GL_STATIC_DRAW);
 
 		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
 		GLint vertexPos = glGetAttribLocation(gShaderProgramAnim, "vertex_position");
@@ -633,8 +633,8 @@ void CreateScene(Scene& scene) {
 		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
 		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 
-		scene.animatedModels[i].setVboIDJoints(scene.CreateVBO());
-		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i].perVertexJointData.size() * VERTEX_JOINT_DATA_SIZE, scene.animatedModels[i].perVertexJointData.data(), GL_STATIC_DRAW);
+		scene.animatedModels[i]->setVboIDJoints(scene.CreateVBO());
+		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i]->perVertexJointData.size() * VERTEX_JOINT_DATA_SIZE, scene.animatedModels[i]->perVertexJointData.data(), GL_STATIC_DRAW);
 		glEnableVertexAttribArray(3);
 		glEnableVertexAttribArray(4);
 		GLint jointIDs = glGetAttribLocation(gShaderProgramAnim, "joint_indices");
@@ -717,11 +717,11 @@ void Render(Scene scene, float rotationVal) {
 	//Choose model placement (default is origo)
 	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
 	scene.models[2].setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
-	scene.animatedModels[0].setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
+	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
+	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0].setWorldRotation(rotationVal);
-	//scene.animatedModels[0].setWorldRotation(-rotationVal);
 
 	////////// Render static models //////////
 	glUseProgram(gShaderProgram); //Choose a shader
@@ -761,26 +761,26 @@ void Render(Scene scene, float rotationVal) {
 
 	//Draws all animated models in the scene
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
-		CreateModelMatrix(scene.animatedModels[i].getWorldRotation(), scene.animatedModels[i].getWorldPosition(), gShaderProgramAnim, model_id_anim);
+		CreateModelMatrix(scene.animatedModels[i]->getWorldRotation(), scene.animatedModels[i]->getWorldPosition(), gShaderProgramAnim, model_id_anim);
 		glUniformMatrix4fv(model_id_anim, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
-		scene.animLoader.CalcJointTransform((double)/*0.328000069*/glfwGetTime(), scene.animatedModels[i]); //Calculate joint transforms
-		for (int j = 0; j < scene.animatedModels[i].jointCount; j++) {
-			glUniformMatrix4fv(scene.animatedModels[i].jointLocations[j], 1, GL_TRUE, (const GLfloat*)&scene.animatedModels[i].jointTransforms[j]); //Send the matrices to the shader (the transpose is intentional)
+		scene.animLoader.CalcJointTransform((double)glfwGetTime(), scene.animatedModels[i]); //Calculate joint transforms
+		for (int j = 0; j < scene.animatedModels[i]->jointCount; j++) {
+			glUniformMatrix4fv(scene.animatedModels[i]->jointLocations[j], 1, GL_TRUE, (const GLfloat*)&scene.animatedModels[i]->jointTransforms[j]); //Send the matrices to the shader (the transpose is intentional)
 		}
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-		glBindTexture(GL_TEXTURE_2D, scene.animatedModels[i].getTextureID()); //Bind the texture
+		glBindTexture(GL_TEXTURE_2D, scene.animatedModels[i]->getTextureID()); //Bind the texture
 
-		glUniform3fv(scene.animatedModels[i].ambID, 1, glm::value_ptr(scene.animatedModels[i].ambientVal));		//Ambient
-		glUniform3fv(scene.animatedModels[i].diffID, 1, glm::value_ptr(scene.animatedModels[i].diffuseVal));	//Diffuse
-		glUniform3fv(scene.animatedModels[i].specID, 1, glm::value_ptr(scene.animatedModels[i].specularVal));	//Specular
+		glUniform3fv(scene.animatedModels[i]->ambID, 1, glm::value_ptr(scene.animatedModels[i]->ambientVal));	//Ambient
+		glUniform3fv(scene.animatedModels[i]->diffID, 1, glm::value_ptr(scene.animatedModels[i]->diffuseVal));	//Diffuse
+		glUniform3fv(scene.animatedModels[i]->specID, 1, glm::value_ptr(scene.animatedModels[i]->specularVal));	//Specular
 
 		// tell opengl we are going to use the VAO we described earlier
-		glBindVertexArray(scene.animatedModels[i].getVaoID());
+		glBindVertexArray(scene.animatedModels[i]->getVaoID());
 
-		glDrawElements(GL_TRIANGLES, scene.animatedModels[i].numIndices, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, scene.animatedModels[i]->numIndices, GL_UNSIGNED_INT, 0);
 	}
 }
 
@@ -1026,6 +1026,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
+	gameScene.cleanup(); //Deletes all Animated Models in the scene
 	gameScene.deleteVAOs(); //Deletes all vaos in the scene
 	gameScene.deleteVBOs(); //Deletes all vbos in the scene
 	gameScene.deleteIBOs(); //Deletes all index buffers in the scene

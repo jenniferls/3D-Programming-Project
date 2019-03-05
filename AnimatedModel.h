@@ -84,7 +84,8 @@ public:
 	std::map<std::string, unsigned int> joint_mapping; //Maps a joint name and their index
 	unsigned int jointLocations[MAX_JOINTS];
 
-	/*const aiScene* scene;*/
+	Assimp::Importer importer;
+	const aiScene* scene;
 
 private:
 	std::string path; //File path

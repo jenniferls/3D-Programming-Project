@@ -15,6 +15,16 @@ Scene::Scene(unsigned int shaderProg, unsigned int shaderProgAnim) {
 
 Scene::~Scene() {
 	OutputDebugStringA("Destructor is run for scene\n");
+	/*for (int i = 0; i < this->animatedModelCount; i++) {
+		delete animatedModels[i];
+	}*/
+	//animatedModels.clear();
+}
+
+void Scene::cleanup() {
+	for (int i = 0; i < this->animatedModelCount; i++) {
+		delete animatedModels[i];
+	}
 }
 
 void Scene::addModel(const char* path) {
@@ -26,10 +36,12 @@ void Scene::addModel(const char* path) {
 }
 
 void Scene::addAnimatedModel(std::string path) {
-	AnimatedModel model(path); //Create a model
-	animLoader.LoadModel(model);//Load the model
-	animatedModels.push_back(model); //Push back the model for rendering
+	//AnimatedModel model(path); //Create a model
+	//AnimatedModel* model = new AnimatedModel(path);
+	animatedModels.push_back(new AnimatedModel(path));
+	animLoader.LoadModel(animatedModels[this->animatedModelCount]);//Load the model
 	this->animatedModelCount++;
+	//animatedModels.push_back(model); //Push back the model for rendering
 }
 
 int Scene::getModelCount() const {
@@ -82,9 +94,9 @@ void Scene::prepareMaterials() {
 		models[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
 	}
 	for (int i = 0; i < getAnimModelCount(); i++) {
-		animatedModels[i].ambID = glGetUniformLocation(this->shaderProgAnim, "ambient_val"); //Assign ID
-		animatedModels[i].diffID = glGetUniformLocation(this->shaderProgAnim, "diffuse_val");
-		animatedModels[i].specID = glGetUniformLocation(this->shaderProgAnim, "specular_val");
+		animatedModels[i]->ambID = glGetUniformLocation(this->shaderProgAnim, "ambient_val"); //Assign ID
+		animatedModels[i]->diffID = glGetUniformLocation(this->shaderProgAnim, "diffuse_val");
+		animatedModels[i]->specID = glGetUniformLocation(this->shaderProgAnim, "specular_val");
 	}
 }
 
@@ -92,7 +104,7 @@ void Scene::prepareJoints() {
 	for (int i = 0; i < this->animatedModelCount; i++) {
 		for (int j = 0; j < MAX_JOINTS; j++) {
 			std::string name = "jointTransforms[" + std::to_string(j) + "]"; //Name in shader
-			animatedModels[i].jointLocations[j] = glGetUniformLocation(this->shaderProgAnim, name.c_str()); //Get an ID for all the possible joints to be used in shader
+			animatedModels[i]->jointLocations[j] = glGetUniformLocation(this->shaderProgAnim, name.c_str()); //Get an ID for all the possible joints to be used in shader
 		}
 	}
 }

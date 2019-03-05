@@ -4,60 +4,59 @@
 #include <string>
 
 AssimpLoader::AssimpLoader() {
-	this->scene = nullptr;
+
 }
 
 AssimpLoader::~AssimpLoader() {
 	OutputDebugStringA("Destructor is run for AssimpLoader\n");
-	importer.FreeScene();
 }
 
-bool AssimpLoader::LoadModel(AnimatedModel &model) {
-	this->scene = this->importer.ReadFile(model.getPath(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights | aiProcess_JoinIdenticalVertices); //Path and post processing flags
-	if (this->scene != nullptr) {
-		model.globalInverseTransform = this->scene->mRootNode->mTransformation; //Get the global transform and then inverse it
-		model.globalInverseTransform = model.globalInverseTransform.Inverse();
+bool AssimpLoader::LoadModel(AnimatedModel* model) {
+	model->scene = model->importer.ReadFile(model->getPath(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights | aiProcess_JoinIdenticalVertices); //Path and post processing flags
+	if (model->scene != nullptr) {
+		model->globalInverseTransform = model->scene->mRootNode->mTransformation; //Get the global transform and then inverse it
+		model->globalInverseTransform = model->globalInverseTransform.Inverse();
 
-		assert(this->scene->mAnimations != nullptr); //Make sure the loaded scene actually has animation
+		assert(model->scene->mAnimations != nullptr); //Make sure the loaded scene actually has animation
 
-		if (this->scene->mAnimations[0]->mTicksPerSecond != 0.0f) { //Get the framerate for the animation
-			model.animation.ticksPerSecond = this->scene->mAnimations[0]->mTicksPerSecond;
-			model.animation.duration = this->scene->mAnimations[0]->mDuration;
+		if (model->scene->mAnimations[0]->mTicksPerSecond != 0.0f) { //Get the framerate for the animation
+			model->animation.ticksPerSecond = model->scene->mAnimations[0]->mTicksPerSecond;
+			model->animation.duration = model->scene->mAnimations[0]->mDuration;
 		}
 		else {
-			model.animation.ticksPerSecond = 30.0f; //If no framerate is found, default to 30
+			model->animation.ticksPerSecond = 30.0f; //If no framerate is found, default to 30
 		}
 
 		AnimatedModel::Vertex temp; //Temporary vertex for storing data
 
-		for (unsigned int i = 0; i < this->scene->mNumMeshes; i++) { //Right now, all mesh data in the loaded scene is stored in one single animated model
-			const aiMesh* mesh = this->scene->mMeshes[i];
-			const aiMaterial* material = this->scene->mMaterials[mesh->mMaterialIndex];
+		for (unsigned int i = 0; i < model->scene->mNumMeshes; i++) { //Right now, all mesh data in the loaded scene is stored in one single animated model
+			const aiMesh* mesh = model->scene->mMeshes[i];
+			const aiMaterial* material = model->scene->mMaterials[mesh->mMaterialIndex];
 
 			//Joint data
-			model.perVertexJointData.resize(mesh->mNumVertices);
+			model->perVertexJointData.resize(mesh->mNumVertices);
 			aiBone** bones = mesh->mBones;
 			for (int j = 0; j < mesh->mNumBones; j++) {
 				unsigned int jointID = 0;
 				std::string jointName = bones[j]->mName.data;
 
-				if (model.joint_mapping.find(jointName) == model.joint_mapping.end()) { //Looks for the joint name and returns end() if it can't find it
+				if (model->joint_mapping.find(jointName) == model->joint_mapping.end()) { //Looks for the joint name and returns end() if it can't find it
 					//Create a new joint and allocate an index to it
-					jointID = model.jointCount;
-					model.jointCount++;
+					jointID = model->jointCount;
+					model->jointCount++;
 					AnimatedModel::JointMatrix matrix;
-					model.joint_matrices.push_back(matrix);
-					model.joint_matrices[jointID].offsetMatrix = bones[j]->mOffsetMatrix;
-					model.joint_mapping[jointName] = jointID;
+					model->joint_matrices.push_back(matrix);
+					model->joint_matrices[jointID].offsetMatrix = bones[j]->mOffsetMatrix;
+					model->joint_mapping[jointName] = jointID;
 				}
 				else {
-					jointID = model.joint_mapping[jointName];
+					jointID = model->joint_mapping[jointName];
 				}
 
 				for (int k = 0; k < mesh->mBones[j]->mNumWeights; k++) {
 					unsigned int vertexID = mesh->mBones[j]->mWeights[k].mVertexId;
 					float weight = mesh->mBones[j]->mWeights[k].mWeight;
-					model.perVertexJointData[vertexID].addJointData(jointID, weight);
+					model->perVertexJointData[vertexID].addJointData(jointID, weight);
 				}
 			}
 
@@ -66,47 +65,47 @@ bool AssimpLoader::LoadModel(AnimatedModel &model) {
 			material->Get(AI_MATKEY_COLOR_DIFFUSE, diff);
 			material->Get(AI_MATKEY_COLOR_AMBIENT, amb);
 			material->Get(AI_MATKEY_COLOR_SPECULAR, spec);
-			model.diffuseVal = glm::vec3(diff.r, diff.g, diff.b);
-			model.ambientVal = glm::vec3(amb.r, amb.g, amb.b);
-			model.specularVal = glm::vec3(spec.r, spec.g, spec.b);
+			model->diffuseVal = glm::vec3(diff.r, diff.g, diff.b);
+			model->ambientVal = glm::vec3(amb.r, amb.g, amb.b);
+			model->specularVal = glm::vec3(spec.r, spec.g, spec.b);
 
 			aiString path;
 			material->GetTexture(aiTextureType_DIFFUSE, 0, &path, NULL, NULL, NULL, NULL, NULL);
 			std::string fileName = path.data;
 			std::string fullPath = "Resources/Textures/" + fileName;
-			model.setTexturePath(fullPath);
+			model->setTexturePath(fullPath);
 
 			for (int j = 0; j < mesh->mNumVertices; j++) {
-				model.positions.push_back(glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z));
-				model.normals.push_back(glm::vec3(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
-				model.uvs.push_back(glm::vec2(mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y)); //Only first set of texture coordinates are relevant in this case
+				model->positions.push_back(glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z));
+				model->normals.push_back(glm::vec3(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
+				model->uvs.push_back(glm::vec2(mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y)); //Only first set of texture coordinates are relevant in this case
 
-				temp.positions = model.positions[j];
-				temp.UVs = model.uvs[j];
-				temp.normals = model.normals[j];
+				temp.positions = model->positions[j];
+				temp.UVs = model->uvs[j];
+				temp.normals = model->normals[j];
 
-				model.vertices.push_back(temp); //Push the vertex to list of vertices
+				model->vertices.push_back(temp); //Push the vertex to list of vertices
 			}
 
 			for (int j = 0; j < mesh->mNumFaces; j++) {
 				if (mesh->mFaces[j].mNumIndices == 3) {
-					model.indices.push_back(mesh->mFaces[j].mIndices[0]);
-					model.indices.push_back(mesh->mFaces[j].mIndices[1]);
-					model.indices.push_back(mesh->mFaces[j].mIndices[2]);
+					model->indices.push_back(mesh->mFaces[j].mIndices[0]);
+					model->indices.push_back(mesh->mFaces[j].mIndices[1]);
+					model->indices.push_back(mesh->mFaces[j].mIndices[2]);
 				}
 				else {
 					OutputDebugStringA("ASSIMP: Model-loading failure! Mesh is not triangulated.");
 					return false;
 				}
 			}
-			model.numIndices = model.indices.size();
-			model.setVertCount(model.vertices.size());
+			model->numIndices = model->indices.size();
+			model->setVertCount(model->vertices.size());
 
 			
 		}
 	}
 	else {
-		OutputDebugStringA(this->importer.GetErrorString());
+		OutputDebugStringA(model->importer.GetErrorString());
 		return false;
 	}
 
@@ -137,25 +136,25 @@ glm::mat4 AssimpLoader::aiToMat4(aiMatrix4x4 matrix) {
 	return convertedMat;
 }
 
-void AssimpLoader::CalcJointTransform(double timeInSeconds, AnimatedModel& model) {
+void AssimpLoader::CalcJointTransform(double timeInSeconds, AnimatedModel* model) {
 	aiMatrix4x4 identity;
 
-	double timeInTicks = timeInSeconds * model.animation.ticksPerSecond;
-	float animationTime = fmod(timeInTicks, model.animation.duration);
+	double timeInTicks = timeInSeconds * model->animation.ticksPerSecond;
+	float animationTime = fmod(timeInTicks, model->animation.duration);
 
-	ReadNodeHeirarchy(animationTime, this->scene->mRootNode, identity, model);
+	ReadNodeHeirarchy(animationTime, model->scene->mRootNode, identity, model);
 
-	model.jointTransforms.resize(model.jointCount);
+	model->jointTransforms.resize(model->jointCount);
 
-	for (int i = 0; i < model.jointCount; i++) {
-		model.jointTransforms[i] = model.joint_matrices[i].finalTransform; //Converts matrix to glm::mat4 and places it in list
+	for (int i = 0; i < model->jointCount; i++) {
+		model->jointTransforms[i] = model->joint_matrices[i].finalTransform; //Converts matrix to glm::mat4 and places it in list
 	}
 }
 
 // This is a recursive function that calculates the final transformation for all of the joints in the whole skeleton, starting from the root joint //
-void AssimpLoader::ReadNodeHeirarchy(float animation_time, const aiNode* node, const aiMatrix4x4 parentTransform, AnimatedModel& model) {
+void AssimpLoader::ReadNodeHeirarchy(float animation_time, const aiNode* node, const aiMatrix4x4 parentTransform, AnimatedModel* model) {
 	std::string nodeName = node->mName.data;
-	const aiAnimation* animation = this->scene->mAnimations[0]; //Only supports one animation sequence
+	const aiAnimation* animation = model->scene->mAnimations[0]; //Only supports one animation sequence
 	aiMatrix4x4 nodeTransform = node->mTransformation;
 	const aiNodeAnim* nodeAnimation = FindNodeAnim(animation, nodeName);
 
@@ -180,9 +179,9 @@ void AssimpLoader::ReadNodeHeirarchy(float animation_time, const aiNode* node, c
 
 	aiMatrix4x4 globalTransform = parentTransform * nodeTransform;
 
-	if (model.joint_mapping.find(nodeName) != model.joint_mapping.end()) { //If the node name exists in the map
-		unsigned int jointIndex = model.joint_mapping[nodeName];
-		model.joint_matrices[jointIndex].finalTransform = model.globalInverseTransform * globalTransform * model.joint_matrices[jointIndex].offsetMatrix;
+	if (model->joint_mapping.find(nodeName) != model->joint_mapping.end()) { //If the node name exists in the map
+		unsigned int jointIndex = model->joint_mapping[nodeName];
+		model->joint_matrices[jointIndex].finalTransform = model->globalInverseTransform * globalTransform * model->joint_matrices[jointIndex].offsetMatrix;
 	}
 
 	for (int i = 0; i < node->mNumChildren; i++) { //Calculate the information for all children joints

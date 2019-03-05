@@ -20,11 +20,12 @@ AnimatedModel::AnimatedModel(std::string filePath) {
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
 	this->specularVal = { 0.0f, 0.0f, 0.0f };
-	//this->scene = nullptr;
+	this->scene = nullptr;
 }
 
 AnimatedModel::~AnimatedModel() {
 	OutputDebugStringA("Destructor is run for AnimatedModel\n");
+	this->importer.FreeScene();
 }
 
 void AnimatedModel::VertexJointData::addJointData(unsigned int id, float weight) {
