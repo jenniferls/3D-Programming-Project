@@ -39,9 +39,6 @@
 #pragma comment(lib, "glfw3.lib")
 
 #define _360_DEGREES 6.2831853072f //In radians
-#define VERTEX_SIZE sizeof(RawModel::TriangleVertex)
-#define ANIM_VERTEX_SIZE sizeof(AnimatedModel::Vertex)
-#define VERTEX_JOINT_DATA_SIZE sizeof(AnimatedModel::VertexJointData)
 
 #define WIDTH 1280.0f
 #define HEIGHT 720.0f
@@ -806,93 +803,17 @@ void CreateScene(Scene& scene) {
 
 	scene.addAnimatedModel("Resources/Models/anim_test2.dae", gShaderProgramAnim);
 	//scene.addAnimatedModel("Resources/Models/anim_test2.dae");
-
 	scene.addAnimatedModel("Resources/Models/model.dae", gShaderProgramAnim);
-
-	//scene.prepareJoints(); //Important step! Get IDs for all joints
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Create textures
 		scene.models[i].setTextureID(CreateTexture(scene.models[i].getTexturePath()));
-
-		//Create VAO and VBO
-		scene.CreateVAO(scene.models[i].vaoID);
-		scene.CreateVBO(scene.models[i].vboID);
-
-		// This "could" imply copying to the GPU, depending on what the driver wants to do, and
-		// the last argument (read the docs!)
-		glBufferData(GL_ARRAY_BUFFER, scene.models[i].getVertCount() * VERTEX_SIZE, scene.models[i].vertices.data(), GL_STATIC_DRAW);
-
-		// this activates the first, second and third attributes of this VAO
-		// think of "attributes" as inputs to the Vertex Shader
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-
-		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-		GLint vertexPos = glGetAttribLocation(scene.models[i].shaderProg, "vertex_position");
-		// if this returns -1, it means there is a problem, and the program will likely crash.
-		// examples: the name is different or missing in the shader
-
-		if (vertexPos == -1) {
-			OutputDebugStringA("Error, cannot find 'vertex_position' attribute in Vertex shader\n");
-		}
-		// tell OpenGL about layout in memory (input assembler information)
-		glVertexAttribPointer(
-			vertexPos,				// location in shader
-			3,						// how many elements of type (see next argument)
-			GL_FLOAT,				// type of each element
-			GL_FALSE,				// integers will be normalized to [-1,1] or [0,1] when read...
-			VERTEX_SIZE,			// distance between two vertices in memory (stride)
-			BUFFER_OFFSET(0)		// offset of FIRST vertex in the list.
-		);
-
-		// repeat the process for the second attribute.
-		// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
-		GLint textureCoord = glGetAttribLocation(scene.models[i].shaderProg, "texture_coords");
-		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
-
-		GLint normals = glGetAttribLocation(scene.models[i].shaderProg, "normals");
-		if (normals == -1) {
-			OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
-		}
-		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
+		scene.models[i].prepare(); //Calling this function is vital to be able to render it (Best to call it after creating the model)
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
 		scene.animatedModels[i]->setTextureID(CreateTexture(scene.animatedModels[i]->getTexturePath())); //Create textures
-
-		scene.CreateVAO(scene.animatedModels[i]->vaoID);
-		scene.CreateVBO(scene.animatedModels[i]->vboID);
-
-		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i]->getVertCount() * ANIM_VERTEX_SIZE, scene.animatedModels[i]->vertices.data(), GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-
-		scene.CreateIBO(scene.animatedModels[i]->iboID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, scene.animatedModels[i]->numIndices * sizeof(unsigned int), scene.animatedModels[i]->indices.data(), GL_STATIC_DRAW);
-
-		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-		GLint vertexPos = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "vertex_position");
-		GLint textureCoord = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "texture_coords");
-		GLint normals = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "normals");
-
-		// tell OpenGL about layout in memory (input assembler information)
-		glVertexAttribPointer(vertexPos, 3,	GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(0));
-		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
-		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
-
-		scene.CreateVBO(scene.animatedModels[i]->vboIDJoints);
-		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i]->perVertexJointData.size() * VERTEX_JOINT_DATA_SIZE, scene.animatedModels[i]->perVertexJointData.data(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(3);
-		glEnableVertexAttribArray(4);
-		GLint jointIDs = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "joint_indices");
-		GLint weights = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "weights");
-		glVertexAttribIPointer(jointIDs, 4, GL_INT, VERTEX_JOINT_DATA_SIZE, BUFFER_OFFSET(0)); //Int pointer
-		glVertexAttribPointer(weights, 4, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(unsigned int) * 4));
-
+		scene.animatedModels[i]->prepare(); //Calling this function is vital to be able to render it (Best to call it after creating the model)
 	}
 
 	//Add lights

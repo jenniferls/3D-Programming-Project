@@ -48,22 +48,3 @@ void Scene::addLight(glm::vec3 position, glm::vec3 color) {
 int Scene::getLightCount() const {
 	return this->lightCount;
 }
-
-void Scene::CreateVAO(unsigned int& id) {
-	// Vertex Array Object (VAO), description of the inputs to the GPU 
-	glGenVertexArrays(1, &id);
-	// bind is like "enabling" the object to use it
-	glBindVertexArray(id);
-}
-
-void Scene::CreateVBO(unsigned int& id) {
-	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
-	glGenBuffers(1, &id);
-	// Bind the buffer ID as an ARRAY_BUFFER
-	glBindBuffer(GL_ARRAY_BUFFER, id);
-}
-
-void Scene::CreateIBO(unsigned int& id) {
-	glGenBuffers(1, &id);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-}

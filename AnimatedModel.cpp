@@ -56,6 +56,46 @@ void AnimatedModel::prepareJoints() {
 	}
 }
 
+void AnimatedModel::prepare() {
+	glGenVertexArrays(1, &vaoID); // Vertex Array Object (VAO), description of the inputs to the GPU 
+	glBindVertexArray(vaoID); // bind is like "enabling" the object to use it
+
+	glGenBuffers(1, &vboID); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
+	glBindBuffer(GL_ARRAY_BUFFER, vboID); // Bind the buffer ID as an ARRAY_BUFFER
+
+	glBufferData(GL_ARRAY_BUFFER, getVertCount() * ANIM_VERTEX_SIZE, vertices.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glGenBuffers(1, &iboID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+	// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
+	GLint vertexPos = glGetAttribLocation(shaderProg, "vertex_position");
+	GLint textureCoord = glGetAttribLocation(shaderProg, "texture_coords");
+	GLint normals = glGetAttribLocation(shaderProg, "normals");
+
+	// tell OpenGL about layout in memory (input assembler information)
+	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(0));
+	glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
+	glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
+
+	glGenBuffers(1, &vboIDJoints); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDJoints); // Bind the buffer ID as an ARRAY_BUFFER
+
+	glBufferData(GL_ARRAY_BUFFER, perVertexJointData.size() * VERTEX_JOINT_DATA_SIZE, perVertexJointData.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	GLint jointIDs = glGetAttribLocation(shaderProg, "joint_indices");
+	GLint weights = glGetAttribLocation(shaderProg, "weights");
+	glVertexAttribIPointer(jointIDs, 4, GL_INT, VERTEX_JOINT_DATA_SIZE, BUFFER_OFFSET(0)); //Int pointer
+	glVertexAttribPointer(weights, 4, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(unsigned int) * 4));
+}
+
 void AnimatedModel::VertexJointData::addJointData(unsigned int id, float weight) {
 	for (int i = 0; i < JOINTS_PER_VERTEX; i++) {
 		if (weights[i] == 0.0f) {

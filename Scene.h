@@ -24,10 +24,6 @@ public:
 	void addLight(glm::vec3 position, glm::vec3 color);
 	int getLightCount() const;
 
-	void CreateVAO(unsigned int& id);
-	void CreateVBO(unsigned int& id);
-	void CreateIBO(unsigned int& id);
-
 	std::vector<RawModel> models;
 	std::vector<AnimatedModel*> animatedModels;
 

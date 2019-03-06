@@ -2,7 +2,10 @@
 #include "glm/glm.hpp"
 #include <vector>
 
+#define VERTEX_SIZE sizeof(RawModel::TriangleVertex)
+
 class RawModel {
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i)) //To avoid redefinition in main
 public:
 	// this is how we will structure the input data for the vertex shader
 	struct TriangleVertex {
@@ -49,6 +52,7 @@ public:
 	unsigned int vboID;
 
 	void prepareMaterials();
+	void prepare();
 
 	unsigned int shaderProg;
 

@@ -7,8 +7,11 @@
 
 #define JOINTS_PER_VERTEX 4
 #define MAX_JOINTS 50
+#define ANIM_VERTEX_SIZE sizeof(AnimatedModel::Vertex)
+#define VERTEX_JOINT_DATA_SIZE sizeof(AnimatedModel::VertexJointData)
 
 class AnimatedModel {
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i)) //To avoid redefinition in main
 public:
 	struct Vertex {
 		glm::vec3 positions;
@@ -43,13 +46,13 @@ public:
 
 	void prepareMaterials();
 	void prepareJoints();
+	void prepare();
 
 	std::string getPath() const;
 	std::string getTexturePath() const;
 	void setTexturePath(std::string texPath);
 	void setVertCount(unsigned int count);
 	unsigned int getVertCount() const;
-
 	unsigned int getTextureID() const;
 	void setTextureID(unsigned int id);
 
