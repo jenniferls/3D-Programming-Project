@@ -38,6 +38,9 @@ AnimatedModel::AnimatedModel(std::string filePath, unsigned int shaderProg) {
 AnimatedModel::~AnimatedModel() {
 	OutputDebugStringA("Destructor is run for AnimatedModel\n");
 	this->importer.FreeScene();
+	glDeleteVertexArrays(1, &vaoID);
+	glDeleteBuffers(1, &vboID);
+	glDeleteBuffers(1, &iboID);
 }
 
 void AnimatedModel::prepareMaterials() {
@@ -81,38 +84,6 @@ void AnimatedModel::setVertCount(unsigned int count) {
 
 unsigned int AnimatedModel::getVertCount() const {
 	return this->vertCount;
-}
-
-unsigned int AnimatedModel::getVaoID() const {
-	return this->vaoID;
-}
-
-void AnimatedModel::setVaoID(unsigned int id) {
-	this->vaoID = id;
-}
-
-unsigned int AnimatedModel::getVboID() const {
-	return this->vboID;
-}
-
-void AnimatedModel::setVboID(unsigned int id) {
-	this->vboID = id;
-}
-
-unsigned int AnimatedModel::getVboIDJoints() const {
-	return this->vboIDJoints;
-}
-
-void AnimatedModel::setVboIDJoints(unsigned int id) {
-	this->vboIDJoints = id;
-}
-
-unsigned int AnimatedModel::getIboID() const {
-	return this->iboID;
-}
-
-void AnimatedModel::setIboID(unsigned int id) {
-	this->iboID = id;
 }
 
 unsigned int AnimatedModel::getTextureID() const {

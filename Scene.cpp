@@ -49,49 +49,21 @@ int Scene::getLightCount() const {
 	return this->lightCount;
 }
 
-GLuint Scene::CreateVAO() {
-	GLuint id = 0;
+void Scene::CreateVAO(unsigned int& id) {
 	// Vertex Array Object (VAO), description of the inputs to the GPU 
 	glGenVertexArrays(1, &id);
 	// bind is like "enabling" the object to use it
 	glBindVertexArray(id);
-	this->vaos.push_back(id);
-	return id;
 }
 
-void Scene::deleteVAOs() {
-	for (int i = 0; i < vaos.size(); i++) {
-		glDeleteVertexArrays(1, &vaos[i]);
-	}
-}
-
-GLuint Scene::CreateVBO() {
-	GLuint vbo = 0;
+void Scene::CreateVBO(unsigned int& id) {
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
-	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &id);
 	// Bind the buffer ID as an ARRAY_BUFFER
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	this->vbos.push_back(vbo);
-	return vbo;
+	glBindBuffer(GL_ARRAY_BUFFER, id);
 }
 
-void Scene::deleteVBOs() {
-	for (int i = 0; i < vbos.size(); i++) {
-		glDeleteBuffers(1, &vbos[i]);
-	}
-}
-
-GLuint Scene::CreateIBO() {
-	GLuint ibo = 0;
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	this->ibos.push_back(ibo);
-	return ibo;
-}
-
-void Scene::deleteIBOs() {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	for (int i = 0; i < ibos.size(); i++) {
-		glDeleteBuffers(1, &ibos[i]);
-	}
+void Scene::CreateIBO(unsigned int& id) {
+	glGenBuffers(1, &id);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 }

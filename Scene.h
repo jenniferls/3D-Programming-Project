@@ -1,7 +1,6 @@
 #pragma once
 #include <windows.h>
 #include "glew/include/GL/glew.h"
-#include "glfw/include/GLFW/glfw3.h"
 #include <gl/GL.h>
 
 #include <vector>
@@ -25,19 +24,12 @@ public:
 	void addLight(glm::vec3 position, glm::vec3 color);
 	int getLightCount() const;
 
-	GLuint CreateVAO();
-	void deleteVAOs();
-	GLuint CreateVBO();
-	void deleteVBOs();
-	GLuint CreateIBO();
-	void deleteIBOs();
+	void CreateVAO(unsigned int& id);
+	void CreateVBO(unsigned int& id);
+	void CreateIBO(unsigned int& id);
 
 	std::vector<RawModel> models;
 	std::vector<AnimatedModel*> animatedModels;
-
-	std::vector<unsigned int> vaos;
-	std::vector<unsigned int> vbos;
-	std::vector<unsigned int> ibos;
 
 	std::vector<Light> lights; //List of lights
 	std::vector<glm::vec3> lightPositions; //List of all light positions

@@ -14,11 +14,6 @@ public:
 	RawModel(const char* filePath, unsigned int shaderProg);
 	~RawModel();
 
-	unsigned int getVaoID() const;
-	void setVaoID(unsigned int id);
-	unsigned int getVboID() const;
-	void setVboID(unsigned int id);
-
 	int getVertCount() const;
 	void setVertCount(int count);
 	const char* getPath() const;
@@ -50,6 +45,9 @@ public:
 	unsigned int specID;
 	unsigned int diffID;
 
+	unsigned int vaoID;
+	unsigned int vboID;
+
 	void prepareMaterials();
 
 	unsigned int shaderProg;
@@ -59,8 +57,6 @@ private:
 	std::string texturePath; //File path to texture file
 	std::string materialPath; //File path to .mtl-file
 	int vertCount;
-	unsigned int vaoID;
-	unsigned int vboID;
 	glm::vec3 worldPosition;
 	float worldRotation;
 };

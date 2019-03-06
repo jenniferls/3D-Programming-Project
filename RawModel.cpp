@@ -24,23 +24,8 @@ RawModel::RawModel(const char* filePath, unsigned int shaderProg) {
 }
 
 RawModel::~RawModel() {
-
-}
-
-unsigned int RawModel::getVaoID() const {
-	return this->vaoID;
-}
-
-void RawModel::setVaoID(unsigned int id) {
-	this->vaoID = id;
-}
-
-unsigned int RawModel::getVboID() const {
-	return this->vboID;
-}
-
-void RawModel::setVboID(unsigned int id) {
-	this->vboID = id;
+	glDeleteVertexArrays(1, &vaoID);
+	glDeleteBuffers(1, &vboID);
 }
 
 int RawModel::getVertCount() const {

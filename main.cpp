@@ -816,8 +816,8 @@ void CreateScene(Scene& scene) {
 		scene.models[i].setTextureID(CreateTexture(scene.models[i].getTexturePath()));
 
 		//Create VAO and VBO
-		scene.models[i].setVaoID(scene.CreateVAO());
-		scene.models[i].setVboID(scene.CreateVBO());
+		scene.CreateVAO(scene.models[i].vaoID);
+		scene.CreateVBO(scene.models[i].vboID);
 
 		// This "could" imply copying to the GPU, depending on what the driver wants to do, and
 		// the last argument (read the docs!)
@@ -862,8 +862,8 @@ void CreateScene(Scene& scene) {
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
 		scene.animatedModels[i]->setTextureID(CreateTexture(scene.animatedModels[i]->getTexturePath())); //Create textures
 
-		scene.animatedModels[i]->setVaoID(scene.CreateVAO());
-		scene.animatedModels[i]->setVboID(scene.CreateVBO());
+		scene.CreateVAO(scene.animatedModels[i]->vaoID);
+		scene.CreateVBO(scene.animatedModels[i]->vboID);
 
 		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i]->getVertCount() * ANIM_VERTEX_SIZE, scene.animatedModels[i]->vertices.data(), GL_STATIC_DRAW);
 
@@ -871,25 +871,25 @@ void CreateScene(Scene& scene) {
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 
-		scene.animatedModels[i]->setIboID(scene.CreateIBO());
+		scene.CreateIBO(scene.animatedModels[i]->iboID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, scene.animatedModels[i]->numIndices * sizeof(unsigned int), scene.animatedModels[i]->indices.data(), GL_STATIC_DRAW);
 
 		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-		GLint vertexPos = glGetAttribLocation(gShaderProgramAnim, "vertex_position");
-		GLint textureCoord = glGetAttribLocation(gShaderProgramAnim, "texture_coords");
-		GLint normals = glGetAttribLocation(gShaderProgramAnim, "normals");
+		GLint vertexPos = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "vertex_position");
+		GLint textureCoord = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "texture_coords");
+		GLint normals = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "normals");
 
 		// tell OpenGL about layout in memory (input assembler information)
 		glVertexAttribPointer(vertexPos, 3,	GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(0));
 		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
 		glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 
-		scene.animatedModels[i]->setVboIDJoints(scene.CreateVBO());
+		scene.CreateVBO(scene.animatedModels[i]->vboIDJoints);
 		glBufferData(GL_ARRAY_BUFFER, scene.animatedModels[i]->perVertexJointData.size() * VERTEX_JOINT_DATA_SIZE, scene.animatedModels[i]->perVertexJointData.data(), GL_STATIC_DRAW);
 		glEnableVertexAttribArray(3);
 		glEnableVertexAttribArray(4);
-		GLint jointIDs = glGetAttribLocation(gShaderProgramAnim, "joint_indices");
-		GLint weights = glGetAttribLocation(gShaderProgramAnim, "weights");
+		GLint jointIDs = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "joint_indices");
+		GLint weights = glGetAttribLocation(scene.animatedModels[i]->shaderProg, "weights");
 		glVertexAttribIPointer(jointIDs, 4, GL_INT, VERTEX_JOINT_DATA_SIZE, BUFFER_OFFSET(0)); //Int pointer
 		glVertexAttribPointer(weights, 4, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(unsigned int) * 4));
 
@@ -975,7 +975,7 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
 
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
@@ -992,18 +992,19 @@ void Render(Scene& scene, float rotationVal) {
 		glUniform3fv(scene.models[i].specID, 1, glm::value_ptr(scene.models[i].specularVal));	//Specular
 
 		// tell opengl we are going to use the VAO we described earlier
-		glBindVertexArray(scene.models[i].getVaoID());
+		glBindVertexArray(scene.models[i].vaoID);
 
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount());
 	}
+	glUseProgram(0); //Unbind program
 
 	////////// Render animated models using another shader program //////////
 	glUseProgram(gShaderProgramAnim); //Choose a shader
 	glUniformMatrix4fv(projection_id_anim, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
-	glUniformMatrix4fv(view_id_anim, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+	glUniformMatrix4fv(view_id_anim, 1, GL_FALSE, glm::value_ptr(view_matrix));				 //Sends data about view-matrix to geometry-shader
 
 	glUniform3fv(glGetUniformLocation(gShaderProgramAnim, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(glGetUniformLocation(gShaderProgramAnim, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgramAnim, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
 
 	//Draws all animated models in the scene
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
@@ -1024,10 +1025,11 @@ void Render(Scene& scene, float rotationVal) {
 		glUniform3fv(scene.animatedModels[i]->specID, 1, glm::value_ptr(scene.animatedModels[i]->specularVal));	//Specular
 
 		// tell opengl we are going to use the VAO we described earlier
-		glBindVertexArray(scene.animatedModels[i]->getVaoID());
+		glBindVertexArray(scene.animatedModels[i]->vaoID);
 
 		glDrawElements(GL_TRIANGLES, scene.animatedModels[i]->numIndices, GL_UNSIGNED_INT, 0);
 	}
+	glUseProgram(0); //Unbind program
 }
 
 void keyboardUpdate() {
@@ -1274,10 +1276,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
-	//gameScene.cleanup(); //Deletes all Animated Models in the scene
-	gameScene.deleteVAOs(); //Deletes all vaos in the scene
-	gameScene.deleteVBOs(); //Deletes all vbos in the scene
-	gameScene.deleteIBOs(); //Deletes all index buffers in the scene
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
 	glDeleteBuffers(1, &gVertexBufferFS);
 	glfwTerminate();

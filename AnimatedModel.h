@@ -50,14 +50,6 @@ public:
 	void setVertCount(unsigned int count);
 	unsigned int getVertCount() const;
 
-	unsigned int getVaoID() const;
-	void setVaoID(unsigned int id);
-	unsigned int getVboID() const;
-	void setVboID(unsigned int id);
-	unsigned int getVboIDJoints() const;
-	void setVboIDJoints(unsigned int id);
-	unsigned int getIboID() const;
-	void setIboID(unsigned int id);
 	unsigned int getTextureID() const;
 	void setTextureID(unsigned int id);
 
@@ -82,6 +74,11 @@ public:
 	unsigned int ambID, specID, diffID;
 	unsigned int jointCount;
 
+	unsigned int vaoID;
+	unsigned int vboID;
+	unsigned int iboID; //Index buffer
+	unsigned int vboIDJoints;
+
 	Animation animation; //One animation sequence
 	aiMatrix4x4 globalInverseTransform;
 	std::map<std::string, unsigned int> joint_mapping; //Maps a joint name and their index
@@ -98,10 +95,6 @@ private:
 	unsigned int vertCount;
 
 	unsigned int textureID;
-	unsigned int vaoID;
-	unsigned int vboID;
-	unsigned int vboIDJoints;
-	unsigned int iboID; //Index buffer
 
 	glm::vec3 worldPosition;
 	float worldRotation;
