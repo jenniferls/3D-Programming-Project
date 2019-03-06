@@ -10,8 +10,13 @@ void GameTimer::Tick() {
 	float currentFrame = glfwGetTime();
 	this->deltaTime = currentFrame - this->lastFrame;
 	this->lastFrame = currentFrame;
+	this->timeInSec = glfwGetTime();
 }
 
 float GameTimer::GetDeltaTime() const{
 	return deltaTime;
+}
+
+double GameTimer::GetTimeSec() const {
+	return this->timeInSec;
 }

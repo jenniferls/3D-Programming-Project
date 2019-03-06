@@ -812,7 +812,7 @@ void Render(Scene& scene, float rotationVal) {
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
-		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));									//Sends data about model-matrix to geometry-shader
+		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -841,7 +841,7 @@ void Render(Scene& scene, float rotationVal) {
 		CreateModelMatrix(scene.animatedModels[i]->getWorldRotation(), scene.animatedModels[i]->getWorldPosition(), gShaderProgramAnim, model_id_anim);
 		glUniformMatrix4fv(model_id_anim, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
-		scene.animLoader.CalcJointTransform((double)glfwGetTime(), scene.animatedModels[i]); //Calculate joint transforms
+		scene.animLoader.CalcJointTransform(timer.GetTimeSec(), scene.animatedModels[i]); //Calculate joint transforms
 		for (int j = 0; j < scene.animatedModels[i]->jointCount; j++) {
 			glUniformMatrix4fv(scene.animatedModels[i]->jointLocations[j], 1, GL_TRUE, (const GLfloat*)&scene.animatedModels[i]->jointTransforms[j]); //Send the matrices to the shader (the transpose is intentional)
 		}
