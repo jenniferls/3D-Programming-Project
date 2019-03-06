@@ -531,7 +531,7 @@ Scene CreateScene() {
 		);
 		GLint textureCoordSM = glGetAttribLocation(gShaderProgramSM, "texture_coords_SM");
 		glVertexAttribPointer(
-			textureCoordSM, //1,
+			1,
 			2,
 			GL_FLOAT,
 			GL_FALSE,
@@ -540,7 +540,7 @@ Scene CreateScene() {
 		);
 		GLint normalsSM = glGetAttribLocation(gShaderProgramSM, "normals_SM");
 		glVertexAttribPointer(
-			normalsSM, //2,
+			2,
 			3,
 			GL_FLOAT,
 			GL_FALSE,
@@ -580,7 +580,7 @@ Scene CreateScene() {
 	}
 
 	//Add lights
-	newScene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
+	newScene.addLight(glm::vec3(6.0, 1.0, 0.0), glm::vec3(1.0f, 1.0f, 1.0f));
 	newScene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
 
 	newScene.prepareLights(); //Important step! Assigns uniform IDs
@@ -616,12 +616,12 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation) {
 }
 
 //PF
-void CreateShadowMatrixData(glm::vec3 lightPos) {
+void CreateShadowMatrixData(glm::vec3 lightPos, float rotationValue) {
 
 	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-	glm::mat4 depthModelMatrix = glm::mat4(1.0);
-	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+	glm::mat4 depthModelMatrix = glm::rotate(glm::mat4(1.0), rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 depthMVP = depthProjectionMatrix * view_matrix * depthModelMatrix;
 
 	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
 			0.0, 0.5, 0.0, 0.0,
@@ -640,6 +640,36 @@ void CreateShadowMatrixData(glm::vec3 lightPos) {
 void SetViewport() {
 	// usually (not necessarily) this matches with the window size
 	glViewport(0, 0, WIDTH, HEIGHT);
+}
+
+void RenderSM(Scene scene, float rotationVal) {
+	glUseProgram(gShaderProgramSM);
+	glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	scene.models[2].setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+	scene.animatedModels[0].setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
+
+	scene.models[0].setWorldRotation(rotationVal);
+	scene.animatedModels[0].setWorldRotation(-rotationVal);
+
+	//Draws all static models in the scene
+	for (int i = 0; i < scene.getModelCount(); i++) {
+		//Send model matrix data per model
+		CreateShadowMatrixData(scene.lightPositions[0], scene.models[i].getWorldRotation());
+		glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
+
+		//Send texture data
+		glActiveTexture(GL_TEXTURE0 + 1); //Activate the texture unit
+		glBindTexture(GL_TEXTURE_2D, scene.models[i].getTextureID()); //Bind the texture
+
+		// tell opengl we are going to use the VAO we described earlier
+		glBindVertexArray(scene.models[i].vaoID_SM);
+
+		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount());
+	}
+
 }
 
 void Render(Scene scene, float rotationVal) {
@@ -677,6 +707,7 @@ void Render(Scene scene, float rotationVal) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition());  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));					//Sends data about model-matrix to geometry-shader
+		glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -897,7 +928,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		static float scale = 1.0f;
 		ImGui::SliderFloat("Scale", &scale, 0.0f, 1.0f);
-		static bool renderDepth = false;
+		static bool renderDepth = true;
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
@@ -907,7 +938,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
 		/*glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));*/
 
-		Render(gameScene, rotation); //9. Render
+		RenderSM(gameScene, rotation); //9. Render
 
 		// first pass is done!
 		// now render a second pass
