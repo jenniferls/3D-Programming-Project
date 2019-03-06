@@ -104,6 +104,9 @@
     <None Include="GeometryShaderAnim.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="GeometryShaderPS.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -157,5 +160,13 @@
     <ClInclude Include="AssimpLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="VertexShaderPS.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </Text>
+    <Text Include="FragmentShaderPS.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </Text>
   </ItemGroup>
 </Project>

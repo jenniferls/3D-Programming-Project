@@ -59,6 +59,9 @@ GLuint gShaderProgram = 0;
 //Shader for animated models
 GLuint gShaderProgramAnim = 0;
 
+//Particle shader
+GLuint gShaderProgramPS = 0;
+
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
@@ -377,6 +380,80 @@ void CreateShaders() {
 	glDetachShader(gShaderProgram, vs);
 	glDetachShader(gShaderProgram, fs);
 	glDetachShader(gShaderProgram, gs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+	glDeleteShader(gs);
+}
+
+void CreateParticleShaders() {
+	char buff[1024];
+	memset(buff, 0, 1024);
+	GLint compileResult = 0;
+
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	ifstream shaderFile("VertexShaderPS.glsl");
+	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+
+	const char* shaderTextPtr = shaderText.c_str();
+	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(vs);
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		glGetShaderInfoLog(vs, 1024, nullptr, buff);
+		OutputDebugStringA(buff);
+	}
+
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	shaderFile.open("FragmentShaderPS.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(fs);
+	compileResult = GL_FALSE;
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(fs, 1024, nullptr, buff);
+		OutputDebugStringA(buff);
+	}
+
+	GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
+	shaderFile.open("GeometryShader.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(gs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(gs);
+	compileResult = GL_FALSE;
+	glGetShaderiv(gs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(gs, 1024, nullptr, buff);
+		OutputDebugStringA(buff);
+	}
+
+	gShaderProgramPS = glCreateProgram();
+	glAttachShader(gShaderProgramPS, fs);
+	glAttachShader(gShaderProgramPS, vs);
+	glAttachShader(gShaderProgramPS, gs);
+	glLinkProgram(gShaderProgramPS);
+
+	compileResult = GL_FALSE;
+	glGetProgramiv(gShaderProgramPS, GL_LINK_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetProgramInfoLog(gShaderProgramPS, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+	// in any case (compile sucess or not), we only want to keep the 
+	// Program around, not the shaders.
+	glDetachShader(gShaderProgramPS, vs);
+	glDetachShader(gShaderProgramPS, fs);
+	glDetachShader(gShaderProgramPS, gs);
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 	glDeleteShader(gs);
@@ -918,6 +995,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	CreateShaders(); //5. Create vertex- and fragment-shaders
 	CreateAnimShaders(); //5. Create shaders for animated models
+	CreateParticleShaders(); //5.
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
 	//CreateSMShaders(); //PF
 

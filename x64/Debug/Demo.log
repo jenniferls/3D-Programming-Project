@@ -1,7 +1,2 @@
-﻿  AssimpLoader.cpp
-c:\program files (x86)\windows kits\10\include\10.0.17763.0\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
-  g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\glfw\include\glfw\glfw3.h(98): note: see previous definition of 'APIENTRY'
-  Scene.cpp
-  main.cpp
-  Generating Code...
+﻿  main.cpp
   Demo.vcxproj -> G:\My Documents\BTH Studies\Inlämningsuppgifter\3D-Programming\Project\3DProject\x64\Debug\3DProject.exe

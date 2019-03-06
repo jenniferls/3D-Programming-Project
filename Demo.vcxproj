@@ -153,6 +153,7 @@
     <None Include="FragmentSM.glsl" />
     <None Include="GeometryShader.glsl" />
     <None Include="GeometryShaderAnim.glsl" />
+    <None Include="GeometryShaderPS.glsl" />
     <None Include="VertexShader.glsl" />
     <None Include="VertexShaderAnim.glsl" />
     <None Include="VertexShaderFS.glsl" />
@@ -176,6 +177,10 @@
     <ClInclude Include="RawModel.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="stb_image.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="FragmentShaderPS.glsl" />
+    <Text Include="VertexShaderPS.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
