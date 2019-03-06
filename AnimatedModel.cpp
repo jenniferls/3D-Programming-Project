@@ -1,31 +1,56 @@
 #include "AnimatedModel.h"
 #include <windows.h>
+#include "glew/include/GL/glew.h"
+#include <gl/GL.h>
 
-AnimatedModel::AnimatedModel(std::string filePath) {
+AnimatedModel::AnimatedModel(std::string filePath, unsigned int shaderProg) {
 	this->path = filePath;
+	this->shaderProg = shaderProg;
 	this->texturePath = "Path not loaded";
+
 	this->vaoID = 0;
 	this->vboID = 0;
 	this->vboIDJoints = 0;
 	this->iboID = 0;
+
 	this->textureID = 0;
 	this->ambID = 0;
 	this->diffID = 0;
 	this->specID = 0;
+
 	this->vertCount = 0;
 	this->jointCount = 0;
 	this->numIndices = 0;
+
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->worldRotation = 0.0f;
+
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
 	this->specularVal = { 0.0f, 0.0f, 0.0f };
+
 	this->scene = nullptr;
+
+	prepareMaterials();
+	prepareJoints();
 }
 
 AnimatedModel::~AnimatedModel() {
 	OutputDebugStringA("Destructor is run for AnimatedModel\n");
 	this->importer.FreeScene();
+}
+
+void AnimatedModel::prepareMaterials() {
+	this->ambID = glGetUniformLocation(this->shaderProg, "ambient_val"); //Assign ID
+	this->diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
+	this->specID = glGetUniformLocation(this->shaderProg, "specular_val");
+}
+
+void AnimatedModel::prepareJoints() {
+	for (int i = 0; i < MAX_JOINTS; i++) {
+		std::string name = "jointTransforms[" + std::to_string(i) + "]"; //Name in shader
+		jointLocations[i] = glGetUniformLocation(this->shaderProg, name.c_str()); //Get an ID for all the possible joints to be used in shader
+	}
 }
 
 void AnimatedModel::VertexJointData::addJointData(unsigned int id, float weight) {

@@ -14,19 +14,16 @@
 
 class Scene {
 public:
-	Scene(unsigned int shaderProg, unsigned int shaderProgAnim);
+	Scene();
 	~Scene();
 
-	void addModel(const char* path);
-	void addAnimatedModel(std::string path);
+	void addModel(const char* path, unsigned int& shaderProg);
+	void addAnimatedModel(std::string path, unsigned int& shaderProg);
 	int getModelCount() const;
 	unsigned int getAnimModelCount() const;
 
 	void addLight(glm::vec3 position, glm::vec3 color);
-	void prepareLights();
 	int getLightCount() const;
-	void prepareMaterials();
-	void prepareJoints();
 
 	GLuint CreateVAO();
 	void deleteVAOs();
@@ -46,11 +43,6 @@ public:
 	std::vector<glm::vec3> lightPositions; //List of all light positions
 	std::vector<glm::vec3> lightColors; //List of all light colors
 
-	int lights_pos_id;
-	int lights_color_id;
-	int anim_lights_pos_id; //ID in FBX-shader
-	int anim_lights_color_id; //ID in FBX-shader
-
 	AssimpLoader animLoader;
 
 private:
@@ -58,6 +50,4 @@ private:
 	int modelCount;
 	unsigned int animatedModelCount;
 	int lightCount;
-	unsigned int shaderProg;
-	unsigned int shaderProgAnim;
 };

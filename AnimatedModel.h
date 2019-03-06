@@ -38,8 +38,11 @@ public:
 		double duration = 0.0f;
 	};
 
-	AnimatedModel(std::string filePath);
+	AnimatedModel(std::string filePath, unsigned int shaderProg);
 	~AnimatedModel();
+
+	void prepareMaterials();
+	void prepareJoints();
 
 	std::string getPath() const;
 	std::string getTexturePath() const;
@@ -86,6 +89,8 @@ public:
 
 	Assimp::Importer importer;
 	const aiScene* scene;
+
+	unsigned int shaderProg;
 
 private:
 	std::string path; //File path

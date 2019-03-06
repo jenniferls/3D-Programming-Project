@@ -11,7 +11,7 @@ public:
 		glm::vec3 normals;
 	};
 
-	RawModel(const char* filePath);
+	RawModel(const char* filePath, unsigned int shaderProg);
 	~RawModel();
 
 	unsigned int getVaoID() const;
@@ -49,6 +49,10 @@ public:
 	unsigned int ambID;
 	unsigned int specID;
 	unsigned int diffID;
+
+	void prepareMaterials();
+
+	unsigned int shaderProg;
 
 private:
 	const char* path; //File path

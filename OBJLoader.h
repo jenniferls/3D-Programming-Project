@@ -13,6 +13,5 @@ public:
 	bool loadMTL(RawModel &model);
 
 private:
-	RawModel model;
 };
 

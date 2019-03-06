@@ -9,6 +9,8 @@ public:
 	glm::vec3 getPosition() const;
 	glm::vec3 getColor() const;
 
+	unsigned int shaderProg;
+
 private:
 	glm::vec3 pos;
 	glm::vec3 color;

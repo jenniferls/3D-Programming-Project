@@ -1,10 +1,13 @@
 #include "RawModel.h"
+#include "glew/include/GL/glew.h"
+#include <gl/GL.h>
 
-RawModel::RawModel(const char* filePath) {
+RawModel::RawModel(const char* filePath, unsigned int shaderProg) {
 	this->vaoID = 0;
 	this->vboID = 0;
 	this->vertCount = 0;
 	this->path = filePath;
+	this->shaderProg = shaderProg;
 	this->texturePath = "Path not loaded";
 	this->textureID = 0;
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
@@ -16,6 +19,8 @@ RawModel::RawModel(const char* filePath) {
 	this->materialPath = "Path not loaded";
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->worldRotation = 0.0f;
+
+	prepareMaterials();
 }
 
 RawModel::~RawModel() {
@@ -64,6 +69,12 @@ float RawModel::getWorldRotation() const {
 
 void RawModel::setWorldRotation(float rotation) {
 	this->worldRotation = rotation;
+}
+
+void RawModel::prepareMaterials() {
+	this->ambID = glGetUniformLocation(this->shaderProg, "ambient_val"); //Assign ID
+	this->diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
+	this->specID = glGetUniformLocation(this->shaderProg, "specular_val");
 }
 
 const char* RawModel::getPath() const {

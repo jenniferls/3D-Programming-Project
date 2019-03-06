@@ -62,6 +62,9 @@ GLuint gShaderProgramAnim = 0;
 //Particle shader
 GLuint gShaderProgramPS = 0;
 
+//Skybox shader
+GLuint gShaderProgramSkybox = 0;
+
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
@@ -459,6 +462,82 @@ void CreateParticleShaders() {
 	glDeleteShader(gs);
 }
 
+void CreateSkyboxShaders() {
+	// local buffer to store error strings when compiling.
+	char buff[1024];
+	memset(buff, 0, 1024);
+	GLint compileResult = 0;
+
+	//create vertex shader "name" and store it in "vs"
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+
+	// open .glsl file and put it in a string
+	ifstream shaderFile("VertexShaderSkybox.glsl");
+	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+
+	// glShaderSource requires a double pointer.
+	// get the pointer to the c style string stored in the string object.
+	const char* shaderTextPtr = shaderText.c_str();
+
+	// ask GL to use this string a shader code source
+	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
+
+	// try to compile this shader source.
+	glCompileShader(vs);
+
+	// check for compilation error
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		glGetShaderInfoLog(vs, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+
+	// repeat process for Fragment Shader (or Pixel Shader)
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	shaderFile.open("FragmentShaderSkybox.glsl");
+	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+	shaderTextPtr = shaderText.c_str();
+	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
+	glCompileShader(fs);
+	// query information about the compilation (nothing if compilation went fine!)
+	compileResult = GL_FALSE;
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetShaderInfoLog(fs, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+
+	//link shader program (connect vs, gs and ps)
+	gShaderProgramSkybox = glCreateProgram();
+	glAttachShader(gShaderProgramSkybox, fs);
+	glAttachShader(gShaderProgramSkybox, vs);
+	glLinkProgram(gShaderProgramSkybox);
+
+	// check once more, if the Vertex Shader, Geometry Shader and the Fragment Shader can be used together
+	compileResult = GL_FALSE;
+	glGetProgramiv(gShaderProgramSkybox, GL_LINK_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetProgramInfoLog(gShaderProgramSkybox, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+	// in any case (compile sucess or not), we only want to keep the 
+	// Program around, not the shaders.
+	glDetachShader(gShaderProgramSkybox, vs);
+	glDetachShader(gShaderProgramSkybox, fs);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+}
+
 void CreateAnimShaders() {
 	// local buffer to store error strings when compiling.
 	char buff[1024];
@@ -595,6 +674,101 @@ void CreateFullScreenQuad() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
 
+void CreateSkyboxGeom() {
+	struct Vertex{
+		glm::vec3 positions;
+		glm::vec2 uvs;
+	};
+	Vertex skybox[36] = {
+		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f),
+		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(1.0f, 0.0f),
+		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
+		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
+		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
+		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f),
+
+		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
+		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
+		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 1.0f),
+		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 1.0f),
+		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f),
+		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
+
+		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 0.0f),
+		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f),
+		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
+		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
+		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
+		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 0.0f),
+
+		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
+		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
+		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(0.0f, 1.0f),
+		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(0.0f, 1.0f),
+		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(0.0f, 0.0f),
+		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
+
+		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
+		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
+		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
+		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
+		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
+		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
+
+		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
+		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
+		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
+		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
+		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
+		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f)
+	};
+
+	//glGenVertexArrays(1, &);
+	//glBindVertexArray();
+
+	//glEnableVertexAttribArray(0);
+	//glEnableVertexAttribArray(1);
+
+	//glGenBuffers(1, &);
+	//glBindBuffer(GL_ARRAY_BUFFER, );
+
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(skybox), skybox, GL_STATIC_DRAW);
+
+	//glVertexAttribPointer(, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0));
+	//glVertexAttribPointer(, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 3));
+}
+
+GLuint CreateCubemapTexture(vector<string> faces) {
+	GLuint texture = 0;
+	glGenTextures(1, &texture); // Generate the texture
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture); //Bind trhe generated texture
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // First arg. is target, second is setting we want to edit & axis, last one is texture wrapping mode.
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	int width, height, colourChannels;
+
+	for (int i = 0; i < faces.size(); i++) {
+		const char* filePath = faces[i].c_str(); //Path to image file
+		cout << "Skybox texture path: " << filePath << endl; //Debug
+
+		unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0);
+		if (data) {
+			// function args. in order | Target | Mipmap | Image format | Width | Height | Legacy, need to be 0 | Format | Datatype | Image data | 
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data); //By increasing the enum we loop over all face orientations (Right, left, top, bottom, back, front)
+		}
+		else {
+			cout << "Failed to load skybox texture nr: " << i << " Reason: " << stbi_failure_reason() << endl; //Output error message if texture file is not found
+		}
+		stbi_image_free(data); // Free image memory
+	}
+	return texture; //Returns an unsigned int/textureID
+}
+
 GLuint CreateTexture(string path) {
 	GLuint texture = 0;
 	glGenTextures(1, &texture); //Generate the texture, first input is amt of textures, second is where we store them.
@@ -626,16 +800,16 @@ GLuint CreateTexture(string path) {
 
 void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
-	scene.addModel("Resources/Models/ship.obj");
-	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
-	scene.addModel("Resources/Models/plane.obj");
+	scene.addModel("Resources/Models/ship.obj", gShaderProgram);
+	scene.addModel("Resources/Models/cruiser.obj", gShaderProgram); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	scene.addModel("Resources/Models/plane.obj", gShaderProgram);
 
-	scene.addAnimatedModel("Resources/Models/anim_test2.dae");
+	scene.addAnimatedModel("Resources/Models/anim_test2.dae", gShaderProgramAnim);
 	//scene.addAnimatedModel("Resources/Models/anim_test2.dae");
 
-	scene.addAnimatedModel("Resources/Models/model.dae");
+	scene.addAnimatedModel("Resources/Models/model.dae", gShaderProgramAnim);
 
-	scene.prepareJoints(); //Important step! Get IDs for all joints
+	//scene.prepareJoints(); //Important step! Get IDs for all joints
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Create textures
@@ -656,7 +830,7 @@ void CreateScene(Scene& scene) {
 		glEnableVertexAttribArray(2);
 
 		// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-		GLint vertexPos = glGetAttribLocation(gShaderProgram, "vertex_position");
+		GLint vertexPos = glGetAttribLocation(scene.models[i].shaderProg, "vertex_position");
 		// if this returns -1, it means there is a problem, and the program will likely crash.
 		// examples: the name is different or missing in the shader
 
@@ -675,10 +849,10 @@ void CreateScene(Scene& scene) {
 
 		// repeat the process for the second attribute.
 		// query which "slot" corresponds to the input texture_coords in the Vertex Shader 
-		GLint textureCoord = glGetAttribLocation(gShaderProgram, "texture_coords");
+		GLint textureCoord = glGetAttribLocation(scene.models[i].shaderProg, "texture_coords");
 		glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
 
-		GLint normals = glGetAttribLocation(gShaderProgram, "normals");
+		GLint normals = glGetAttribLocation(scene.models[i].shaderProg, "normals");
 		if (normals == -1) {
 			OutputDebugStringA("Error, cannot find 'normals' attribute in Vertex shader\n");
 		}
@@ -724,8 +898,6 @@ void CreateScene(Scene& scene) {
 	//Add lights
 	scene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
 	scene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
-
-	scene.prepareLights(); //Important step! Assigns uniform IDs
 }
 
 void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
@@ -788,9 +960,6 @@ void Render(Scene& scene, float rotationVal) {
 	// use the color to clear the color buffer (clear the color buffer only)
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	//Assign material data IDs for all models
-	scene.prepareMaterials();
-
 	//Choose model placement (default is origo)
 	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
 	scene.models[2].setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
@@ -805,8 +974,8 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 
-	glUniform3fv(scene.lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(scene.lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
 
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
@@ -833,8 +1002,8 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(projection_id_anim, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id_anim, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 
-	glUniform3fv(scene.anim_lights_pos_id, scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(scene.anim_lights_color_id, scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgramAnim, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgramAnim, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));   //Sends light color data to fragment-shader
 
 	//Draws all animated models in the scene
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
@@ -995,6 +1164,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	CreateShaders(); //5. Create vertex- and fragment-shaders
 	CreateAnimShaders(); //5. Create shaders for animated models
+	CreateSkyboxShaders(); //5.
 	CreateParticleShaders(); //5.
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
 	//CreateSMShaders(); //PF
@@ -1003,7 +1173,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		shutdown = true;
 
 	//Create a scene object and fill it
-	Scene gameScene(gShaderProgram, gShaderProgramAnim);
+	Scene gameScene;
 	CreateScene(gameScene);
 
 	CreateFullScreenQuad();

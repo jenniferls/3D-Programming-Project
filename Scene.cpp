@@ -1,15 +1,9 @@
 #include "Scene.h"
 
-Scene::Scene(unsigned int shaderProg, unsigned int shaderProgAnim) {
+Scene::Scene() {
 	this->modelCount = 0;
 	this->animatedModelCount = 0;
 	this->lightCount = 0;
-	this->shaderProg = shaderProg;
-	this->shaderProgAnim = shaderProgAnim;
-	this->lights_pos_id = -1;
-	this->lights_color_id = -1;
-	this->anim_lights_pos_id = -1;
-	this->anim_lights_color_id = -1;
 }
 
 
@@ -21,16 +15,16 @@ Scene::~Scene() {
 	animatedModels.clear();
 }
 
-void Scene::addModel(const char* path) {
-	RawModel model(path);
+void Scene::addModel(const char* path, unsigned int& shaderProg) {
+	RawModel model(path, shaderProg);
 	loader.loadOBJ(model); //Loads model from file
 	loader.loadMTL(model); //Loads material from file
 	models.push_back(model);
 	this->modelCount++;
 }
 
-void Scene::addAnimatedModel(std::string path) {
-	animatedModels.push_back(new AnimatedModel(path));
+void Scene::addAnimatedModel(std::string path, unsigned int& shaderProg) {
+	animatedModels.push_back(new AnimatedModel(path, shaderProg));
 	animLoader.LoadModel(animatedModels[this->animatedModelCount]);//Load the model
 	this->animatedModelCount++;
 }
@@ -51,53 +45,8 @@ void Scene::addLight(glm::vec3 position, glm::vec3 color) {
 	this->lightCount++;
 }
 
-void Scene::prepareLights() {
-	//Send arrays of light information to shader
-	lights_pos_id = glGetUniformLocation(this->shaderProg, "light_positions"); //Assign ID
-	if (lights_pos_id == -1) {
-		OutputDebugStringA("Error, cannot find 'lightpos_id' attribute in Fragment shader\n");
-	}
-
-	lights_color_id = glGetUniformLocation(this->shaderProg, "light_colors"); //Assign ID
-	if (lights_color_id == -1) {
-		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
-	}
-
-	anim_lights_pos_id = glGetUniformLocation(this->shaderProgAnim, "light_positions"); //Assign ID
-	if (lights_pos_id == -1) {
-		OutputDebugStringA("Error, cannot find 'lightpos_id' attribute in Fragment shader\n");
-	}
-
-	anim_lights_color_id = glGetUniformLocation(this->shaderProgAnim, "light_colors"); //Assign ID
-	if (lights_color_id == -1) {
-		OutputDebugStringA("Error, cannot find 'lightcolor_id' attribute in Fragment shader\n");
-	}
-}
-
 int Scene::getLightCount() const {
 	return this->lightCount;
-}
-
-void Scene::prepareMaterials() {
-	for (int i = 0; i < getModelCount(); i++) {
-		models[i].ambID = glGetUniformLocation(this->shaderProg, "ambient_val"); //Assign ID
-		models[i].diffID = glGetUniformLocation(this->shaderProg, "diffuse_val");
-		models[i].specID = glGetUniformLocation(this->shaderProg, "specular_val");
-	}
-	for (int i = 0; i < getAnimModelCount(); i++) {
-		animatedModels[i]->ambID = glGetUniformLocation(this->shaderProgAnim, "ambient_val"); //Assign ID
-		animatedModels[i]->diffID = glGetUniformLocation(this->shaderProgAnim, "diffuse_val");
-		animatedModels[i]->specID = glGetUniformLocation(this->shaderProgAnim, "specular_val");
-	}
-}
-
-void Scene::prepareJoints() {
-	for (int i = 0; i < this->animatedModelCount; i++) {
-		for (int j = 0; j < MAX_JOINTS; j++) {
-			std::string name = "jointTransforms[" + std::to_string(j) + "]"; //Name in shader
-			animatedModels[i]->jointLocations[j] = glGetUniformLocation(this->shaderProgAnim, name.c_str()); //Get an ID for all the possible joints to be used in shader
-		}
-	}
 }
 
 GLuint Scene::CreateVAO() {

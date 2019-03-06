@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 
-OBJLoader::OBJLoader() : model(""){
+OBJLoader::OBJLoader() {
 
 }
 
