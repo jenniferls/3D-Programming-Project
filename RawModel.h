@@ -14,7 +14,7 @@ public:
 		glm::vec3 normals;
 	};
 
-	RawModel(const char* filePath, unsigned int shaderProg);
+	RawModel(const char* filePath);
 	~RawModel();
 
 	int getVertCount() const;
@@ -51,12 +51,13 @@ public:
 	unsigned int vaoID;
 	unsigned int vboID;
 
-	void prepareMaterials();
-	void prepare();
+	void prepare(unsigned int& shaderProgram);
 
 	unsigned int shaderProg;
 
 private:
+	void prepareMaterials();
+
 	const char* path; //File path
 	std::string texturePath; //File path to texture file
 	std::string materialPath; //File path to .mtl-file

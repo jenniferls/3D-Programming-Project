@@ -16,8 +16,8 @@ public:
 	Scene();
 	~Scene();
 
-	void addModel(const char* path, unsigned int& shaderProg);
-	void addAnimatedModel(std::string path, unsigned int& shaderProg);
+	void addModel(const char* path);
+	void addAnimatedModel(std::string path);
 	int getModelCount() const;
 	unsigned int getAnimModelCount() const;
 

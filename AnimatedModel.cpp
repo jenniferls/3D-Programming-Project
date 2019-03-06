@@ -3,9 +3,8 @@
 #include "glew/include/GL/glew.h"
 #include <gl/GL.h>
 
-AnimatedModel::AnimatedModel(std::string filePath, unsigned int shaderProg) {
+AnimatedModel::AnimatedModel(std::string filePath) {
 	this->path = filePath;
-	this->shaderProg = shaderProg;
 	this->texturePath = "Path not loaded";
 
 	this->vaoID = 0;
@@ -30,9 +29,6 @@ AnimatedModel::AnimatedModel(std::string filePath, unsigned int shaderProg) {
 	this->specularVal = { 0.0f, 0.0f, 0.0f };
 
 	this->scene = nullptr;
-
-	prepareMaterials();
-	prepareJoints();
 }
 
 AnimatedModel::~AnimatedModel() {
@@ -56,7 +52,11 @@ void AnimatedModel::prepareJoints() {
 	}
 }
 
-void AnimatedModel::prepare() {
+void AnimatedModel::prepare(unsigned int& shaderProgram) {
+	this->shaderProg = shaderProgram;
+	prepareMaterials();
+	prepareJoints();
+
 	glGenVertexArrays(1, &vaoID); // Vertex Array Object (VAO), description of the inputs to the GPU 
 	glBindVertexArray(vaoID); // bind is like "enabling" the object to use it
 

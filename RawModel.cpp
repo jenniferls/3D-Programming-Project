@@ -2,12 +2,11 @@
 #include "glew/include/GL/glew.h"
 #include <gl/GL.h>
 
-RawModel::RawModel(const char* filePath, unsigned int shaderProg) {
+RawModel::RawModel(const char* filePath) {
 	this->vaoID = 0;
 	this->vboID = 0;
 	this->vertCount = 0;
 	this->path = filePath;
-	this->shaderProg = shaderProg;
 	this->texturePath = "Path not loaded";
 	this->textureID = 0;
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
@@ -19,8 +18,6 @@ RawModel::RawModel(const char* filePath, unsigned int shaderProg) {
 	this->materialPath = "Path not loaded";
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->worldRotation = 0.0f;
-
-	prepareMaterials();
 }
 
 RawModel::~RawModel() {
@@ -62,7 +59,10 @@ void RawModel::prepareMaterials() {
 	this->specID = glGetUniformLocation(this->shaderProg, "specular_val");
 }
 
-void RawModel::prepare() {
+void RawModel::prepare(unsigned int& shaderProgram) {
+	this->shaderProg = shaderProgram;
+	prepareMaterials();
+
 	glGenVertexArrays(1, &vaoID); // Vertex Array Object (VAO), description of the inputs to the GPU 
 	glBindVertexArray(vaoID); // bind is like "enabling" the object to use it
 

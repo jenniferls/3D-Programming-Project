@@ -15,16 +15,16 @@ Scene::~Scene() {
 	animatedModels.clear();
 }
 
-void Scene::addModel(const char* path, unsigned int& shaderProg) {
-	RawModel model(path, shaderProg);
+void Scene::addModel(const char* path) {
+	RawModel model(path);
 	loader.loadOBJ(model); //Loads model from file
 	loader.loadMTL(model); //Loads material from file
 	models.push_back(model);
 	this->modelCount++;
 }
 
-void Scene::addAnimatedModel(std::string path, unsigned int& shaderProg) {
-	animatedModels.push_back(new AnimatedModel(path, shaderProg));
+void Scene::addAnimatedModel(std::string path) {
+	animatedModels.push_back(new AnimatedModel(path));
 	animLoader.LoadModel(animatedModels[this->animatedModelCount]);//Load the model
 	this->animatedModelCount++;
 }

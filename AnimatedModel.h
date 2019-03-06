@@ -41,12 +41,10 @@ public:
 		double duration = 0.0f;
 	};
 
-	AnimatedModel(std::string filePath, unsigned int shaderProg);
+	AnimatedModel(std::string filePath);
 	~AnimatedModel();
 
-	void prepareMaterials();
-	void prepareJoints();
-	void prepare();
+	void prepare(unsigned int& shaderProgram);
 
 	std::string getPath() const;
 	std::string getTexturePath() const;
@@ -93,6 +91,9 @@ public:
 	unsigned int shaderProg;
 
 private:
+	void prepareMaterials();
+	void prepareJoints();
+
 	std::string path; //File path
 	std::string texturePath; //File path to texture file
 	unsigned int vertCount;

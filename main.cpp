@@ -797,23 +797,29 @@ GLuint CreateTexture(string path) {
 
 void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
-	scene.addModel("Resources/Models/ship.obj", gShaderProgram);
-	scene.addModel("Resources/Models/cruiser.obj", gShaderProgram); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
-	scene.addModel("Resources/Models/plane.obj", gShaderProgram);
+	scene.addModel("Resources/Models/ship.obj");
+	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	scene.addModel("Resources/Models/plane.obj");
 
-	scene.addAnimatedModel("Resources/Models/anim_test2.dae", gShaderProgramAnim);
+	scene.addAnimatedModel("Resources/Models/anim_test2.dae");
 	//scene.addAnimatedModel("Resources/Models/anim_test2.dae");
-	scene.addAnimatedModel("Resources/Models/model.dae", gShaderProgramAnim);
+	scene.addAnimatedModel("Resources/Models/model.dae");
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Create textures
 		scene.models[i].setTextureID(CreateTexture(scene.models[i].getTexturePath()));
-		scene.models[i].prepare(); //Calling this function is vital to be able to render it (Best to call it after creating the model)
+
+		//Calling this function is vital to be able to render it. Always call it before rendering!
+		//If the model will only be rendered once, this can be called after creating it.
+		scene.models[i].prepare(gShaderProgram);
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
 		scene.animatedModels[i]->setTextureID(CreateTexture(scene.animatedModels[i]->getTexturePath())); //Create textures
-		scene.animatedModels[i]->prepare(); //Calling this function is vital to be able to render it (Best to call it after creating the model)
+
+		//Calling this function is vital to be able to render it. Always call it before rendering!
+		//If the model will only be rendered once, this can be called after creating it.
+		scene.animatedModels[i]->prepare(gShaderProgramAnim);
 	}
 
 	//Add lights
