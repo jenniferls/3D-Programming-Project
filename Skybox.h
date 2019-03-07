@@ -3,12 +3,15 @@
 #include <string>
 
 class Skybox {
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i)) //To avoid redefinition in main
 public:
 	Skybox(std::string folderPath);
 	~Skybox();
 
+	void prepare(unsigned int& shaderProgram);
+
 	glm::vec3 geom[36] = {
-		glm::vec3(-1.0f, 1.0f, -1.0f),
+		/*glm::vec3(-1.0f, 1.0f, -1.0f),
 		glm::vec3(-1.0f, -1.0f, -1.0f),
 		glm::vec3(1.0f, -1.0f, -1.0f),
 		glm::vec3(1.0f, -1.0f, -1.0f),
@@ -48,7 +51,50 @@ public:
 		glm::vec3(1.0f, -1.0f, -1.0f),
 		glm::vec3(1.0f, -1.0f, -1.0f),
 		glm::vec3(-1.0f, -1.0f, 1.0f),
-		glm::vec3(1.0f, -1.0f, 1.0f)
+		glm::vec3(1.0f, -1.0f, 1.0f),*/
+
+
+		glm::vec3(- 1.0f,  1.0f, -1.0f),
+		glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3(1.0f, -1.0f, -1.0f),
+		 glm::vec3(1.0f, -1.0f, -1.0f),
+		 glm::vec3(1.0f,  1.0f, -1.0f),
+		glm::vec3(-1.0f,  1.0f, -1.0f),
+
+		glm::vec3(-1.0f, -1.0f,  1.0f),
+		glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3(-1.0f,  1.0f, -1.0f),
+		glm::vec3(-1.0f,  1.0f, -1.0f),
+		glm::vec3(-1.0f,  1.0f,  1.0f),
+		glm::vec3(-1.0f, -1.0f,  1.0f),
+
+		 glm::vec3(1.0f, -1.0f, -1.0f),
+		 glm::vec3(1.0f, -1.0f,  1.0f),
+		glm::vec3(1.0f,  1.0f,  1.0f),
+		 glm::vec3(1.0f,  1.0f,  1.0f),
+		 glm::vec3(1.0f,  1.0f, -1.0f),
+		 glm::vec3(1.0f, -1.0f, -1.0f),
+
+		glm::vec3(-1.0f, -1.0f,  1.0f),
+		glm::vec3(-1.0f,  1.0f,  1.0f),
+		 glm::vec3(1.0f,  1.0f,  1.0f),
+		 glm::vec3(1.0f,  1.0f,  1.0f),
+		 glm::vec3(1.0f, -1.0f,  1.0f),
+		glm::vec3(-1.0f, -1.0f,  1.0f),
+
+		glm::vec3(-1.0f,  1.0f, -1.0f),
+		 glm::vec3(1.0f,  1.0f, -1.0f),
+		 glm::vec3(1.0f,  1.0f,  1.0f),
+		 glm::vec3(1.0f,  1.0f,  1.0f),
+		glm::vec3(-1.0f,  1.0f,  1.0f),
+		glm::vec3(-1.0f,  1.0f, -1.0f),
+
+		glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3(-1.0f, -1.0f,  1.0f),
+		 glm::vec3(1.0f, -1.0f, -1.0f),
+		 glm::vec3(1.0f, -1.0f, -1.0f),
+		glm::vec3(-1.0f, -1.0f,  1.0f),
+		 glm::vec3(1.0f, -1.0f,  1.0f)
 	};
 
 	std::string faces[6];

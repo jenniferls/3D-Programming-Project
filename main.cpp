@@ -75,12 +75,15 @@ float gClearColour[3] {};
 //MVP-Matrix
 GLint model_id = -1;
 GLint model_id_anim = -1;
+GLint model_id_skybox = -1;
 glm::mat4 model_matrix;
 GLint view_id = -1;
 GLint view_id_anim = -1;
+GLint view_id_skybox = -1;
 glm::mat4 view_matrix;
 GLint projection_id = -1;
 GLint projection_id_anim = -1;
+GLint projection_id_skybox = -1;
 glm::mat4 projection_matrix;
 GLuint shadow_id = -1; //PF
 glm::mat4 shadow_matrix; //PF
@@ -760,19 +763,7 @@ void CreateScene(Scene& scene) {
 
 	//Skybox
 	scene.skybox.textureID = CreateCubemapTexture(scene.skybox.faces);
-	glGenVertexArrays(1, &scene.skybox.vaoID);
-	glBindVertexArray(scene.skybox.vaoID);
-
-	glEnableVertexAttribArray(0);
-
-	glGenBuffers(1, &scene.skybox.vboID);
-	glBindBuffer(GL_ARRAY_BUFFER, scene.skybox.vboID);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(scene.skybox.geom), scene.skybox.geom, GL_STATIC_DRAW);
-
-	GLint pos = glGetAttribLocation(gShaderProgramSkybox, "position");
-
-	glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), BUFFER_OFFSET(0));
+	scene.skybox.prepare(gShaderProgramSkybox);
 }
 
 void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
@@ -843,6 +834,22 @@ void Render(Scene& scene, float rotationVal) {
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0].setWorldRotation(rotationVal);
+
+	////////// Skybox //////////
+	glUseProgram(gShaderProgramSkybox);
+	glDepthMask(GL_FALSE); //Make sure the skybox is always rendered behind other objects
+
+	glUniformMatrix4fv(projection_id_skybox, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to vertex-shader
+	glUniformMatrix4fv(view_id_skybox, 1, GL_FALSE, glm::value_ptr(view_matrix)); //Sends data about view-matrix to vertex-shader
+
+	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
+	glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skybox.textureID); //Bind the texture
+
+	glBindVertexArray(scene.skybox.vaoID);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	glUseProgram(0); //Unbind program
+	glDepthMask(GL_TRUE);
 
 	////////// Render static models //////////
 	glUseProgram(gShaderProgram); //Choose a shader
@@ -1102,8 +1109,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(gShaderProgram, projection_id, view_id); //Creates mvp-matrix for normal shader
-		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim); //Creates mvp-matrix for FBX-shader
+		CreateMatrixData(gShaderProgram, projection_id, view_id); //Creates vp-matrices for normal shader
+		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim); //Creates vp-matrices for animated model-shader
+		CreateMatrixData(gShaderProgramSkybox, projection_id_skybox, view_id_skybox); // Creates vp-matrices for skybox
 
 		/*GLuint depthMatrixID = -1;*/
 		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
