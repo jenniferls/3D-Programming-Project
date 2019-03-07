@@ -37,5 +37,5 @@ void Skybox::prepare(unsigned int& shaderProgram) {
 
 	GLint pos = glGetAttribLocation(shaderProgram, "position");
 
-	glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), BUFFER_OFFSET(0));
+	glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), BUFFER_OFFSET(0));
 }

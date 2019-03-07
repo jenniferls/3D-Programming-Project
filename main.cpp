@@ -835,22 +835,6 @@ void Render(Scene& scene, float rotationVal) {
 	//Chose model rotations (default is 0.0f)
 	scene.models[0].setWorldRotation(rotationVal);
 
-	////////// Skybox //////////
-	glUseProgram(gShaderProgramSkybox);
-	glDepthMask(GL_FALSE); //Make sure the skybox is always rendered behind other objects
-
-	glUniformMatrix4fv(projection_id_skybox, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to vertex-shader
-	glUniformMatrix4fv(view_id_skybox, 1, GL_FALSE, glm::value_ptr(view_matrix)); //Sends data about view-matrix to vertex-shader
-
-	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-	glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skybox.textureID); //Bind the texture
-
-	glBindVertexArray(scene.skybox.vaoID);
-	//glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	glUseProgram(0); //Unbind program
-	glDepthMask(GL_TRUE);
-
 	////////// Render static models //////////
 	glUseProgram(gShaderProgram); //Choose a shader
 	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
@@ -912,10 +896,27 @@ void Render(Scene& scene, float rotationVal) {
 		glDrawElements(GL_TRIANGLES, scene.animatedModels[i]->numIndices, GL_UNSIGNED_INT, 0);
 	}
 	glUseProgram(0); //Unbind program
+
+	////////// Skybox //////////
+	glUseProgram(gShaderProgramSkybox);
+	glDepthFunc(GL_LEQUAL); //Make sure the skybox is always rendered behind other objects
+
+	glUniformMatrix4fv(projection_id_skybox, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to vertex-shader
+	glm::mat4 view = glm::mat3(view_matrix);
+	glUniformMatrix4fv(view_id_skybox, 1, GL_FALSE, glm::value_ptr(view)); //Sends data about view-matrix to vertex-shader
+
+	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
+	glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skybox.textureID); //Bind the texture
+
+	glBindVertexArray(scene.skybox.vaoID);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	glDepthFunc(GL_LESS); //Return to default
+	glUseProgram(0); //Unbind program
 }
 
 void keyboardUpdate() {
-	float movementSpeed = 2.5f * timer.GetDeltaTime();
+	float movementSpeed = 4.5f * timer.GetDeltaTime();
 	if (GetAsyncKeyState(GLFW_KEY_W)) //GetAsyncKeyState Determines whether a key is up or down at the time of the function call.
 		camPos += movementSpeed * camFront;
 

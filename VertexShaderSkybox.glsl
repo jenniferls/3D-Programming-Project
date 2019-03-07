@@ -8,6 +8,6 @@ out vec3 texCoords;
 
 void main(){
 	texCoords = position;
-	vec4 pos = (PROJ_MAT * VIEW_MAT) * vec4(position, 1.0);
+	vec4 pos = PROJ_MAT * VIEW_MAT * vec4(position, 1.0);
 	gl_Position = pos.xyww;
 }
