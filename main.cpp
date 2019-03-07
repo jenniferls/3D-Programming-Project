@@ -29,10 +29,8 @@
 #include "stb_image.h"
 
 #include "GameTimer.h"
-#include "RawModel.h"
-#include "OBJLoader.h"
 #include "Scene.h"
-#include "Light.h"
+#include "Skybox.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -671,71 +669,7 @@ void CreateFullScreenQuad() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
 };
 
-void CreateSkyboxGeom() {
-	struct Vertex{
-		glm::vec3 positions;
-		glm::vec2 uvs;
-	};
-	Vertex skybox[36] = {
-		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f),
-		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(1.0f, 0.0f),
-		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
-		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
-		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
-		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f),
-
-		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
-		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
-		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 1.0f),
-		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 1.0f),
-		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f),
-		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
-
-		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 0.0f),
-		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f),
-		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
-		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
-		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
-		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 0.0f),
-
-		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
-		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
-		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(0.0f, 1.0f),
-		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(0.0f, 1.0f),
-		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(0.0f, 0.0f),
-		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
-
-		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
-		glm::vec3(0.5f, -0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
-		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
-		glm::vec3(0.5f, -0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
-		glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
-		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
-
-		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f),
-		glm::vec3(0.5f,  0.5f, -0.5f),  glm::vec2(1.0f, 1.0f),
-		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
-		glm::vec3(0.5f,  0.5f,  0.5f),  glm::vec2(1.0f, 0.0f),
-		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 0.0f),
-		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f)
-	};
-
-	//glGenVertexArrays(1, &);
-	//glBindVertexArray();
-
-	//glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
-
-	//glGenBuffers(1, &);
-	//glBindBuffer(GL_ARRAY_BUFFER, );
-
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(skybox), skybox, GL_STATIC_DRAW);
-
-	//glVertexAttribPointer(, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0));
-	//glVertexAttribPointer(, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 3));
-}
-
-GLuint CreateCubemapTexture(vector<string> faces) {
+GLuint CreateCubemapTexture(string faces[]) {
 	GLuint texture = 0;
 	glGenTextures(1, &texture); // Generate the texture
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texture); //Bind trhe generated texture
@@ -749,7 +683,7 @@ GLuint CreateCubemapTexture(vector<string> faces) {
 
 	int width, height, colourChannels;
 
-	for (int i = 0; i < faces.size(); i++) {
+	for (int i = 0; i < 6; i++) {
 		const char* filePath = faces[i].c_str(); //Path to image file
 		cout << "Skybox texture path: " << filePath << endl; //Debug
 
@@ -802,22 +736,20 @@ void CreateScene(Scene& scene) {
 	scene.addModel("Resources/Models/plane.obj");
 
 	scene.addAnimatedModel("Resources/Models/anim_test2.dae");
-	//scene.addAnimatedModel("Resources/Models/anim_test2.dae");
 	scene.addAnimatedModel("Resources/Models/model.dae");
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
-		//Create textures
-		scene.models[i].setTextureID(CreateTexture(scene.models[i].getTexturePath()));
+		scene.models[i].setTextureID(CreateTexture(scene.models[i].getTexturePath())); //Create texture
 
-		//Calling this function is vital to be able to render it. Always call it before rendering!
+		//Calling this function is vital to be able to render a model. Always call it before rendering!
 		//If the model will only be rendered once, this can be called after creating it.
 		scene.models[i].prepare(gShaderProgram);
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
-		scene.animatedModels[i]->setTextureID(CreateTexture(scene.animatedModels[i]->getTexturePath())); //Create textures
+		scene.animatedModels[i]->setTextureID(CreateTexture(scene.animatedModels[i]->getTexturePath())); //Create texture
 
-		//Calling this function is vital to be able to render it. Always call it before rendering!
+		//Calling this function is vital to be able to render a model. Always call it before rendering!
 		//If the model will only be rendered once, this can be called after creating it.
 		scene.animatedModels[i]->prepare(gShaderProgramAnim);
 	}
@@ -825,6 +757,22 @@ void CreateScene(Scene& scene) {
 	//Add lights
 	scene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
 	scene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
+
+	//Skybox
+	scene.skybox.textureID = CreateCubemapTexture(scene.skybox.faces);
+	glGenVertexArrays(1, &scene.skybox.vaoID);
+	glBindVertexArray(scene.skybox.vaoID);
+
+	glEnableVertexAttribArray(0);
+
+	glGenBuffers(1, &scene.skybox.vboID);
+	glBindBuffer(GL_ARRAY_BUFFER, scene.skybox.vboID);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene.skybox.geom), scene.skybox.geom, GL_STATIC_DRAW);
+
+	GLint pos = glGetAttribLocation(gShaderProgramSkybox, "position");
+
+	glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), BUFFER_OFFSET(0));
 }
 
 void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {

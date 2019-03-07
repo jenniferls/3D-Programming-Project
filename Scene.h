@@ -1,8 +1,5 @@
 #pragma once
 #include <windows.h>
-#include "glew/include/GL/glew.h"
-#include <gl/GL.h>
-
 #include <vector>
 #include <string>
 #include "RawModel.h"
@@ -10,6 +7,7 @@
 #include "OBJLoader.h"
 #include "AssimpLoader.h"
 #include "Light.h"
+#include "Skybox.h"
 
 class Scene {
 public:
@@ -32,6 +30,7 @@ public:
 	std::vector<glm::vec3> lightColors; //List of all light colors
 
 	AssimpLoader animLoader;
+	Skybox skybox = "Resources/Textures/Skybox1";
 
 private:
 	OBJLoader loader;
