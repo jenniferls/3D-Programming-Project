@@ -916,7 +916,7 @@ void Render(Scene& scene, float rotationVal) {
 }
 
 void keyboardUpdate() {
-	float movementSpeed = 4.5f * timer.GetDeltaTime();
+	float movementSpeed = 7.5f * timer.GetDeltaTime();
 	if (GetAsyncKeyState(GLFW_KEY_W)) //GetAsyncKeyState Determines whether a key is up or down at the time of the function call.
 		camPos += movementSpeed * camFront;
 
@@ -957,11 +957,11 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
 	camPitch += yOffset;
 
 	//Constraining camera movement to avoid flipping
-	if (camPitch >= 90.0f) {
-		camPitch = 90.0f;;
+	if (camPitch >= 89.0f) {
+		camPitch = 89.0f;;
 	}
-	if (camPitch <= -90.0f) {
-		camPitch = -90.0f;
+	if (camPitch <= -89.0f) {
+		camPitch = -89.0f;
 	}
 
 	//Calculating direction vector
