@@ -55,3 +55,4 @@ void main () {
 	result += calcDiffuse(light_positions[1], light_colors[1], norm) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
 	fragment_color = result;
+	}

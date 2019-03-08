@@ -79,14 +79,17 @@ float gClearColour[3] {};
 GLint model_id = -1;
 GLint model_id_anim = -1;
 GLint model_id_skybox = -1;
+GLint model_id_blend = -1;
 glm::mat4 model_matrix;
 GLint view_id = -1;
 GLint view_id_anim = -1;
 GLint view_id_skybox = -1;
+GLint view_id_blend = -1;
 glm::mat4 view_matrix;
 GLint projection_id = -1;
 GLint projection_id_anim = -1;
 GLint projection_id_skybox = -1;
+GLint projection_id_blend = -1;
 glm::mat4 projection_matrix;
 GLuint shadow_id = -1; //PF
 glm::mat4 shadow_matrix; //PF
@@ -1003,7 +1006,38 @@ void Render(Scene& scene, float rotationVal) {
 	}
 	glUseProgram(0); //Unbind program
 
-	////////// Skybox //////////
+	////////// Blend-mapped objects //////////
+	glUseProgram(gShaderProgramBlend);
+
+	glUniformMatrix4fv(projection_id_blend, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
+	glUniformMatrix4fv(view_id_blend, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgramBlend, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgramBlend, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
+
+	//Draws models with blendmap in the scene
+	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
+		//Send model matrix data per model
+		CreateModelMatrix(scene.blendmapModels[i].getWorldRotation(), scene.blendmapModels[i].getWorldPosition(), gShaderProgramBlend, model_id_blend);  //Exchange rotation for "0.0f" to stop rotation
+		glUniformMatrix4fv(model_id_blend, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
+
+		//Send texture data
+		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i].getTextureID()); //Bind the texture
+		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i].getNormalID());
+
+		glUniform3fv(scene.blendmapModels[i].ambID, 1, glm::value_ptr(scene.blendmapModels[i].ambientVal));		//Ambient
+		glUniform3fv(scene.blendmapModels[i].diffID, 1, glm::value_ptr(scene.blendmapModels[i].diffuseVal));	//Diffuse
+		glUniform3fv(scene.blendmapModels[i].specID, 1, glm::value_ptr(scene.blendmapModels[i].specularVal));	//Specular
+
+		// tell opengl we are going to use the VAO we described earlier
+		glBindVertexArray(scene.blendmapModels[i].vaoID);
+
+		glDrawArrays(GL_TRIANGLES, 0, scene.blendmapModels[i].getVertCount());
+	}
+	glUseProgram(0); //Unbind program
+
+	////////// Skybox ////////// (Rendered last!)
 	glUseProgram(gShaderProgramSkybox);
 	glDepthFunc(GL_LEQUAL); //Make sure the skybox is always rendered behind other objects
 
@@ -1217,7 +1251,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(gShaderProgram, projection_id, view_id); //Creates vp-matrices for normal shader
+		CreateMatrixData(gShaderProgram, projection_id, view_id); //Creates vp-matrices for standard shader
+		CreateMatrixData(gShaderProgramBlend, projection_id_blend, view_id_blend); //Creates vp-matrices for blendmap shader
 		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim); //Creates vp-matrices for animated model-shader
 		CreateMatrixData(gShaderProgramSkybox, projection_id_skybox, view_id_skybox); // Creates vp-matrices for skybox
 

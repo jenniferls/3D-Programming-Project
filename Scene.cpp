@@ -23,6 +23,14 @@ void Scene::addModel(const char* path) {
 	this->modelCount++;
 }
 
+void Scene::addBlendmapModel(const char* path) {
+	RawModel model(path);
+	loader.loadOBJ(model); //Loads model from file
+	loader.loadMTL(model); //Loads material from file
+	blendmapModels.push_back(model);
+	this->blendMapModelCount++;
+}
+
 void Scene::addAnimatedModel(std::string path) {
 	animatedModels.push_back(new AnimatedModel(path));
 	animLoader.LoadModel(animatedModels[this->animatedModelCount]);//Load the model
@@ -35,6 +43,10 @@ int Scene::getModelCount() const {
 
 unsigned int Scene::getAnimModelCount() const {
 	return this->animatedModelCount;
+}
+
+int Scene::getBlendmapModelCount() const {
+	return this->blendMapModelCount;
 }
 
 void Scene::addLight(glm::vec3 position, glm::vec3 color) {
