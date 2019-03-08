@@ -141,6 +141,13 @@ bool OBJLoader::loadMTL(RawModel &model) {
 			tex = "Resources/Textures/" + tex;
 			model.setTexturePath(tex);
 		}
+		else if (line.substr(0, 12) == "bump  -bm 1 ") {
+			std::istringstream s(line.substr(12));
+			std::string tex;
+			s >> tex;
+			tex = "Resources/Textures/" + tex;
+			model.setNormalTexturePath(tex);
+		}
 	}
 	return true;
 }

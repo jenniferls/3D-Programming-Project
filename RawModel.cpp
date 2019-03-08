@@ -8,6 +8,7 @@ RawModel::RawModel(const char* filePath) {
 	this->vertCount = 0;
 	this->path = filePath;
 	this->texturePath = "Path not loaded";
+	this->normalTexPath = "Path not loaded";
 	this->textureID = 0;
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
@@ -35,6 +36,16 @@ void RawModel::setVertCount(int count) {
 
 void RawModel::setTextureID(unsigned int id) {
 	this->textureID = id;
+}
+
+unsigned int RawModel::getNormalID() const
+{
+	return this->normalID;
+}
+
+void RawModel::setNormalID(unsigned int id)
+{
+	this->normalID = id;
 }
 
 glm::vec3 RawModel::getWorldPosition() const {
@@ -94,8 +105,17 @@ std::string RawModel::getTexturePath() const {
 	return this->texturePath;
 }
 
+std::string RawModel::getNormalTexturePath() const
+{
+	return this->normalTexPath;
+}
+
 void RawModel::setTexturePath(std::string texPath) {
 	this->texturePath = texPath;
+}
+
+void RawModel::setNormalTexturePath(std::string texPath){
+	this->normalTexPath = texPath;
 }
 
 void RawModel::setMaterialPath(std::string matPath) {

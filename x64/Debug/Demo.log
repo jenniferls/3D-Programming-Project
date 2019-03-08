@@ -1,2 +1,7 @@
 ﻿  main.cpp
-  Demo.vcxproj -> G:\My Documents\BTH Studies\Inlämningsuppgifter\3D-Programming\Project\3DProject\x64\Debug\3DProject.exe
+d:\år 2\lp3\3dprog\project\3d-programming-project\main.cpp(1229): warning C4552: '+': result of expression not used
+  OBJLoader.cpp
+  RawModel.cpp
+  Scene.cpp
+  Generating Code...
+  Demo.vcxproj -> D:\År 2\LP3\3DProg\Project\3D-Programming-Project\x64\Debug\3DProject.exe

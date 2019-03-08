@@ -21,11 +21,15 @@ public:
 	void setVertCount(int count);
 	const char* getPath() const;
 	std::string getTexturePath() const;
+	std::string getNormalTexturePath() const;
 	void setTexturePath(std::string texPath);
+	void setNormalTexturePath(std::string texPath);
 	void setMaterialPath(std::string matPath);
 	std::string getMaterialPath() const;
 	unsigned int getTextureID() const;
 	void setTextureID(unsigned int id);
+	unsigned int getNormalID() const;
+	void setNormalID(unsigned int id);
 
 	glm::vec3 getWorldPosition() const;
 	void setWorldPosition(glm::vec3 position);
@@ -58,8 +62,11 @@ public:
 private:
 	void prepareMaterials();
 
+	unsigned int normalID;
+
 	const char* path; //File path
 	std::string texturePath; //File path to texture file
+	std::string normalTexPath;
 	std::string materialPath; //File path to .mtl-file
 	int vertCount;
 	glm::vec3 worldPosition;
