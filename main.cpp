@@ -1154,6 +1154,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	}
 
 	CreateShaders(); //5. Create vertex- and fragment-shaders
+	CreateBlendmapShaders();
 	CreateAnimShaders(); //5. Create shaders for animated models
 	CreateSkyboxShaders(); //5.
 	CreateParticleShaders(); //5.
