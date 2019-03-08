@@ -116,6 +116,15 @@
     <None Include="FragmentShaderSkybox.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="FragmentShaderBlend.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="GeometryShaderBlend.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="VertexShaderBlend.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
