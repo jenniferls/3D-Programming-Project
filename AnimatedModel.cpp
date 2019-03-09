@@ -29,6 +29,8 @@ AnimatedModel::AnimatedModel(std::string filePath) {
 	this->specularVal = { 0.0f, 0.0f, 0.0f };
 
 	this->scene = nullptr;
+
+	createBuffers();
 }
 
 AnimatedModel::~AnimatedModel() {
@@ -52,15 +54,23 @@ void AnimatedModel::prepareJoints() {
 	}
 }
 
+void AnimatedModel::createBuffers() {
+	glGenVertexArrays(1, &vaoID); // Vertex Array Object (VAO), description of the inputs to the GPU
+
+	glGenBuffers(1, &vboID); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
+
+	glGenBuffers(1, &iboID); //Create index buffer
+
+	glGenBuffers(1, &vboIDJoints); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
+}
+
 void AnimatedModel::prepare(unsigned int& shaderProgram) {
 	this->shaderProg = shaderProgram;
 	prepareMaterials();
 	prepareJoints();
 
-	glGenVertexArrays(1, &vaoID); // Vertex Array Object (VAO), description of the inputs to the GPU 
 	glBindVertexArray(vaoID); // bind is like "enabling" the object to use it
 
-	glGenBuffers(1, &vboID); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glBindBuffer(GL_ARRAY_BUFFER, vboID); // Bind the buffer ID as an ARRAY_BUFFER
 
 	glBufferData(GL_ARRAY_BUFFER, getVertCount() * ANIM_VERTEX_SIZE, vertices.data(), GL_STATIC_DRAW);
@@ -69,7 +79,6 @@ void AnimatedModel::prepare(unsigned int& shaderProgram) {
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 
-	glGenBuffers(1, &iboID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
@@ -84,7 +93,6 @@ void AnimatedModel::prepare(unsigned int& shaderProgram) {
 	glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
 	glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, ANIM_VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 
-	glGenBuffers(1, &vboIDJoints); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDJoints); // Bind the buffer ID as an ARRAY_BUFFER
 
 	glBufferData(GL_ARRAY_BUFFER, perVertexJointData.size() * VERTEX_JOINT_DATA_SIZE, perVertexJointData.data(), GL_STATIC_DRAW);

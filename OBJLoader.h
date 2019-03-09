@@ -9,8 +9,8 @@ public:
 	OBJLoader();
 	~OBJLoader();
 
-	bool loadOBJ(RawModel &model);
-	bool loadMTL(RawModel &model);
+	bool loadOBJ(RawModel *model);
+	bool loadMTL(RawModel *model);
 
 private:
 };

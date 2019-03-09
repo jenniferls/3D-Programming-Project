@@ -19,6 +19,8 @@ RawModel::RawModel(const char* filePath) {
 	this->materialPath = "Path not loaded";
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->worldRotation = 0.0f;
+
+	createBuffers();
 }
 
 RawModel::~RawModel() {
@@ -74,10 +76,8 @@ void RawModel::prepare(unsigned int& shaderProgram) {
 	this->shaderProg = shaderProgram;
 	prepareMaterials();
 
-	glGenVertexArrays(1, &vaoID); // Vertex Array Object (VAO), description of the inputs to the GPU 
 	glBindVertexArray(vaoID); // bind is like "enabling" the object to use it
 
-	glGenBuffers(1, &vboID); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 	glBindBuffer(GL_ARRAY_BUFFER, vboID); // Bind the buffer ID as an ARRAY_BUFFER
 
 	glBufferData(GL_ARRAY_BUFFER, getVertCount() * VERTEX_SIZE, vertices.data(), GL_STATIC_DRAW);
@@ -95,6 +95,12 @@ void RawModel::prepare(unsigned int& shaderProgram) {
 	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
 	glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
 	glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
+}
+
+void RawModel::createBuffers() {
+	glGenVertexArrays(1, &vaoID); // Vertex Array Object (VAO), description of the inputs to the GPU 
+
+	glGenBuffers(1, &vboID); // create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
 }
 
 const char* RawModel::getPath() const {

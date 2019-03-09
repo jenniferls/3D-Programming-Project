@@ -44,6 +44,7 @@ public:
 	AnimatedModel(std::string filePath);
 	~AnimatedModel();
 
+	void createBuffers();
 	void prepare(unsigned int& shaderProgram);
 
 	std::string getPath() const;

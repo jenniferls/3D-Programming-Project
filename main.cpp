@@ -847,12 +847,12 @@ void CreateScene(Scene& scene) {
 	scene.addAnimatedModel("Resources/Models/model.dae");
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
-		scene.models[i].setTextureID(CreateTexture(scene.models[i].getTexturePath())); //Create texture
-		scene.models[i].setNormalID(CreateTexture(scene.models[i].getNormalTexturePath()));
+		scene.models[i]->setTextureID(CreateTexture(scene.models[i]->getTexturePath())); //Create texture
+		scene.models[i]->setNormalID(CreateTexture(scene.models[i]->getNormalTexturePath()));
 
 		//Calling this function is vital to be able to render a model. Always call it before rendering!
 		//If the model will only be rendered once, this can be called after creating it.
-		scene.models[i].prepare(gShaderProgram);
+		scene.models[i]->prepare(gShaderProgram);
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
@@ -933,14 +933,14 @@ void Render(Scene& scene, float rotationVal) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//Choose model placement (default is origo)
-	scene.models[1].setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-	scene.models[2].setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
-	scene.models[3].setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
+	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	scene.models[2]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+	scene.models[3]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
 
 	//Chose model rotations (default is 0.0f)
-	scene.models[0].setWorldRotation(rotationVal);
+	scene.models[0]->setWorldRotation(rotationVal);
 
 	////////// Render static models //////////
 	glUseProgram(gShaderProgram); //Choose a shader
@@ -953,23 +953,24 @@ void Render(Scene& scene, float rotationVal) {
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
-		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
+		CreateModelMatrix(scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
+		//scene.models[i].prepare(gShaderProgram);
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-		glBindTexture(GL_TEXTURE_2D, scene.models[i].getTextureID()); //Bind the texture
+		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
 		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
-		glBindTexture(GL_TEXTURE_2D, scene.models[i].getNormalID());
+		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getNormalID());
 
-		glUniform3fv(scene.models[i].ambID, 1, glm::value_ptr(scene.models[i].ambientVal));		//Ambient
-		glUniform3fv(scene.models[i].diffID, 1, glm::value_ptr(scene.models[i].diffuseVal));	//Diffuse
-		glUniform3fv(scene.models[i].specID, 1, glm::value_ptr(scene.models[i].specularVal));	//Specular
+		glUniform3fv(scene.models[i]->ambID, 1, glm::value_ptr(scene.models[i]->ambientVal));		//Ambient
+		glUniform3fv(scene.models[i]->diffID, 1, glm::value_ptr(scene.models[i]->diffuseVal));	//Diffuse
+		glUniform3fv(scene.models[i]->specID, 1, glm::value_ptr(scene.models[i]->specularVal));	//Specular
 
 		// tell opengl we are going to use the VAO we described earlier
-		glBindVertexArray(scene.models[i].vaoID);
+		glBindVertexArray(scene.models[i]->vaoID);
 
-		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].getVertCount());
+		glDrawArrays(GL_TRIANGLES, 0, scene.models[i]->getVertCount());
 	}
 	glUseProgram(0); //Unbind program
 
@@ -985,6 +986,7 @@ void Render(Scene& scene, float rotationVal) {
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
 		CreateModelMatrix(scene.animatedModels[i]->getWorldRotation(), scene.animatedModels[i]->getWorldPosition(), gShaderProgramAnim, model_id_anim);
 		glUniformMatrix4fv(model_id_anim, 1, GL_FALSE, glm::value_ptr(model_matrix));
+		//scene.animatedModels[i]->prepare(gShaderProgramAnim);
 
 		scene.animLoader.CalcJointTransform(timer.GetTimeSec(), scene.animatedModels[i]); //Calculate joint transforms
 		for (int j = 0; j < scene.animatedModels[i]->jointCount; j++) {
@@ -1017,23 +1019,23 @@ void Render(Scene& scene, float rotationVal) {
 	//Draws models with blendmap in the scene
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
 		//Send model matrix data per model
-		CreateModelMatrix(scene.blendmapModels[i].getWorldRotation(), scene.blendmapModels[i].getWorldPosition(), gShaderProgramBlend, model_id_blend);  //Exchange rotation for "0.0f" to stop rotation
+		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramBlend, model_id_blend);  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id_blend, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
-		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i].getTextureID()); //Bind the texture
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->getTextureID()); //Bind the texture
 		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
-		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i].getNormalID());
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->getNormalID());
 
-		glUniform3fv(scene.blendmapModels[i].ambID, 1, glm::value_ptr(scene.blendmapModels[i].ambientVal));		//Ambient
-		glUniform3fv(scene.blendmapModels[i].diffID, 1, glm::value_ptr(scene.blendmapModels[i].diffuseVal));	//Diffuse
-		glUniform3fv(scene.blendmapModels[i].specID, 1, glm::value_ptr(scene.blendmapModels[i].specularVal));	//Specular
+		glUniform3fv(scene.blendmapModels[i]->ambID, 1, glm::value_ptr(scene.blendmapModels[i]->ambientVal));		//Ambient
+		glUniform3fv(scene.blendmapModels[i]->diffID, 1, glm::value_ptr(scene.blendmapModels[i]->diffuseVal));	//Diffuse
+		glUniform3fv(scene.blendmapModels[i]->specID, 1, glm::value_ptr(scene.blendmapModels[i]->specularVal));	//Specular
 
 		// tell opengl we are going to use the VAO we described earlier
-		glBindVertexArray(scene.blendmapModels[i].vaoID);
+		glBindVertexArray(scene.blendmapModels[i]->vaoID);
 
-		glDrawArrays(GL_TRIANGLES, 0, scene.blendmapModels[i].getVertCount());
+		glDrawArrays(GL_TRIANGLES, 0, scene.blendmapModels[i]->getVertCount());
 	}
 	glUseProgram(0); //Unbind program
 

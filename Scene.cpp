@@ -13,21 +13,27 @@ Scene::~Scene() {
 		delete animatedModels[i];
 	}
 	animatedModels.clear();
+	for (int i = 0; i < this->modelCount; i++) {
+		delete models[i];
+	}
+	models.clear();
+	for (int i = 0; i < this->blendMapModelCount; i++) {
+		delete blendmapModels[i];
+	}
+	blendmapModels.clear();
 }
 
 void Scene::addModel(const char* path) {
-	RawModel model(path);
-	loader.loadOBJ(model); //Loads model from file
-	loader.loadMTL(model); //Loads material from file
-	models.push_back(model);
+	models.push_back(new RawModel (path));
+	loader.loadOBJ(models[this->modelCount]); //Loads model from file
+	loader.loadMTL(models[this->modelCount]); //Loads material from file
 	this->modelCount++;
 }
 
 void Scene::addBlendmapModel(const char* path) {
-	RawModel model(path);
-	loader.loadOBJ(model); //Loads model from file
-	loader.loadMTL(model); //Loads material from file
-	blendmapModels.push_back(model);
+	blendmapModels.push_back(new RawModel (path));
+	loader.loadOBJ(blendmapModels[this->blendMapModelCount]); //Loads model from file
+	loader.loadMTL(blendmapModels[this->blendMapModelCount]); //Loads material from file
 	this->blendMapModelCount++;
 }
 

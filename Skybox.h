@@ -9,51 +9,9 @@ public:
 	~Skybox();
 
 	void prepare(unsigned int& shaderProgram);
+	void createBuffers();
 
 	glm::vec3 geom[36] = {
-		/*glm::vec3(-1.0f, 1.0f, -1.0f),
-		glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3(1.0f, -1.0f, -1.0f),
-		glm::vec3(1.0f, -1.0f, -1.0f),
-		glm::vec3(1.0f, 1.0f, -1.0f),
-		glm::vec3(-1.0f, 1.0f, -1.0f),
-
-		glm::vec3(-1.0f, -1.0f, 1.0f),
-		glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3(-1.0f, 1.0f, -1.0f),
-		glm::vec3(-1.0f, 1.0f, -1.0f),
-		glm::vec3(-1.0f, 1.0f, 1.0f),
-		glm::vec3(-1.0f, -1.0f, 1.0f),
-
-		glm::vec3(1.0f, -1.0f, -1.0f),
-		glm::vec3(1.0f, -1.0f, 1.0f),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(1.0f, 1.0f, -1.0f),
-		glm::vec3(1.0f, -1.0f, -1.0f),
-
-		glm::vec3(-1.0f, -1.0f, 1.0f),
-		glm::vec3(-1.0f, 1.0f, 1.0f),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(1.0f, -1.0f, 1.0f),
-		glm::vec3(-1.0f, -1.0f, 1.0f),
-
-		glm::vec3(-1.0f, 1.0f, -1.0f),
-		glm::vec3(1.0f, 1.0f, -1.0f),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-1.0f, 1.0f, 1.0f),
-		glm::vec3(-1.0f, 1.0f, -1.0f),
-
-		glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3(-1.0f, -1.0f, 1.0f),
-		glm::vec3(1.0f, -1.0f, -1.0f),
-		glm::vec3(1.0f, -1.0f, -1.0f),
-		glm::vec3(-1.0f, -1.0f, 1.0f),
-		glm::vec3(1.0f, -1.0f, 1.0f),*/
-
-
 		glm::vec3(-1.0f,  1.0f, -1.0f),
 		glm::vec3(-1.0f, -1.0f, -1.0f),
 		glm::vec3(1.0f, -1.0f, -1.0f),

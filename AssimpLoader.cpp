@@ -100,8 +100,6 @@ bool AssimpLoader::LoadModel(AnimatedModel* model) {
 			}
 			model->numIndices = model->indices.size();
 			model->setVertCount(model->vertices.size());
-
-			
 		}
 	}
 	else {

@@ -24,8 +24,8 @@ public:
 	void addLight(glm::vec3 position, glm::vec3 color);
 	int getLightCount() const;
 
-	std::vector<RawModel> models;
-	std::vector<RawModel> blendmapModels; //Models to be rendered with a blendmap
+	std::vector<RawModel*> models;
+	std::vector<RawModel*> blendmapModels; //Models to be rendered with a blendmap
 	std::vector<AnimatedModel*> animatedModels;
 
 	std::vector<Light> lights; //List of lights

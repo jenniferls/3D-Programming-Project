@@ -56,6 +56,7 @@ public:
 	unsigned int vboID;
 
 	void prepare(unsigned int& shaderProgram);
+	void createBuffers();
 
 	unsigned int shaderProg;
 
