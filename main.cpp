@@ -869,6 +869,7 @@ void CreateScene(Scene& scene) {
 
 	//Skybox
 	scene.skybox.textureID = CreateCubemapTexture(scene.skybox.faces);
+	scene.skybox.prepareBuffers();
 	scene.skybox.prepare(gShaderProgramSkybox);
 }
 
@@ -955,7 +956,7 @@ void Render(Scene& scene, float rotationVal) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
-		//scene.models[i].prepare(gShaderProgram);
+		//scene.models[i]->prepare(gShaderProgram);
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -1046,6 +1047,7 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(projection_id_skybox, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to vertex-shader
 	glm::mat4 view = glm::mat3(view_matrix);
 	glUniformMatrix4fv(view_id_skybox, 1, GL_FALSE, glm::value_ptr(view)); //Sends data about view-matrix to vertex-shader
+	//scene.skybox.prepare(gShaderProgramSkybox);
 
 	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 	glBindTexture(GL_TEXTURE_CUBE_MAP, scene.skybox.textureID); //Bind the texture

@@ -33,8 +33,6 @@ void Skybox::prepare(unsigned int& shaderProgram) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, vboID);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(geom), geom, GL_STATIC_DRAW);
-
 	GLint pos = glGetAttribLocation(shaderProgram, "position");
 
 	glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), BUFFER_OFFSET(0));
@@ -44,4 +42,9 @@ void Skybox::createBuffers(){
 	glGenVertexArrays(1, &vaoID);
 
 	glGenBuffers(1, &vboID);
+}
+
+void Skybox::prepareBuffers() {
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(geom), geom, GL_STATIC_DRAW);
 }

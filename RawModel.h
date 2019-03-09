@@ -57,6 +57,7 @@ public:
 
 	void prepare(unsigned int& shaderProgram);
 	void createBuffers();
+	void prepareBuffers();
 
 	unsigned int shaderProg;
 

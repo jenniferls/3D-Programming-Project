@@ -46,6 +46,7 @@ public:
 
 	void createBuffers();
 	void prepare(unsigned int& shaderProgram);
+	void prepareBuffers();
 
 	std::string getPath() const;
 	std::string getTexturePath() const;

@@ -10,6 +10,7 @@ public:
 
 	void prepare(unsigned int& shaderProgram);
 	void createBuffers();
+	void prepareBuffers();
 
 	glm::vec3 geom[36] = {
 		glm::vec3(-1.0f,  1.0f, -1.0f),

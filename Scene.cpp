@@ -27,6 +27,7 @@ void Scene::addModel(const char* path) {
 	models.push_back(new RawModel (path));
 	loader.loadOBJ(models[this->modelCount]); //Loads model from file
 	loader.loadMTL(models[this->modelCount]); //Loads material from file
+	models[this->modelCount]->prepareBuffers();
 	this->modelCount++;
 }
 
@@ -34,12 +35,14 @@ void Scene::addBlendmapModel(const char* path) {
 	blendmapModels.push_back(new RawModel (path));
 	loader.loadOBJ(blendmapModels[this->blendMapModelCount]); //Loads model from file
 	loader.loadMTL(blendmapModels[this->blendMapModelCount]); //Loads material from file
+	blendmapModels[this->blendMapModelCount]->prepareBuffers();
 	this->blendMapModelCount++;
 }
 
 void Scene::addAnimatedModel(std::string path) {
 	animatedModels.push_back(new AnimatedModel(path));
 	animLoader.LoadModel(animatedModels[this->animatedModelCount]);//Load the model
+	animatedModels[animatedModelCount]->prepareBuffers();
 	this->animatedModelCount++;
 }
 
