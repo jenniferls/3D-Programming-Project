@@ -1040,9 +1040,9 @@ void Render(Scene& scene, float rotationVal) {
 	}
 	glUseProgram(0); //Unbind program
 
-	////////// Skybox ////////// (Rendered last!)
+	////////// Skybox ////////// (Rendered last! This is more efficient)
 	glUseProgram(gShaderProgramSkybox);
-	glDepthFunc(GL_LEQUAL); //Make sure the skybox is always rendered behind other objects
+	glDepthFunc(GL_LEQUAL); //Passes the depth test with values less than or equal to the depth buffer
 
 	glUniformMatrix4fv(projection_id_skybox, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to vertex-shader
 	glm::mat4 view = glm::mat3(view_matrix);

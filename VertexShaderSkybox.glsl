@@ -9,5 +9,5 @@ out vec3 texCoords;
 void main(){
 	texCoords = position;
 	vec4 pos = PROJ_MAT * VIEW_MAT * vec4(position, 1.0);
-	gl_Position = pos.xyww;
+	gl_Position = pos.xyww; // w / w = 1.0 meaning we can ensure the skybox will always render behind other objects
 }
