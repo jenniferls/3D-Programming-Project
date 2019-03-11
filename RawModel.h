@@ -47,10 +47,19 @@ public:
 	glm::vec3 ambientVal;
 	glm::vec3 specularVal;
 	glm::vec3 diffuseVal;
-
 	unsigned int ambID;
 	unsigned int specID;
 	unsigned int diffID;
+
+	//Used with blendmapping
+	std::string blendmapPath; //File path to blendmap texture file
+	std::string rTexPath;
+	std::string gTexPath;
+	std::string bTexPath;
+	unsigned int blendTexID;
+	unsigned int rTexID;
+	unsigned int gTexID;
+	unsigned int bTexID;
 
 	unsigned int vaoID;
 	unsigned int vboID;

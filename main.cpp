@@ -840,8 +840,10 @@ void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
 	scene.addModel("Resources/Models/ship.obj");
 	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
-	scene.addModel("Resources/Models/plane.obj");
+	//scene.addModel("Resources/Models/plane.obj");
 	scene.addModel("Resources/Models/cube.obj");
+
+	scene.addBlendmapModel("Resources/Models/plane.obj");
 
 	scene.addAnimatedModel("Resources/Models/anim_test2.dae");
 	scene.addAnimatedModel("Resources/Models/model.dae");
@@ -853,6 +855,25 @@ void CreateScene(Scene& scene) {
 		//Calling this function is vital to be able to render a model. Always call it before rendering!
 		//If the model will only be rendered once, this can be called after creating it.
 		scene.models[i]->prepare(gShaderProgram);
+	}
+
+	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
+		scene.blendmapModels[i]->setTextureID(CreateTexture(scene.blendmapModels[i]->getTexturePath()));
+		scene.blendmapModels[i]->setNormalID(CreateTexture(scene.blendmapModels[i]->getNormalTexturePath()));
+
+		scene.blendmapModels[i]->blendmapPath = "Resources/Textures/basic_blendmap3.jpg";
+		scene.blendmapModels[i]->rTexPath = "Resources/Textures/brickwall_normal.jpg"; //Test
+		scene.blendmapModels[i]->gTexPath = "Resources/Textures/container.jpg"; //Test
+		scene.blendmapModels[i]->bTexPath = "Resources/Textures/texture1.jpg"; //Test
+
+		scene.blendmapModels[i]->blendTexID = CreateTexture(scene.blendmapModels[i]->blendmapPath);
+		scene.blendmapModels[i]->rTexID = CreateTexture(scene.blendmapModels[i]->rTexPath);
+		scene.blendmapModels[i]->gTexID = CreateTexture(scene.blendmapModels[i]->gTexPath);
+		scene.blendmapModels[i]->bTexID = CreateTexture(scene.blendmapModels[i]->bTexPath);
+
+		//Calling this function is vital to be able to render a model. Always call it before rendering!
+		//If the model will only be rendered once, this can be called after creating it.
+		scene.blendmapModels[i]->prepare(gShaderProgramBlend);
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
@@ -935,10 +956,10 @@ void Render(Scene& scene, float rotationVal) {
 
 	//Choose model placement (default is origo)
 	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-	scene.models[2]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
-	scene.models[3]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
+	scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
+	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0]->setWorldRotation(rotationVal);
@@ -1010,14 +1031,14 @@ void Render(Scene& scene, float rotationVal) {
 	glUseProgram(0); //Unbind program
 
 	////////// Blend-mapped objects //////////
-	glUseProgram(gShaderProgramBlend);
-
+	glUseProgram(gShaderProgramBlend); //Choose a shader
 	glUniformMatrix4fv(projection_id_blend, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id_blend, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+
 	glUniform3fv(glGetUniformLocation(gShaderProgramBlend, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(glGetUniformLocation(gShaderProgramBlend, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
 
-	//Draws models with blendmap in the scene
+	//Draws all static models in the scene
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramBlend, model_id_blend);  //Exchange rotation for "0.0f" to stop rotation
@@ -1028,6 +1049,19 @@ void Render(Scene& scene, float rotationVal) {
 		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->getTextureID()); //Bind the texture
 		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
 		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->getNormalID());
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->blendTexID);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->rTexID);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->gTexID);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->bTexID);
+
+		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "blendmapSampler"), 2);
+		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "rTexSampler"), 3);
+		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "gTexSampler"), 4);
+		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "bTexSampler"), 5);
 
 		glUniform3fv(scene.blendmapModels[i]->ambID, 1, glm::value_ptr(scene.blendmapModels[i]->ambientVal));		//Ambient
 		glUniform3fv(scene.blendmapModels[i]->diffID, 1, glm::value_ptr(scene.blendmapModels[i]->diffuseVal));	//Diffuse

@@ -7,9 +7,19 @@ RawModel::RawModel(const char* filePath) {
 	this->vboID = 0;
 	this->vertCount = 0;
 	this->path = filePath;
+
 	this->texturePath = "Path not loaded";
 	this->normalTexPath = "Path not loaded";
+	this->blendmapPath = "Path not loaded";
+	this->rTexPath = "Path not loaded";
+	this->gTexPath = "Path not loaded";
+	this->bTexPath = "Path not loaded";
 	this->textureID = 0;
+	this->blendTexID = 0;
+	this->rTexID = 0;
+	this->gTexID = 0;
+	this->bTexID = 0;
+
 	this->ambientVal = { 0.0f, 0.0f, 0.0f };
 	this->diffuseVal = { 0.0f, 0.0f, 0.0f };
 	this->specularVal = { 0.0f, 0.0f, 0.0f };

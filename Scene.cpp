@@ -3,6 +3,7 @@
 Scene::Scene() {
 	this->modelCount = 0;
 	this->animatedModelCount = 0;
+	this->blendMapModelCount = 0;
 	this->lightCount = 0;
 }
 
