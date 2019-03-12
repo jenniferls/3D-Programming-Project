@@ -8,7 +8,7 @@ out vec3 normalsOut;
 out vec4 shadow_coord;
 
 //uniform mat4 MODEL_MAT;
-//uniform mat4 depthMVP;
+//uniform mat4 SHADOW_MAT;
 
 void main() {
 	aTexture = texture_coords; //Pass the texture info to the geometry shader
@@ -16,5 +16,5 @@ void main() {
 
 	gl_Position = vec4(vertex_position, 1.0);
 
-//	shadow_coord = depthMVP * (MODEL_MAT * vec4(vertex_position, 1.0));
+//	shadow_coord = SHADOW_MAT * (MODEL_MAT * vec4(vertex_position, 1.0));
 }

@@ -93,6 +93,38 @@ GameTimer timer;
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 
+unsigned int depthMapFbo;
+unsigned int depthMap[1];
+int CreateFrameBufferSM() {
+	int err = 0;
+	// =================== COLOUR BUFFER =======================================
+	// add "Attachments" to the framebuffer (textures to write to/read from)
+	glGenTextures(1, depthMap);
+	// ===================== DEPTH BUFFER ==================================== 
+	glBindTexture(GL_TEXTURE_2D, depthMap[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glGenFramebuffers(1, &depthMapFbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap[0], 0);
+
+	// check if framebuffer is complete (usable):
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+	{
+		err = 0;
+	}
+	else
+		err = -1;
+
+	// bind default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return err;
+}
+
 unsigned int gFbo;
 unsigned int gFboTextureAttachments[2]; // first for colour, second for depth
 //const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -708,7 +740,7 @@ void Render(Scene scene, float rotationVal) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.models[i].getWorldRotation(), scene.models[i].getWorldPosition());  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix));					//Sends data about model-matrix to geometry-shader
-		glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
+		glUniformMatrix4fv(glGetUniformLocation(gShaderProgram, "SHADOW_MAT"), 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -883,6 +915,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
 
+	if (CreateFrameBufferSM() != 0)
+		shutdown = true;
+
 	Scene gameScene = CreateScene();
 	CreateFullScreenQuad();
 
@@ -909,6 +944,13 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		keyboardUpdate();
 
 		glViewport(0, 0, WIDTH, HEIGHT);
+
+		//Shadowmap prepass
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		RenderSM(gameScene, rotation); //9. Render
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// first pass
@@ -929,14 +971,14 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		static float scale = 1.0f;
 		ImGui::SliderFloat("Scale", &scale, 0.0f, 1.0f);
-		static bool renderDepth = true;
+		static bool renderDepth = false;
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
 		CreateMatrixData(); //Creates mvp-matrix. Exchange rotation for "0.0f" to stop rotation
 
-		RenderSM(gameScene, rotation); //9. Render
-		//Render(gameScene, rotation);
+		//RenderSM(gameScene, rotation); //9. Render
+		Render(gameScene, rotation);
 		// first pass is done!
 		// now render a second pass
 		// bind default framebuffer
