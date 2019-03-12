@@ -41,9 +41,11 @@
 #define WIDTH 1280.0f
 #define HEIGHT 720.0f
 GLFWwindow *gWindow;
+
 using namespace std;
 
 void initWindow(unsigned int w, unsigned int h);
+
 
 // OpenGL uses unsigned integers to keep track of
 // created resources (shaders, vertices, textures, etc)
@@ -849,8 +851,10 @@ void CreateScene(Scene& scene) {
 	scene.addAnimatedModel("Resources/Models/model.dae");
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
+		//calcTangentBasis(scene.models[i]->vertices, scene.models[i]->positions, scene.models[i]->uvs, scene.models[i]->normals, scene.models[i]->tangent, scene.models[i]->bitangent);
 		scene.models[i]->setTextureID(CreateTexture(scene.models[i]->getTexturePath())); //Create texture
 		scene.models[i]->setNormalID(CreateTexture(scene.models[i]->getNormalTexturePath()));
+		
 
 		//Calling this function is vital to be able to render a model. Always call it before rendering!
 		//If the model will only be rendered once, this can be called after creating it.
@@ -960,6 +964,7 @@ void Render(Scene& scene, float rotationVal) {
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+	
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0]->setWorldRotation(rotationVal);
@@ -1297,7 +1302,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		/*GLuint depthMatrixID = -1;*/
 		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
 		/*glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));*/
-
 		Render(gameScene, rotation); //9. Render
 
 		// first pass is done!
@@ -1390,12 +1394,14 @@ void initWindow(unsigned int w, unsigned int h) {
 	return;
 }
 
+/*
 void calcTangentBasis(
 	//in:
-	vector<glm::vec3> & vertices,
-	vector<glm::vec2> & uvs,
-	vector<glm::vec3> & normals,
-	//out:
+	vector<RawModel::TriangleVertex> vertices,
+	vector<glm::vec3> positions,
+	vector<glm::vec2> uvs,
+	vector<glm::vec3> normals,
+	//out
 	vector<glm::vec3> & tangents,
 	vector<glm::vec3> & bitangents
 ) 
@@ -1403,9 +1409,9 @@ void calcTangentBasis(
 	//Calculate edges and deltaUVs based on amount of triangles
 	for (int i = 0; i < vertices.size(); i + 3) {
 		// Shortcuts for verts
-		glm::vec3 & v0 = vertices[i + 0];
-		glm::vec3 & v1 = vertices[i + 1];
-		glm::vec3 & v2 = vertices[i + 2];
+		glm::vec3 & v0 = positions[i + 0];
+		glm::vec3 & v1 = positions[i + 1];
+		glm::vec3 & v2 = positions[i + 2];
 		// Shortcuts for UVs
 		glm::vec2 & uv0 = uvs[i + 0];
 		glm::vec2 & uv1 = uvs[i + 1];
@@ -1423,12 +1429,17 @@ void calcTangentBasis(
 		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x)*r;
 
 		//Set the same tangent and bitangent to all three vertices of the triangle.
-		for (int i = 0; i < 3; i++) {
-			tangents.push_back(tangent);
-			bitangents.push_back(bitangent);
-		}
+		tangents.push_back(tangent);
+		tangents.push_back(tangent);
+		tangents.push_back(tangent);
+
+		bitangents.push_back(bitangent);
+		bitangents.push_back(bitangent);
+		bitangents.push_back(bitangent);
 
 	}
+	cout << "Tangent and bitangent calculated for a Triangle" << endl;
 }
+*/
 
 

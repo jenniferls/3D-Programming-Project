@@ -36,12 +36,16 @@ public:
 	float getWorldRotation() const;
 	void setWorldRotation(float rotation);
 
+
 	unsigned int textureID;
 	std::vector<TriangleVertex> vertices; //List of all vertices in model file
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned short> vertex_indices, uv_indices, normal_indices;
+	//For normal mapping
+	std::vector<glm::vec3> tangent;
+	std::vector<glm::vec3> bitangent;
 
 	//Used with MTL-files
 	glm::vec3 ambientVal;

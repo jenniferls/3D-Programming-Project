@@ -1,6 +1,7 @@
 #include "RawModel.h"
 #include "glew/include/GL/glew.h"
 #include <gl/GL.h>
+#include <iostream>
 
 RawModel::RawModel(const char* filePath) {
 	this->vaoID = 0;
