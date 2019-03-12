@@ -20,7 +20,7 @@ uniform vec3 specular_val;	//Specular color
 in vec4 fragPos;
 in vec3 lightToCamera;
 
-//in vec4 shadow_coord;
+//in vec4 final_shadow_coord;
 //uniform sampler2D shadowMap;
 
 //float shadowCalc(vec4 shadow_coord){

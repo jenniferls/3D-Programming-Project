@@ -6,4 +6,6 @@ uniform mat4 SHADOW_MAT;
 void main() {
 
 	gl_Position = SHADOW_MAT * vec4(vertex_position, 1.0);
+
+
 }

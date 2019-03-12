@@ -16,6 +16,9 @@ out vec3 lightToCamera;
 out float diffValue;
 out float specValue;
 
+//in vec4 shadow_coord[]; // PF
+//out vec4 final_shadow_coord; // PF
+
 void main(){
 	//First determine the normal of the face by calculating the cross product of two vectors created by 3 triangle vertices
 	//This gives us a vector that is perpendicular to the two vectors
@@ -28,6 +31,7 @@ void main(){
 		for(int i = 0; i < gl_in.length(); i++){
 			texUVs = aTexture[i];
 			finalNormals = normalsOut[i];
+			//final_shadow_coords = shadow_coords[i]; // PF
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
 			lightToCamera = (inverse(VIEW_MAT) * vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz - fragPos.xyz; //Vector that goes from light to camera

@@ -86,7 +86,7 @@ glm::mat4 model_matrix;
 GLint view_id = -1;
 GLint view_id_anim = -1;
 GLint view_id_skybox = -1;
-GLint view_id_blend = -1;
+GLint view_id_blend = -1; 
 glm::mat4 view_matrix;
 GLint projection_id = -1;
 GLint projection_id_anim = -1;
@@ -111,6 +111,38 @@ GameTimer timer;
 // macro that returns "char*" with offset "i"
 // BUFFER_OFFSET(5) transforms in "(char*)nullptr+(5)"
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
+
+//PF
+unsigned int depthMapFbo;
+unsigned int depthMapAttachment[1];
+
+int CreateFrameBufferSM() {
+	int err = 0;
+
+	glGenTextures(1, depthMapAttachment);
+	glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glGenFramebuffers(1, &depthMapFbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapAttachment[0], 0);
+
+	// check if framebuffer is complete (usable):
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+	{
+		err = 0;
+	}
+	else
+		err = -1;
+
+	// bind default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return err;
+}
 
 unsigned int gFbo;
 unsigned int gFboTextureAttachments[2]; // first for colour, second for depth
@@ -926,30 +958,64 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shader
 }
 
 //PF
-//void CreateShadowMatrixData(glm::vec3 lightPos) {
-//
-//	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
-//	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-//	glm::mat4 depthModelMatrix = glm::mat4(1.0);
-//	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-//
-//	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
-//			0.0, 0.5, 0.0, 0.0,
-//			0.0, 0.0, 0.5, 0.0,
-//			0.5, 0.5, 0.5, 1.0);
-//
-//
-//	shadow_matrix = shadowBias * depthMVP;
-//	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
-//	if (shadow_id == -1) {
-//		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
-//		return;
-//	}
-//}
+void CreateShadowMatrixData(glm::vec3 lightPos, float rotationValue, glm::vec3 translation) {
+
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5, 5, -5, 5, 10, 20);
+	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	glm::mat4 identity_mat = glm::mat4(1.0f);
+	glm::mat4 test = glm::translate(identity_mat, translation);
+	glm::mat4 depthModelMatrix = glm::rotate(test, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+	//Might be at the wrong place. 
+	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
+		0.0, 0.5, 0.0, 0.0,
+		0.0, 0.0, 0.5, 0.0,
+		0.5, 0.5, 0.5, 1.0);
+
+
+	shadow_matrix = shadowBias * depthMVP;
+	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
+	if (shadow_id == -1) {
+		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
+		return;
+	}
+}
 
 void SetViewport() {
 	// usually (not necessarily) this matches with the window size
 	glViewport(0, 0, WIDTH, HEIGHT);
+}
+
+void PrePassRender(Scene& scene, float rotationVal) {
+	glUseProgram(gShaderProgramSM);
+	glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	scene.models[2]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
+
+	scene.models[0]->setWorldRotation(rotationVal);
+
+	//Draws all static models in the scene
+	for (int i = 0; i < scene.getModelCount(); i++) {
+		//Send model matrix data per model
+		CreateShadowMatrixData(scene.lightPositions[0], scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition());
+		glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
+		//scene.models[i]->prepare(gShaderProgramSM);
+		glBindVertexArray(scene.models[i]->vaoID); // bind is like "enabling" the object to use it
+		glBindBuffer(GL_ARRAY_BUFFER, scene.models[i]->vboID); // Bind the buffer ID as an ARRAY_BUFFER
+		glEnableVertexAttribArray(0);
+		GLint vertexPos = glGetAttribLocation(gShaderProgramSM, "vertex_position");
+		glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
+
+		//Send texture data
+		glActiveTexture(GL_TEXTURE0 + 1); //Activate the texture unit
+		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
+
+		glDrawArrays(GL_TRIANGLES, 0, scene.models[i]->getVertCount());
+	}
 }
 
 void Render(Scene& scene, float rotationVal) {
@@ -982,13 +1048,17 @@ void Render(Scene& scene, float rotationVal) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
-		//scene.models[i]->prepare(gShaderProgram);
+		scene.models[i]->prepare(gShaderProgram);
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
 		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getNormalID());
+		//glActiveTexture(GL_TEXTURE2); //PF
+		//glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
+
+		//glUniform1i(glGetUniformLocation(gShaderProgram, "shadow_map"), 2); //PF
 
 		glUniform3fv(scene.models[i]->ambID, 1, glm::value_ptr(scene.models[i]->ambientVal));		//Ambient
 		glUniform3fv(scene.models[i]->diffID, 1, glm::value_ptr(scene.models[i]->diffuseVal));	//Diffuse
@@ -1236,7 +1306,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CreateSkyboxShaders(); //5.
 	CreateParticleShaders(); //5.
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
-	//CreateSMShaders(); //PF
+	CreateSMShaders(); //PF
 
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
@@ -1270,7 +1340,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		keyboardUpdate();
 
 		glViewport(0, 0, WIDTH, HEIGHT);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); //PF
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
+		glClear(GL_COLOR_BUFFER_BIT);
+		PrePassRender(gameScene, rotation);
+
 
 		// first pass
 		// render all geometry to a framebuffer object
@@ -1299,9 +1373,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim); //Creates vp-matrices for animated model-shader
 		CreateMatrixData(gShaderProgramSkybox, projection_id_skybox, view_id_skybox); // Creates vp-matrices for skybox
 
-		/*GLuint depthMatrixID = -1;*/
-		//glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &shadowBiasMVP[0][0]); 
-		/*glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, glm::value_ptr(shadowBiasMVP));*/
 		Render(gameScene, rotation); //9. Render
 
 		// first pass is done!
@@ -1344,6 +1415,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
+	glDeleteFramebuffers(1, &depthMapFbo); //PF
+	glDeleteTextures(1, depthMapAttachment); //PF
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
 	glDeleteBuffers(1, &gVertexBufferFS);
 	glfwTerminate();
