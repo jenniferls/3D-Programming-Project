@@ -968,13 +968,13 @@ void CreateShadowMatrixData(glm::vec3 lightPos, float rotationValue, glm::vec3 t
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
 	//Might be at the wrong place. 
-	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
+	/*glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0);
+		0.5, 0.5, 0.5, 1.0);*/
 
 
-	shadow_matrix = shadowBias * depthMVP;
+	shadow_matrix = depthMVP;
 	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
 	if (shadow_id == -1) {
 		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
@@ -1055,10 +1055,10 @@ void Render(Scene& scene, float rotationVal) {
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
 		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getNormalID());
-		//glActiveTexture(GL_TEXTURE2); //PF
-		//glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
+		glActiveTexture(GL_TEXTURE2); //PF
+		glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
 
-		//glUniform1i(glGetUniformLocation(gShaderProgram, "shadow_map"), 2); //PF
+		glUniform1i(glGetUniformLocation(gShaderProgram, "shadow_map"), 2); //PF
 
 		glUniform3fv(scene.models[i]->ambID, 1, glm::value_ptr(scene.models[i]->ambientVal));		//Ambient
 		glUniform3fv(scene.models[i]->diffID, 1, glm::value_ptr(scene.models[i]->diffuseVal));	//Diffuse
