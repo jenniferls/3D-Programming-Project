@@ -96,6 +96,7 @@ GLint projection_id_blend = -1;
 glm::mat4 projection_matrix;
 GLuint shadow_id = -1; //PF
 GLuint shadow_id2 = -1;
+GLuint shadow_id3 = -1;
 glm::mat4 shadow_matrix; //PF
 
 //Camera variables
@@ -892,7 +893,7 @@ void CreateScene(Scene& scene) {
 
 		//Calling this function is vital to be able to render a model. Always call it before rendering!
 		//If the model will only be rendered once, this can be called after creating it.
-		scene.models[i]->prepare(gShaderProgram);
+		//scene.models[i]->prepare(gShaderProgram);
 	}
 
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
@@ -911,7 +912,7 @@ void CreateScene(Scene& scene) {
 
 		//Calling this function is vital to be able to render a model. Always call it before rendering!
 		//If the model will only be rendered once, this can be called after creating it.
-		scene.blendmapModels[i]->prepare(gShaderProgramBlend);
+		//scene.blendmapModels[i]->prepare(gShaderProgramBlend);
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
@@ -923,8 +924,8 @@ void CreateScene(Scene& scene) {
 	}
 
 	//Add lights
-	scene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 1.0f, 1.0f));
-	scene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
+	scene.addLight(glm::vec3(4.0, 6.0, 2.0), glm::vec3(1.0f, 0.82f, 0.73f));
+	//scene.addLight(glm::vec3(-8.0, 6.0, 2.0), glm::vec3(1.0f, 0.0f, 0.0f)); //A red light
 
 	//Skybox
 	scene.skybox.textureID = CreateCubemapTexture(scene.skybox.faces);
@@ -981,7 +982,12 @@ void CreateShadowMatrixData(glm::vec3 lightPos, float rotationValue, glm::vec3 t
 	}
 	shadow_id2 = glGetUniformLocation(gShaderProgram, "SHADOW_MAT");
 	if (shadow_id2 == -1) {
-		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
+		OutputDebugStringA("Error, cannot find 'shadow_id2' attribute in Vertex shader\n");
+		return;
+	}
+	shadow_id3 = glGetUniformLocation(gShaderProgramBlend, "SHADOW_MAT");
+	if (shadow_id3 == -1) {
+		OutputDebugStringA("Error, cannot find 'shadow_id3' attribute in Vertex shader Blend\n");
 		return;
 	}
 }
@@ -1125,7 +1131,8 @@ void Render(Scene& scene, float rotationVal) {
 	////////// Blend-mapped objects //////////
 	glUseProgram(gShaderProgramBlend); //Choose a shader
 	glUniformMatrix4fv(projection_id_blend, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
-	glUniformMatrix4fv(view_id_blend, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+	glUniformMatrix4fv(view_id_blend, 1, GL_FALSE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix to geometry-shader
+	glUniformMatrix4fv(shadow_id3, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
 	glUniform3fv(glGetUniformLocation(gShaderProgramBlend, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(glGetUniformLocation(gShaderProgramBlend, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
@@ -1135,6 +1142,7 @@ void Render(Scene& scene, float rotationVal) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramBlend, model_id_blend);  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id_blend, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
+		scene.blendmapModels[i]->prepare(gShaderProgramBlend);
 
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
@@ -1149,13 +1157,16 @@ void Render(Scene& scene, float rotationVal) {
 		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->gTexID);
 		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->bTexID);
+		glActiveTexture(GL_TEXTURE6); //PF
+		glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
 
 		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "blendmapSampler"), 2);
 		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "rTexSampler"), 3);
 		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "gTexSampler"), 4);
 		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "bTexSampler"), 5);
+		glUniform1i(glGetUniformLocation(gShaderProgramBlend, "shadowMap"), 6); //PF
 
-		glUniform3fv(scene.blendmapModels[i]->ambID, 1, glm::value_ptr(scene.blendmapModels[i]->ambientVal));		//Ambient
+		glUniform3fv(scene.blendmapModels[i]->ambID, 1, glm::value_ptr(scene.blendmapModels[i]->ambientVal));	//Ambient
 		glUniform3fv(scene.blendmapModels[i]->diffID, 1, glm::value_ptr(scene.blendmapModels[i]->diffuseVal));	//Diffuse
 		glUniform3fv(scene.blendmapModels[i]->specID, 1, glm::value_ptr(scene.blendmapModels[i]->specularVal));	//Specular
 

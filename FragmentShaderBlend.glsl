@@ -11,6 +11,7 @@ uniform sampler2D rTexSampler; //Red channel
 uniform sampler2D gTexSampler; //Green channel
 uniform sampler2D bTexSampler; //Blue channel
 uniform sampler2D blendmapSampler;
+uniform sampler2D shadowMap;
 
 uniform mat4 MODEL_MAT;
 uniform vec3 light_positions[];
@@ -23,14 +24,28 @@ uniform vec3 specular_val;	//Specular color
 in vec4 fragPos;
 in vec3 lightToCamera;
 
+in vec4 final_shadow_coord;
+
+float shadowCalc(vec4 shadow_coord){
+	
+	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
+	proj_coord = proj_coord * 0.5 + 0.5;
+	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
+	float currentDepth = proj_coord.z;
+	float bias = 0.005;
+	float shadow = currentDepth - bias > closetsDepth ? 1.0 : 0.0;
+
+	return shadow;
+}
+
 vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
-	vec3 am = ambient_val * light_color; // PF: the ambient 
+//	vec3 am = ambient_val * light_color; // PF: the ambient 
 	//Diffuse shading
 	vec3 pointToLight = normalize(light_pos - fragPos.xyz);
 	float diffuseFactor = dot(pointToLight, normal) / (length(pointToLight) * length(normal));
 	diffuseFactor = clamp(diffuseFactor, 0, 1); //Make sure the diffuse factor isn't negative or above 1
 	vec3 diffuse = diffuseFactor * light_color;
-	vec4 final = vec4(am + diffuse, 1.0 );
+	vec4 final = vec4(diffuse, 1.0 );
 	return final;
 }
 
@@ -49,6 +64,11 @@ vec4 calcSpecular(vec3 light_pos, vec3 light_color, vec3 normal){
 	return final;
 }
 
+vec4 calcAmbient(vec3 light_color){
+	vec3 amb = ambient_val * light_color;
+	return vec4(amb, 1.0);
+}
+
 void main () {
 	vec4 blendmapSample = texture(blendmapSampler, vec2(texUVs.s, 1 - texUVs.t)); //Blendmap texture
 	float bgTexValue = 1 - (blendmapSample.r + blendmapSample.g + blendmapSample.b); //How much of the texture is black
@@ -63,8 +83,10 @@ void main () {
 	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
 	vec4 result = vec4(0.0f);
-	result += calcDiffuse(light_positions[0], light_colors[0], norm) * finalTex + calcSpecular(light_positions[0], light_colors[0], norm);
-	result += calcDiffuse(light_positions[1], light_colors[1], norm) * finalTex + calcSpecular(light_positions[1], light_colors[1], norm);
+//	result += calcDiffuse(light_positions[0], light_colors[0], norm) * finalTex + calcSpecular(light_positions[0], light_colors[0], norm);
+//	result += calcDiffuse(light_positions[1], light_colors[1], norm) * finalTex + calcSpecular(light_positions[1], light_colors[1], norm);
+
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[0], light_colors[0], norm)) * finalTex + calcSpecular(light_positions[0], light_colors[0], norm);
 
 	fragment_color = result;
 }
