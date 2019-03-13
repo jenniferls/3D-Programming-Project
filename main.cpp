@@ -963,7 +963,7 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shader
 //PF
 void CreateShadowMatrixData(glm::vec3 lightPos, float rotationValue, glm::vec3 translation) {
 
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5, 5, -5, 5, -10, 20);
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-13, 13, -13, 13, -10, 20);
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
