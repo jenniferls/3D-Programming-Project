@@ -82,6 +82,7 @@ GLint model_id = -1;
 GLint model_id_anim = -1;
 GLint model_id_skybox = -1;
 GLint model_id_blend = -1;
+GLint model_id_sm = -1;
 glm::mat4 model_matrix;
 GLint view_id = -1;
 GLint view_id_anim = -1;
@@ -94,6 +95,7 @@ GLint projection_id_skybox = -1;
 GLint projection_id_blend = -1;
 glm::mat4 projection_matrix;
 GLuint shadow_id = -1; //PF
+GLuint shadow_id2 = -1;
 glm::mat4 shadow_matrix; //PF
 
 //Camera variables
@@ -960,23 +962,25 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shader
 //PF
 void CreateShadowMatrixData(glm::vec3 lightPos, float rotationValue, glm::vec3 translation) {
 
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5, 5, -5, 5, 10, 20);
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5, 5, -5, 5, -10, 20);
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-	glm::mat4 identity_mat = glm::mat4(1.0f);
-	glm::mat4 test = glm::translate(identity_mat, translation);
-	glm::mat4 depthModelMatrix = glm::rotate(test, rotationValue, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
 	//Might be at the wrong place. 
-	/*glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
+	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0);*/
+		0.5, 0.5, 0.5, 1.0);
 
 
-	shadow_matrix = depthMVP;
+	shadow_matrix = depthMVP * shadowBias;
 	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
 	if (shadow_id == -1) {
+		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
+		return;
+	}
+	shadow_id2 = glGetUniformLocation(gShaderProgram, "SHADOW_MAT");
+	if (shadow_id2 == -1) {
 		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
 		return;
 	}
@@ -989,32 +993,44 @@ void SetViewport() {
 
 void PrePassRender(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramSM);
-	glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-	scene.models[2]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
-	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
+	scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
+	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
 	scene.models[0]->setWorldRotation(rotationVal);
+
+	glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
 		CreateShadowMatrixData(scene.lightPositions[0], scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition());
-		glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
-		//scene.models[i]->prepare(gShaderProgramSM);
+		CreateModelMatrix(scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition(), gShaderProgramSM, model_id_sm);
+		glUniformMatrix4fv(model_id_sm, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
 		glBindVertexArray(scene.models[i]->vaoID); // bind is like "enabling" the object to use it
 		glBindBuffer(GL_ARRAY_BUFFER, scene.models[i]->vboID); // Bind the buffer ID as an ARRAY_BUFFER
 		glEnableVertexAttribArray(0);
 		GLint vertexPos = glGetAttribLocation(gShaderProgramSM, "vertex_position");
 		glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
 
-		//Send texture data
-		glActiveTexture(GL_TEXTURE0 + 1); //Activate the texture unit
-		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
-
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i]->getVertCount());
+	}
+	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
+		//Send model matrix data per model
+		CreateShadowMatrixData(scene.lightPositions[0], scene.blendmapModels[i]->getWorldRotation(), scene.blendmapModels[i]->getWorldPosition());
+		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramSM, model_id_sm);  //Exchange rotation for "0.0f" to stop rotation
+		glUniformMatrix4fv(model_id_sm, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+		// tell opengl we are going to use the VAO we described earlier
+		glBindVertexArray(scene.blendmapModels[i]->vaoID);
+		glBindBuffer(GL_ARRAY_BUFFER, scene.blendmapModels[i]->vboID); // Bind the buffer ID as an ARRAY_BUFFER
+		glEnableVertexAttribArray(0);
+		GLint vertexPos = glGetAttribLocation(gShaderProgramSM, "vertex_position");
+		glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
+
+		glDrawArrays(GL_TRIANGLES, 0, scene.blendmapModels[i]->getVertCount());
 	}
 }
 
@@ -1039,6 +1055,7 @@ void Render(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgram); //Choose a shader
 	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
+	glUniformMatrix4fv(shadow_id2, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
@@ -1058,7 +1075,7 @@ void Render(Scene& scene, float rotationVal) {
 		glActiveTexture(GL_TEXTURE2); //PF
 		glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
 
-		glUniform1i(glGetUniformLocation(gShaderProgram, "shadow_map"), 2); //PF
+		glUniform1i(glGetUniformLocation(gShaderProgram, "shadowMap"), 2); //PF
 
 		glUniform3fv(scene.models[i]->ambID, 1, glm::value_ptr(scene.models[i]->ambientVal));		//Ambient
 		glUniform3fv(scene.models[i]->diffID, 1, glm::value_ptr(scene.models[i]->diffuseVal));	//Diffuse
@@ -1311,6 +1328,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
 
+	if (CreateFrameBufferSM() != 0)
+		shutdown = true;
+
 	//Create a scene object and fill it
 	Scene gameScene;
 	CreateScene(gameScene);
@@ -1342,9 +1362,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); //PF
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
 		PrePassRender(gameScene, rotation);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// first pass
 		// render all geometry to a framebuffer object

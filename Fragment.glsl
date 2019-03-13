@@ -29,7 +29,8 @@ float shadowCalc(vec4 shadow_coord){
 	proj_coord = proj_coord * 0.5 + 0.5;
 	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
 	float currentDepth = proj_coord.z;
-	float shadow = currentDepth > closetsDepth ? 1.0 : 0.0;
+	float bias = 0.005;
+	float shadow = currentDepth - bias > closetsDepth ? 1.0 : 0.0;
 
 	return shadow;
 }
@@ -71,12 +72,12 @@ void main () {
 	result += calcDiffuse(light_positions[0], light_colors[0], norm) * texSample + calcSpecular(light_positions[0], light_colors[0], norm);
 	result += calcDiffuse(light_positions[1], light_colors[1], norm) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
-//	vec3 am = 0.15 * light_colors[0];
-//	vec3 pointToLight = normalize(light_positions[0] - fragPos.xyz);
-//	float diff = max(dot(pointToLight, norm), 0.0);
-//	vec3 diffuse = diff * light_colors[0];
+	//vec3 am = ambient_val * light_colors[0];
+	//vec3 pointToLight = normalize(light_positions[0] - fragPos.xyz);
+	//float diff = max(dot(pointToLight, norm), 0.0);
+	//vec3 diffuse = diff * light_colors[0];
 
-	//result = (vec4(am, 1.0) + (1.0 - shadow)) * (vec4(diffuse, 1.0) + calcSpecular(light_positions[1], light_colors[1], norm)) * texSample;
+	//result += (vec4(am, 1.0) + (1.0 - shadow)) * (vec4(diffuse, 1.0) + calcSpecular(light_positions[1], light_colors[1], norm)) * texSample;
 
 	fragment_color = result;
 }
