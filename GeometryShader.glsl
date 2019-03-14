@@ -11,7 +11,7 @@ in vec3 normalsOut[];
 out vec2 texUVs;
 out vec4 fragPos;
 out vec3 finalNormals;
-out vec3 lightToCamera;
+out vec3 pointToCamera;
 
 out float diffValue;
 out float specValue;
@@ -33,8 +33,8 @@ void main(){
 			finalNormals = normalsOut[i];
 			final_shadow_coord = shadow_coord[i]; // PF
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
-			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in world space
-			lightToCamera = (inverse(VIEW_MAT) * vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz - fragPos.xyz; //Vector that goes from light to camera
+			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in model space
+			pointToCamera = (inverse(VIEW_MAT) * vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz - fragPos.xyz; //Vector that goes from point to camera
 			EmitVertex();
 		}
 		EndPrimitive();

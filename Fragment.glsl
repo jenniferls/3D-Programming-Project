@@ -18,7 +18,7 @@ uniform vec3 diffuse_val;	//Diffuse color (Not used because of texture)
 uniform vec3 specular_val;	//Specular color
 
 in vec4 fragPos;
-in vec3 lightToCamera;
+in vec3 pointToCamera;
 
 in vec4 final_shadow_coord;
 uniform sampler2D shadowMap;
@@ -46,17 +46,17 @@ vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
 	return final;
 }
 
-vec4 calcSpecular(vec3 light_pos, vec3 light_color, vec3 normal){
+vec4 calcSpecular(vec3 light_pos, vec3 normal){
 	//Specularity
-	vec3 unitLightToCam = normalize(lightToCamera);
+	vec3 unitPointToCam = normalize(pointToCamera);
 	vec3 lightDir = -normalize(light_pos - fragPos.xyz);
 	vec3 reflectedLightDir = reflect(lightDir, normal);
-	float specFactor = dot(reflectedLightDir, unitLightToCam);
+	float specFactor = dot(reflectedLightDir, unitPointToCam);
 	specFactor = clamp(specFactor, 0, 1); //Make sure the specular factor isn't negative or above 1
 	float shineDamper = 32f;
 	float reflectivity = 0.8f;
 	float dampedSpec = pow(specFactor, shineDamper);
-	vec3 specular = dampedSpec * reflectivity * specular_val * light_color;
+	vec3 specular = dampedSpec * reflectivity * specular_val;
 	vec4 final = vec4(specular, 1.0f);
 	return final;
 }
@@ -77,7 +77,7 @@ void main () {
 //	result += calcDiffuse(light_positions[0], light_colors[0], norm) * texSample + calcSpecular(light_positions[0], light_colors[0], norm);
 //	result += calcDiffuse(light_positions[1], light_colors[1], norm) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
-	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], light_colors[0], norm));
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm));
 //	result += (calcAmbient(light_colors[1]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[1], light_colors[1], norm)) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
 

@@ -17,7 +17,7 @@ uniform vec3 diffuse_val;	//Diffuse color (Not used because of texture)
 uniform vec3 specular_val;	//Specular color
 
 in vec4 fragPos;
-in vec3 lightToCamera;
+in vec3 pointToCamera;
 
 vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
 	vec3 am = ambient_val * light_color; // PF: the ambient 
@@ -32,10 +32,10 @@ vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
 
 vec4 calcSpecular(vec3 light_pos, vec3 light_color, vec3 normal){
 	//Specularity
-	vec3 unitLightToCam = normalize(lightToCamera);
+	vec3 unitPointToCam = normalize(pointToCamera);
 	vec3 lightDir = -normalize(light_pos - fragPos.xyz);
 	vec3 reflectedLightDir = reflect(lightDir, normal);
-	float specFactor = dot(reflectedLightDir, unitLightToCam);
+	float specFactor = dot(reflectedLightDir, unitPointToCam);
 	specFactor = clamp(specFactor, 0, 1); //Make sure the specular factor isn't negative or above 1
 	float shineDamper = 32f;
 	float reflectivity = 0.8f;
