@@ -124,7 +124,7 @@ int CreateFrameBufferSM() {
 
 	glGenTextures(1, depthMapAttachment);
 	glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1371,7 +1371,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		keyboardUpdate();
 
-		glViewport(0, 0, WIDTH, HEIGHT);
+		glViewport(0, 0, 1024, 1024); //Set the viewport to the same resolution as the framebuffer to be able to render shadows correctly
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); //PF
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -1382,6 +1382,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		// first pass
 		// render all geometry to a framebuffer object
+		glViewport(0, 0, WIDTH, HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
 		glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], gClearColour[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
