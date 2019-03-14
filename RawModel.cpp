@@ -94,16 +94,6 @@ void RawModel::prepare(unsigned int& shaderProgram) {
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
-
-	// query which "slot" corresponds to the input vertex_position in the Vertex Shader 
-	GLint vertexPos = glGetAttribLocation(shaderProg, "vertex_position");
-	GLint textureCoord = glGetAttribLocation(shaderProg, "texture_coords");
-	GLint normals = glGetAttribLocation(shaderProg, "normals");
-
-	// tell OpenGL about layout in memory (input assembler information)
-	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
-	glVertexAttribPointer(textureCoord, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
-	glVertexAttribPointer(normals, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 }
 
 void RawModel::createBuffers() {
@@ -113,8 +103,17 @@ void RawModel::createBuffers() {
 }
 
 void RawModel::prepareBuffers() {
+	glBindVertexArray(vaoID); // bind is like "enabling" the object to use it
 	glBindBuffer(GL_ARRAY_BUFFER, vboID); // Bind the buffer ID as an ARRAY_BUFFER
 	glBufferData(GL_ARRAY_BUFFER, getVertCount() * VERTEX_SIZE, vertices.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(sizeof(float) * 5));
 }
 
 const char* RawModel::getPath() const {

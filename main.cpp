@@ -961,10 +961,10 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shader
 }
 
 //PF
-void CreateShadowMatrixData(glm::vec3 lightPos, float rotationValue, glm::vec3 translation) {
+void CreateShadowMatrixData(glm::vec3 lightPos) {
 
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-13, 13, -13, 13, -10, 20);
-	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -13, 13, -10, 20); //An orthographic matrix
+	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); //View from the light position towards origo
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
 	//Might be at the wrong place. 
@@ -1010,8 +1010,8 @@ void PrePassRender(Scene& scene, float rotationVal) {
 
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
-		//Send model matrix data per model
-		CreateShadowMatrixData(scene.lightPositions[0], scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition());
+		//Send mvp matrix data per model
+		CreateShadowMatrixData(scene.lightPositions[0]); //Creates the matrix every frame
 		CreateModelMatrix(scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition(), gShaderProgramSM, model_id_sm);
 		glUniformMatrix4fv(model_id_sm, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
@@ -1023,9 +1023,10 @@ void PrePassRender(Scene& scene, float rotationVal) {
 
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i]->getVertCount());
 	}
+	//Draws all blendmap models in the scene
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
-		//Send model matrix data per model
-		CreateShadowMatrixData(scene.lightPositions[0], scene.blendmapModels[i]->getWorldRotation(), scene.blendmapModels[i]->getWorldPosition());
+		//Send mvp matrix data per model
+		CreateShadowMatrixData(scene.lightPositions[0]); //Creates the matrix every frame
 		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramSM, model_id_sm);  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id_sm, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
@@ -1373,7 +1374,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); //PF
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		PrePassRender(gameScene, rotation);
 
@@ -1384,8 +1385,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
 		glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], gClearColour[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glEnable(GL_DEPTH_TEST);
 
 		//Prepare IMGUI output
 		ImGui_ImplOpenGL3_NewFrame();

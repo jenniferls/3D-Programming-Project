@@ -86,7 +86,7 @@ void main () {
 //	result += calcDiffuse(light_positions[0], light_colors[0], norm) * finalTex + calcSpecular(light_positions[0], light_colors[0], norm);
 //	result += calcDiffuse(light_positions[1], light_colors[1], norm) * finalTex + calcSpecular(light_positions[1], light_colors[1], norm);
 
-	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[0], light_colors[0], norm)) * finalTex + calcSpecular(light_positions[0], light_colors[0], norm);
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (finalTex + calcSpecular(light_positions[0], light_colors[0], norm));
 
 	fragment_color = result;
 }
