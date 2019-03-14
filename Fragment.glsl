@@ -60,7 +60,7 @@ vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
 	return final;
 }
 
-vec4 calcSpecular(vec3 light_pos, vec3 normal){
+vec4 calcSpecular(vec3 light_pos, vec3 normal, float shadow){
 	//Specularity
 	vec3 unitPointToCam = normalize(pointToCamera);
 	vec3 lightDir = -normalize(light_pos - fragPos.xyz);
@@ -68,7 +68,11 @@ vec4 calcSpecular(vec3 light_pos, vec3 normal){
 	float specFactor = dot(reflectedLightDir, unitPointToCam);
 	specFactor = clamp(specFactor, 0, 1); //Make sure the specular factor isn't negative or above 1
 	float shineDamper = 32f;
-	float reflectivity = 0.8f;
+	float reflectivity;
+	if (shadow == 1.0)
+		reflectivity = 0.0f;
+	else 
+		reflectivity = 0.8f;
 	float dampedSpec = pow(specFactor, shineDamper);
 	vec3 specular = dampedSpec * reflectivity * specular_val;
 	vec4 final = vec4(specular, 1.0f);
@@ -91,7 +95,8 @@ void main () {
 //	result += calcDiffuse(light_positions[0], light_colors[0], norm) * texSample + calcSpecular(light_positions[0], light_colors[0], norm);
 //	result += calcDiffuse(light_positions[1], light_colors[1], norm) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
-	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord,norm, light_positions[0])) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm));
+	float shadow = shadowCalc(final_shadow_coord,norm, light_positions[0]);
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm, shadow));
 //	result += (calcAmbient(light_colors[1]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[1], light_colors[1], norm)) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
 
