@@ -26,14 +26,30 @@ in vec3 pointToCamera;
 
 in vec4 final_shadow_coord;
 
-float shadowCalc(vec4 shadow_coord){
+float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 	
 	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
 	proj_coord = proj_coord * 0.5 + 0.5;
 	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
 	float currentDepth = proj_coord.z;
-	float bias = 0.005;
-	float shadow = currentDepth - bias > closetsDepth ? 1.0 : 0.0;
+	//float bias = 0.005;
+	//float shadow = currentDepth - bias > closetsDepth ? 1.0 : 0.0;
+	vec3 lightDir = normalize(light_pos - fragPos.xyz);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+	float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, proj_coord.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+	if(proj_coord.z > 1.0)
+		shadow = 0.0;
 
 	return shadow;
 }
@@ -86,7 +102,7 @@ void main () {
 //	result += calcDiffuse(light_positions[0], light_colors[0], norm) * finalTex + calcSpecular(light_positions[0], light_colors[0], norm);
 //	result += calcDiffuse(light_positions[1], light_colors[1], norm) * finalTex + calcSpecular(light_positions[1], light_colors[1], norm);
 
-	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (finalTex + calcSpecular(light_positions[0], norm));
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadowCalc(final_shadow_coord, norm, light_positions[0])) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (finalTex + calcSpecular(light_positions[0], norm));
 
 	fragment_color = result;
 }

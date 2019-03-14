@@ -118,17 +118,21 @@ GameTimer timer;
 //PF
 unsigned int depthMapFbo;
 unsigned int depthMapAttachment[1];
-
+const unsigned int SHADOW_WIDTH = 2000, SHADOW_HEIGHT = 2000;
 int CreateFrameBufferSM() {
 	int err = 0;
 
 	glGenTextures(1, depthMapAttachment);
 	glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	glGenFramebuffers(1, &depthMapFbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo);
@@ -963,7 +967,7 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shader
 //PF
 void CreateShadowMatrixData(glm::vec3 lightPos) {
 
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10, 10, -13, 13, -10, 20); //An orthographic matrix
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>( -3, 3, -3, 3, -1, 10); //An orthographic matrix
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); //View from the light position towards origo
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
@@ -1371,12 +1375,16 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		keyboardUpdate();
 
-		glViewport(0, 0, 1024, 1024); //Set the viewport to the same resolution as the framebuffer to be able to render shadows correctly
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT); //Set the viewport to the same resolution as the framebuffer to be able to render shadows correctly
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); //PF
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
 		PrePassRender(gameScene, rotation);
+		//glCullFace(GL_BACK);
+		//glDisable(GL_CULL_FACE);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
