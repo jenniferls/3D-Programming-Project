@@ -4,6 +4,12 @@
 in vec2 texUVs;
 in vec3 finalNormals;
 
+in GS_OUT {
+	vec3 aFragPos;
+	vec2 TextureCoords;
+	mat3 matTBN;
+} fs_in;
+
 // this is the final pixel colour
 out vec4 fragment_color;
 
@@ -22,6 +28,8 @@ in vec3 pointToCamera;
 
 in vec4 final_shadow_coord;
 uniform sampler2D shadowMap;
+
+uniform sampler2D normalMap;
 
 float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 	
@@ -84,8 +92,17 @@ vec4 calcAmbient(vec3 light_color){
 	return vec4(amb, 1.0);
 }
 
+vec3 calcNormal(){
+	vec3 normalTex = texture(normalMapm fs_in.TextureCoords).rgb;
+	normalTex = normalize(normalTex * 2.0 - 1.0);
+	normalTex = normalize(fs_in.matTBN * normalTex);
+	
+}
+
 void main () {
 	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
+	//Normal mapping calcs
+	vec3 normalResult = calcNormal();
 
 	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 

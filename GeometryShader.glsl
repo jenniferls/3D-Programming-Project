@@ -6,6 +6,24 @@ uniform mat4 PROJ_MAT;
 uniform mat4 VIEW_MAT;
 uniform mat4 MODEL_MAT;
 
+in VS_OUT {
+	vec3 FragPos[];
+	vec2 aTexture[];
+	mat3 TBN[];
+	vec3 tangentLightPos[];
+	vec3 tangentViewPos[];
+	vec3 tangentFragPos[];
+} gs_in;
+
+out GS_OUT {
+	vec3 aFragPos;
+	vec2 TextureCoords;
+	mat3 matTBN;
+	vec3 tLightPos;
+	vec3 tViewPos;
+	vec3 tFragPos;
+} gs_out;
+
 in vec2 aTexture[];
 in vec3 normalsOut[];
 out vec2 texUVs;
@@ -31,6 +49,15 @@ void main(){
 		for(int i = 0; i < gl_in.length(); i++){
 			texUVs = aTexture[i];
 			finalNormals = normalsOut[i];
+
+			//Pass variables for normal mapping to fragment shader
+			gs_out.TextureCoords = gs_in.aTexture[i];
+			gs_out.aFragPos = gs_in.FragPos[i];
+			gs_out.matTBN = gs_in.TBN[i];
+			gs_out.tLightPos = gs_in.tangentLightPos[i];
+			gs_out.tFragPos = gs_in.tangentFragPos[i];
+			gs_out.tViewPos = gs_in.tangentViewPos[i];
+
 			final_shadow_coord = shadow_coord[i]; // PF
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;
 			fragPos = MODEL_MAT * gl_in[i].gl_Position; //Position in model space
