@@ -1066,7 +1066,7 @@ void Render(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgram); //Choose a shader
 	glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to geometry-shader
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
-	glUniformMatrix4fv(shadow_id2, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
+	glUniformMatrix4fv(shadow_id2, 1, GL_FALSE, glm::value_ptr(shadow_matrix));			//Sends data about view-matrix to vertex-shader
 
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
@@ -1083,10 +1083,10 @@ void Render(Scene& scene, float rotationVal) {
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
 		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getNormalID());
-		glActiveTexture(GL_TEXTURE2); //PF
-		glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
+		glActiveTexture(GL_TEXTURE2); //Activate the texture for shadowmap
+		glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]);
 
-		glUniform1i(glGetUniformLocation(gShaderProgram, "shadowMap"), 2); //PF
+		glUniform1i(glGetUniformLocation(gShaderProgram, "shadowMap"), 2); // Sends data about the shadowmap
 
 		glUniform3fv(scene.models[i]->ambID, 1, glm::value_ptr(scene.models[i]->ambientVal));		//Ambient
 		glUniform3fv(scene.models[i]->diffID, 1, glm::value_ptr(scene.models[i]->diffuseVal));	//Diffuse
@@ -1375,20 +1375,17 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		keyboardUpdate();
 
+		// PREPASS - DEPTH MAP FOR SHADOWS 
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT); //Set the viewport to the same resolution as the framebuffer to be able to render shadows correctly
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); //PF
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); // Binds the framebuffer depthMapFbo 
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT);
-		PrePassRender(gameScene, rotation);
-		//glCullFace(GL_BACK);
-		//glDisable(GL_CULL_FACE);
+		PrePassRender(gameScene, rotation); // Renders from the lights position.
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		// first pass
+		// FIRSTPASS 
 		// render all geometry to a framebuffer object
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
@@ -1416,7 +1413,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		Render(gameScene, rotation); //9. Render
 
-		// first pass is done!
+		// SECONDPASS - 
 		// now render a second pass
 		// bind default framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
