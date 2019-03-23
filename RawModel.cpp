@@ -1,4 +1,5 @@
 #include "RawModel.h"
+#include <windows.h>
 #include "glew/include/GL/glew.h"
 #include <gl/GL.h>
 #include <iostream>
@@ -35,6 +36,7 @@ RawModel::RawModel(const char* filePath) {
 }
 
 RawModel::~RawModel() {
+	OutputDebugStringA("Destructor is run for RawModel\n");
 	glDeleteVertexArrays(1, &vaoID);
 	glDeleteBuffers(1, &vboID);
 }

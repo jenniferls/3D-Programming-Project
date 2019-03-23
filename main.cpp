@@ -84,16 +84,19 @@ GLint model_id_skybox = -1;
 GLint model_id_blend = -1;
 GLint model_id_sm = -1;
 glm::mat4 model_matrix;
+
 GLint view_id = -1;
 GLint view_id_anim = -1;
 GLint view_id_skybox = -1;
 GLint view_id_blend = -1; 
 glm::mat4 view_matrix;
+
 GLint projection_id = -1;
 GLint projection_id_anim = -1;
 GLint projection_id_skybox = -1;
 GLint projection_id_blend = -1;
 glm::mat4 projection_matrix;
+
 GLuint shadow_id = -1; //PF
 GLuint shadow_id2 = -1;
 GLuint shadow_id3 = -1;
@@ -118,7 +121,7 @@ GameTimer timer;
 //PF
 unsigned int depthMapFbo;
 unsigned int depthMapAttachment[1];
-const unsigned int SHADOW_WIDTH = 2000, SHADOW_HEIGHT = 2000;
+const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 int CreateFrameBufferSM() {
 	int err = 0;
 
@@ -153,7 +156,6 @@ int CreateFrameBufferSM() {
 
 unsigned int gFbo;
 unsigned int gFboTextureAttachments[2]; // first for colour, second for depth
-//const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 int CreateFrameBuffer() {
 	int err = 0;
 	// =================== COLOUR BUFFER =======================================
@@ -193,49 +195,42 @@ int CreateFrameBuffer() {
 	return err;
 }
 
+void CreateShader(const string &fileName, GLuint &shader, const GLuint shaderType) {
+	char buff[1024];
+	memset(buff, 0, 1024);
+	GLint compileResult = 0;
+
+	shader = glCreateShader(shaderType);
+
+	ifstream shaderFile(fileName);
+	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
+	shaderFile.close();
+
+	const char* shaderTextPtr = shaderText.c_str();
+
+	glShaderSource(shader, 1, &shaderTextPtr, nullptr);
+	glCompileShader(shader);
+
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+
+		glGetShaderInfoLog(shader, 1024, nullptr, buff);
+
+		OutputDebugStringA(buff);
+	}
+}
+
 //PF
 void CreateSMShaders() {
 	char buff[1024];
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	GLuint vs = 0;
+	GLuint fs = 0;
 
-	ifstream shaderFile("VertexShaderSM.glsl");
-	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-
-	const char* shaderTextPtr = shaderText.c_str();
-
-	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(vs);
-
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-
-		glGetShaderInfoLog(vs, 1024, nullptr, buff);
-
-		OutputDebugStringA(buff);
-	}
-
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderFile.open("FragmentSM.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(fs);
-
-	compileResult = GL_FALSE;
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
-
-	if (compileResult == GL_FALSE) {
-
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(fs, 1024, nullptr, buff);
-
-		OutputDebugStringA(buff);
-	}
+	CreateShader("VertexShaderSM.glsl", vs, GL_VERTEX_SHADER);
+	CreateShader("FragmentSM.glsl", fs, GL_FRAGMENT_SHADER);
 
 	gShaderProgramSM = glCreateProgram();
 	glAttachShader(gShaderProgramSM, fs);
@@ -264,70 +259,13 @@ void CreateBlendmapShaders() {
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
-	//create vertex shader "name" and store it in "vs"
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	GLuint vs = 0;
+	GLuint fs = 0;
+	GLuint gs = 0;
 
-	// open .glsl file and put it in a string
-	ifstream shaderFile("VertexShaderBlend.glsl");
-	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-
-	// glShaderSource requires a double pointer.
-	// get the pointer to the c style string stored in the string object.
-	const char* shaderTextPtr = shaderText.c_str();
-
-	// ask GL to use this string a shader code source
-	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
-
-	// try to compile this shader source.
-	glCompileShader(vs);
-
-	// check for compilation error
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		glGetShaderInfoLog(vs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Fragment Shader (or Pixel Shader)
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderFile.open("FragmentShaderBlend.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(fs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(fs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Geometry Shader
-	GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
-	shaderFile.open("GeometryShaderBlend.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(gs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(gs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(gs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(gs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
+	CreateShader("VertexShaderBlend.glsl", vs, GL_VERTEX_SHADER);
+	CreateShader("FragmentShaderBlend.glsl", fs, GL_FRAGMENT_SHADER);
+	CreateShader("GeometryShaderBlend.glsl", gs, GL_GEOMETRY_SHADER);
 
 	//link shader program (connect vs, gs and ps)
 	gShaderProgramBlend = glCreateProgram();
@@ -362,51 +300,11 @@ void CreateFSShaders() {
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
-	//create vertex shader "name" and store it in "vs"
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	GLuint vs = 0;
+	GLuint fs = 0;
 
-	// open .glsl file and put it in a string
-	ifstream shaderFile("VertexShaderFS.glsl");
-	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-
-	// glShaderSource requires a double pointer.
-	// get the pointer to the c style string stored in the string object.
-	const char* shaderTextPtr = shaderText.c_str();
-	
-	// ask GL to use this string as a shader code source
-	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
-
-	// try to compile this shader source.
-	glCompileShader(vs);
-
-	// check for compilation error
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		glGetShaderInfoLog(vs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Fragment Shader (or Pixel Shader)
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderFile.open("FragmentFS.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(fs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(fs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
+	CreateShader("VertexShaderFS.glsl", vs, GL_VERTEX_SHADER);
+	CreateShader("FragmentFS.glsl", fs, GL_FRAGMENT_SHADER);
 
 	//link shader program (connect vs and ps)
 	gShaderProgramFS = glCreateProgram();
@@ -439,70 +337,13 @@ void CreateShaders() {
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
-	//create vertex shader "name" and store it in "vs"
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	GLuint vs = 0;
+	GLuint fs = 0;
+	GLuint gs = 0;
 
-	// open .glsl file and put it in a string
-	ifstream shaderFile("VertexShader.glsl");
-	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-
-	// glShaderSource requires a double pointer.
-	// get the pointer to the c style string stored in the string object.
-	const char* shaderTextPtr = shaderText.c_str();
-	
-	// ask GL to use this string a shader code source
-	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
-
-	// try to compile this shader source.
-	glCompileShader(vs);
-
-	// check for compilation error
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		glGetShaderInfoLog(vs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Fragment Shader (or Pixel Shader)
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderFile.open("Fragment.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(fs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(fs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Geometry Shader
-	GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
-	shaderFile.open("GeometryShader.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(gs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(gs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(gs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(gs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
+	CreateShader("VertexShader.glsl", vs, GL_VERTEX_SHADER);
+	CreateShader("Fragment.glsl", fs, GL_FRAGMENT_SHADER);
+	CreateShader("GeometryShader.glsl", gs, GL_GEOMETRY_SHADER);
 
 	//link shader program (connect vs, gs and ps)
 	gShaderProgram = glCreateProgram();
@@ -536,49 +377,13 @@ void CreateParticleShaders() {
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	ifstream shaderFile("VertexShaderPS.glsl");
-	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
+	GLuint vs = 0;
+	GLuint fs = 0;
+	GLuint gs = 0;
 
-	const char* shaderTextPtr = shaderText.c_str();
-	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(vs);
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		glGetShaderInfoLog(vs, 1024, nullptr, buff);
-		OutputDebugStringA(buff);
-	}
-
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderFile.open("FragmentShaderPS.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(fs);
-	compileResult = GL_FALSE;
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(fs, 1024, nullptr, buff);
-		OutputDebugStringA(buff);
-	}
-
-	GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
-	shaderFile.open("GeometryShader.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(gs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(gs);
-	compileResult = GL_FALSE;
-	glGetShaderiv(gs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(gs, 1024, nullptr, buff);
-		OutputDebugStringA(buff);
-	}
+	CreateShader("VertexShaderPS.glsl", vs, GL_VERTEX_SHADER);
+	CreateShader("FragmentShaderPS.glsl", fs, GL_FRAGMENT_SHADER);
+	CreateShader("GeometryShader.glsl", gs, GL_GEOMETRY_SHADER);
 
 	gShaderProgramPS = glCreateProgram();
 	glAttachShader(gShaderProgramPS, fs);
@@ -611,51 +416,11 @@ void CreateSkyboxShaders() {
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
-	//create vertex shader "name" and store it in "vs"
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	GLuint vs = 0;
+	GLuint fs = 0;
 
-	// open .glsl file and put it in a string
-	ifstream shaderFile("VertexShaderSkybox.glsl");
-	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-
-	// glShaderSource requires a double pointer.
-	// get the pointer to the c style string stored in the string object.
-	const char* shaderTextPtr = shaderText.c_str();
-
-	// ask GL to use this string a shader code source
-	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
-
-	// try to compile this shader source.
-	glCompileShader(vs);
-
-	// check for compilation error
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		glGetShaderInfoLog(vs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Fragment Shader (or Pixel Shader)
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderFile.open("FragmentShaderSkybox.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(fs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(fs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
+	CreateShader("VertexShaderSkybox.glsl", vs, GL_VERTEX_SHADER);
+	CreateShader("FragmentShaderSkybox.glsl", fs, GL_FRAGMENT_SHADER);
 
 	//link shader program (connect vs, gs and ps)
 	gShaderProgramSkybox = glCreateProgram();
@@ -687,70 +452,13 @@ void CreateAnimShaders() {
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
-	//create vertex shader "name" and store it in "vs"
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	GLuint vs = 0;
+	GLuint fs = 0;
+	GLuint gs = 0;
 
-	// open .glsl file and put it in a string
-	ifstream shaderFile("VertexShaderAnim.glsl");
-	std::string shaderText((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-
-	// glShaderSource requires a double pointer.
-	// get the pointer to the c style string stored in the string object.
-	const char* shaderTextPtr = shaderText.c_str();
-
-	// ask GL to use this string a shader code source
-	glShaderSource(vs, 1, &shaderTextPtr, nullptr);
-
-	// try to compile this shader source.
-	glCompileShader(vs);
-
-	// check for compilation error
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		glGetShaderInfoLog(vs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Fragment Shader (or Pixel Shader)
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderFile.open("FragmentAnim.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(fs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(fs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(fs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
-
-	// repeat process for Geometry Shader
-	GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
-	shaderFile.open("GeometryShaderAnim.glsl");
-	shaderText.assign((std::istreambuf_iterator<char>(shaderFile)), std::istreambuf_iterator<char>());
-	shaderFile.close();
-	shaderTextPtr = shaderText.c_str();
-	glShaderSource(gs, 1, &shaderTextPtr, nullptr);
-	glCompileShader(gs);
-	// query information about the compilation (nothing if compilation went fine!)
-	compileResult = GL_FALSE;
-	glGetShaderiv(gs, GL_COMPILE_STATUS, &compileResult);
-	if (compileResult == GL_FALSE) {
-		// query information about the compilation (nothing if compilation went fine!)
-		memset(buff, 0, 1024);
-		glGetShaderInfoLog(gs, 1024, nullptr, buff);
-		// print to Visual Studio debug console output
-		OutputDebugStringA(buff);
-	}
+	CreateShader("VertexShaderAnim.glsl", vs, GL_VERTEX_SHADER);
+	CreateShader("FragmentAnim.glsl", fs, GL_FRAGMENT_SHADER);
+	CreateShader("GeometryShaderAnim.glsl", gs, GL_GEOMETRY_SHADER);
 
 	//link shader program (connect vs, gs and ps)
 	gShaderProgramAnim = glCreateProgram();
@@ -971,7 +679,6 @@ void CreateShadowMatrixData(glm::vec3 lightPos) {
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); //View from the light position towards origo
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
-	//Might be at the wrong place. 
 	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
@@ -1380,11 +1087,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT);
 		PrePassRender(gameScene, rotation);
-		//glCullFace(GL_BACK);
-		//glDisable(GL_CULL_FACE);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1461,9 +1164,15 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	glDeleteVertexArrays(1, &gVertexAttributeFS);
 	glDeleteBuffers(1, &gVertexBufferFS);
 	glfwTerminate();
+	glDeleteProgram(gShaderProgram);
+	glDeleteProgram(gShaderProgramAnim);
+	glDeleteProgram(gShaderProgramBlend);
+	glDeleteProgram(gShaderProgramFS);
+	glDeleteProgram(gShaderProgramPS);
+	glDeleteProgram(gShaderProgramSkybox);
+	glDeleteProgram(gShaderProgramSM);
 
 	return 0;
-
 }
 
 void initWindow(unsigned int w, unsigned int h) {
