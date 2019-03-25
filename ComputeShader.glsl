@@ -1,0 +1,8 @@
+#version 440
+#extension GL_ARB_compute_shader : enable
+
+layout (local_size_x = 20, local_size_y = 20) in; //Threads
+
+void main(){
+	
+}

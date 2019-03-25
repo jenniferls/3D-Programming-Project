@@ -75,6 +75,9 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Fragment.glsl">
@@ -123,6 +126,9 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="VertexShaderBlend.glsl">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="ComputeShader.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -179,6 +185,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

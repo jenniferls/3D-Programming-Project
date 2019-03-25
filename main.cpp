@@ -65,6 +65,9 @@ GLuint gShaderProgramSkybox = 0;
 //Blend-mapping shader
 GLuint gShaderProgramBlend = 0;
 
+//Compute shader program
+GLuint gShaderProgramCompute = 0;
+
 // full screen quad stuff
 GLuint gVertexBufferFS = 0;
 GLuint gVertexAttributeFS = 0;
@@ -292,6 +295,36 @@ void CreateBlendmapShaders() {
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 	glDeleteShader(gs);
+}
+
+void CreateComputeShader() {
+	// local buffer to store error strings when compiling.
+	char buff[1024];
+	memset(buff, 0, 1024);
+	GLint compileResult = 0;
+
+	GLuint cs = 0;
+
+	CreateShader("ComputeShader.glsl", cs, GL_COMPUTE_SHADER);
+
+	gShaderProgramCompute = glCreateProgram();
+	glAttachShader(gShaderProgramCompute, cs);
+	glLinkProgram(gShaderProgramCompute);
+
+	// check once more, if the Vertex Shader and the Fragment Shader can be used
+	// together
+	compileResult = GL_FALSE;
+	glGetProgramiv(gShaderProgramCompute, GL_LINK_STATUS, &compileResult);
+	if (compileResult == GL_FALSE) {
+		// query information about the compilation (nothing if compilation went fine!)
+		memset(buff, 0, 1024);
+		glGetProgramInfoLog(gShaderProgramCompute, 1024, nullptr, buff);
+		// print to Visual Studio debug console output
+		OutputDebugStringA(buff);
+	}
+
+	glDetachShader(gShaderProgramCompute, cs);
+	glDeleteShader(cs);
 }
 
 void CreateFSShaders() {
@@ -589,7 +622,6 @@ void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
 	scene.addModel("Resources/Models/ship.obj");
 	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
-	//scene.addModel("Resources/Models/plane.obj");
 	scene.addModel("Resources/Models/cube.obj");
 
 	scene.addBlendmapModel("Resources/Models/plane.obj");
@@ -601,11 +633,6 @@ void CreateScene(Scene& scene) {
 		//calcTangentBasis(scene.models[i]->vertices, scene.models[i]->positions, scene.models[i]->uvs, scene.models[i]->normals, scene.models[i]->tangent, scene.models[i]->bitangent);
 		scene.models[i]->setTextureID(CreateTexture(scene.models[i]->getTexturePath())); //Create texture
 		scene.models[i]->setNormalID(CreateTexture(scene.models[i]->getNormalTexturePath()));
-		
-
-		//Calling this function is vital to be able to render a model. Always call it before rendering!
-		//If the model will only be rendered once, this can be called after creating it.
-		//scene.models[i]->prepare(gShaderProgram);
 	}
 
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
@@ -621,10 +648,6 @@ void CreateScene(Scene& scene) {
 		scene.blendmapModels[i]->rTexID = CreateTexture(scene.blendmapModels[i]->rTexPath);
 		scene.blendmapModels[i]->gTexID = CreateTexture(scene.blendmapModels[i]->gTexPath);
 		scene.blendmapModels[i]->bTexID = CreateTexture(scene.blendmapModels[i]->bTexPath);
-
-		//Calling this function is vital to be able to render a model. Always call it before rendering!
-		//If the model will only be rendered once, this can be called after creating it.
-		//scene.blendmapModels[i]->prepare(gShaderProgramBlend);
 	}
 
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
@@ -1047,6 +1070,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CreateParticleShaders(); //5.
 	CreateFSShaders(); //5. Create vertex- and fragment-shaders
 	CreateSMShaders(); //PF
+	CreateComputeShader();
 
 	if (CreateFrameBuffer() != 0)
 		shutdown = true;
