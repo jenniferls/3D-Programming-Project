@@ -8,6 +8,7 @@
 #include "AssimpLoader.h"
 #include "Light.h"
 #include "Skybox.h"
+#include "ParticleSystem.h"
 
 class Scene {
 public:
@@ -34,6 +35,7 @@ public:
 
 	AssimpLoader animLoader;
 	Skybox skybox = "Resources/Textures/Skybox1";
+	ParticleSystem particleSystem;
 
 private:
 	OBJLoader loader;

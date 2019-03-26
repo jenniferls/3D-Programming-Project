@@ -86,18 +86,21 @@ GLint model_id_anim = -1;
 GLint model_id_skybox = -1;
 GLint model_id_blend = -1;
 GLint model_id_sm = -1;
+GLint model_id_ps = -1;
 glm::mat4 model_matrix;
 
 GLint view_id = -1;
 GLint view_id_anim = -1;
 GLint view_id_skybox = -1;
-GLint view_id_blend = -1; 
+GLint view_id_blend = -1;
+GLint view_id_ps = -1;
 glm::mat4 view_matrix;
 
 GLint projection_id = -1;
 GLint projection_id_anim = -1;
 GLint projection_id_skybox = -1;
 GLint projection_id_blend = -1;
+GLint projection_id_ps = -1;
 glm::mat4 projection_matrix;
 
 GLuint shadow_id = -1; //PF
@@ -608,7 +611,7 @@ GLuint CreateTexture(string path) {
 	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0); 
 	if (data) {
 		// function args. in order | Target | Mipmap | Image format | Width | Height | Legacy, need to be 0 | Format | Datatype | Image data | 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D); // Generate the required mipmaps.
 	}
 	else {
@@ -666,6 +669,9 @@ void CreateScene(Scene& scene) {
 	scene.skybox.textureID = CreateCubemapTexture(scene.skybox.faces);
 	scene.skybox.prepareBuffers();
 	scene.skybox.prepare(gShaderProgramSkybox);
+
+	//Particle system
+	scene.particleSystem.textureID = CreateTexture(scene.particleSystem.texPath);
 }
 
 void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
@@ -912,6 +918,14 @@ void Render(Scene& scene, float rotationVal) {
 	}
 	glUseProgram(0); //Unbind program
 
+	/////////// Compute shader //////////
+	glUseProgram(gShaderProgramCompute);
+	glUseProgram(0);
+
+	////////// Particle System  //////////
+	glUseProgram(gShaderProgramPS);
+	glUseProgram(0);
+
 	////////// Skybox ////////// (Rendered last! This is more efficient)
 	glUseProgram(gShaderProgramSkybox);
 	glDepthFunc(GL_LEQUAL); //Passes the depth test with values less than or equal to the depth buffer
@@ -1140,6 +1154,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		CreateMatrixData(gShaderProgramBlend, projection_id_blend, view_id_blend); //Creates vp-matrices for blendmap shader
 		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim); //Creates vp-matrices for animated model-shader
 		CreateMatrixData(gShaderProgramSkybox, projection_id_skybox, view_id_skybox); // Creates vp-matrices for skybox
+		CreateMatrixData(gShaderProgramPS, projection_id_ps, view_id_ps); // Creates vp-matrices for particle system
 
 		Render(gameScene, rotation); //9. Render
 
