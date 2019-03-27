@@ -419,7 +419,7 @@ void CreateParticleShaders() {
 
 	CreateShader("VertexShaderPS.glsl", vs, GL_VERTEX_SHADER);
 	CreateShader("FragmentShaderPS.glsl", fs, GL_FRAGMENT_SHADER);
-	CreateShader("GeometryShader.glsl", gs, GL_GEOMETRY_SHADER);
+	CreateShader("GeometryShaderPS.glsl", gs, GL_GEOMETRY_SHADER);
 
 	gShaderProgramPS = glCreateProgram();
 	glAttachShader(gShaderProgramPS, fs);
@@ -671,7 +671,9 @@ void CreateScene(Scene& scene) {
 	scene.skybox.prepare(gShaderProgramSkybox);
 
 	//Particle system
-	scene.particleSystem.textureID = CreateTexture(scene.particleSystem.texPath);
+	scene.particleSystem.textureID = CreateTexture(scene.particleSystem.getTexPath());
+	scene.particleSystem.prepareBuffers();
+	scene.particleSystem.prepare(gShaderProgramPS);
 }
 
 void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
@@ -918,20 +920,12 @@ void Render(Scene& scene, float rotationVal) {
 	}
 	glUseProgram(0); //Unbind program
 
-	/////////// Compute shader //////////
-	glUseProgram(gShaderProgramCompute);
-	glUseProgram(0);
-
-	////////// Particle System  //////////
-	glUseProgram(gShaderProgramPS);
-	glUseProgram(0);
-
-	////////// Skybox ////////// (Rendered last! This is more efficient)
+	////////// Skybox ////////// (Rendered last (except for particles)! This is more efficient)
 	glUseProgram(gShaderProgramSkybox);
 	glDepthFunc(GL_LEQUAL); //Passes the depth test with values less than or equal to the depth buffer
 
 	glUniformMatrix4fv(projection_id_skybox, 1, GL_FALSE, glm::value_ptr(projection_matrix));  //Sends data about projection-matrix to vertex-shader
-	glm::mat4 view = glm::mat3(view_matrix);
+	glm::mat4 view = glm::mat3(view_matrix); //Modified view-matrix
 	glUniformMatrix4fv(view_id_skybox, 1, GL_FALSE, glm::value_ptr(view)); //Sends data about view-matrix to vertex-shader
 	//scene.skybox.prepare(gShaderProgramSkybox);
 
@@ -943,6 +937,33 @@ void Render(Scene& scene, float rotationVal) {
 
 	glDepthFunc(GL_LESS); //Return to default
 	glUseProgram(0); //Unbind program
+
+	/////////// Compute shader //////////
+	glUseProgram(gShaderProgramCompute);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, scene.particleSystem.vboID);
+	//TODO: Send delta time as a uniform
+	//TODO: Dispatch
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glUseProgram(0);
+
+	////////// Particle System  //////////
+	glUseProgram(gShaderProgramPS);
+	glEnable(GL_BLEND); //For transparency
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+	CreateModelMatrix(0.0f, glm::vec3(0.0, 5.0, 0.0), gShaderProgramPS, model_id_ps);
+	glUniformMatrix4fv(projection_id_ps, 1, GL_FALSE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix
+	glUniformMatrix4fv(view_id_ps, 1, GL_FALSE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix
+	glUniformMatrix4fv(model_id_ps, 1, GL_FALSE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix
+
+	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
+	glBindTexture(GL_TEXTURE_2D, scene.particleSystem.textureID);
+
+	glBindVertexArray(scene.particleSystem.vaoID);
+	glDrawArrays(GL_POINTS, 0, scene.particleSystem.getCount());
+
+	glDisable(GL_BLEND);
+	glUseProgram(0);
 }
 
 void keyboardUpdate() {

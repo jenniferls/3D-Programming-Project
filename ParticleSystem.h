@@ -2,11 +2,13 @@
 #include <vector>
 #include "glm/glm.hpp"
 
+const int MAX_PARTICLES = 100;
+
 class ParticleSystem {
 public:
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 	struct Particle {
 		glm::vec3 pos = glm::vec3(0.0, 0.0, 0.0);
-		float size = 0.5f;
 		float lifetime = 3.0f;
 		glm::vec3 velocity = glm::vec3(0.0, 0.0, 0.0);
 		float acceleration = 0.0f;
@@ -17,16 +19,22 @@ public:
 	~ParticleSystem();
 
 	void createBuffers();
-	unsigned int getCount() const; //Particle count
+	void prepareBuffers();
+	void prepare(unsigned int& shaderProg); //Prepare for render
 
-	std::vector<Particle> particles;
+	void addParticle(); //Basically only for debug
+
+	unsigned int getCount() const; //Particle count
+	std::string getTexPath() const;
+
+	//std::vector<Particle> particles;
+	Particle particles[MAX_PARTICLES];
 	unsigned int vaoID;
 	unsigned int vboID;
 	unsigned int textureID;
-	std::string texPath = "Resources/Textures/particle.png";
 
 private:
 	unsigned int particleCount;
-	unsigned int maxParticles;
+	std::string texPath = "Resources/Textures/particle.png";
 };
 

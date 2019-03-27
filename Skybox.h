@@ -3,7 +3,7 @@
 #include <string>
 
 class Skybox {
-#define BUFFER_OFFSET(i) ((char *)nullptr + (i)) //To avoid redefinition in main
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 public:
 	Skybox(std::string folderPath);
 	~Skybox();
