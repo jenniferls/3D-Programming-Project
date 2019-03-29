@@ -941,8 +941,8 @@ void Render(Scene& scene, float rotationVal) {
 	/////////// Compute shader //////////
 	glUseProgram(gShaderProgramCompute);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, scene.particleSystem.vboID);
-	//TODO: Send delta time as a uniform
-	//TODO: Dispatch
+	glUniform1f(glGetUniformLocation(gShaderProgramCompute, "dt"), timer.GetDeltaTime()); //Send delta time
+	glDispatchCompute(scene.particleSystem.getCount() / 10, 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	glUseProgram(0);
 
@@ -955,6 +955,8 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(projection_id_ps, 1, GL_FALSE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix
 	glUniformMatrix4fv(view_id_ps, 1, GL_FALSE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix
 	glUniformMatrix4fv(model_id_ps, 1, GL_FALSE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix
+
+	scene.particleSystem.update(timer.GetDeltaTime());
 
 	glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 	glBindTexture(GL_TEXTURE_2D, scene.particleSystem.textureID);
@@ -1165,6 +1167,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		ImGui::Text("DV1568 3D-Programming");           // Display some text (you can use a format strings too)   
 		ImGui::ColorEdit3("clear color", gClearColour); // Edit 3 floats representing a color
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("Particles in scene: %i", gameScene.particleSystem.getCount());
 		static float scale = 1.0f;
 		ImGui::SliderFloat("Scale", &scale, 0.0f, 1.0f);
 		static bool renderDepth = false;
