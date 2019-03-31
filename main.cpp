@@ -942,7 +942,8 @@ void Render(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramCompute);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, scene.particleSystem.vboID);
 	glUniform1f(glGetUniformLocation(gShaderProgramCompute, "dt"), timer.GetDeltaTime()); //Send delta time
-	glDispatchCompute(scene.particleSystem.getCount() / 10, 1, 1);
+	glDispatchCompute(scene.particleSystem.getCount(), 1, 1);
+	//cout << sizeof(scene.particleSystem.particles) << endl; // Debug
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	glUseProgram(0);
 

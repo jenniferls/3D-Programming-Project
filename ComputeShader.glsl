@@ -1,14 +1,18 @@
-#version 440
+#version 430
 #extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_shading_language_include : require
 
-layout (local_size_x = 10, local_size_y = 10) in; //Threads
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in; //Threads
 
 struct Particle {
-	vec3 pos;
-//	vec3 velocity;
+	vec4 pos;
+	vec4 velocity;
+//	vec4 color;
 //	float lifetime;
 //	float acceleration;
-//	bool isDead;
+	int isDead;
 };
 layout (std430, binding = 0) buffer particles {
 	Particle particleData[];
@@ -16,24 +20,10 @@ layout (std430, binding = 0) buffer particles {
 
 uniform float dt;
 
-const int MAX_PARTICLES = 100; //Needs to match max particles on CPU
-
 void main(){
-//	int i = 0;
-//	while(i < MAX_PARTICLES){
-//		if(particlesData[i].isDead == true){ //If particle is dead, reset its' position
-//			particlesData[i].pos = vec3(0.0, 0.0, 0.0);
-//		}
-//		particlesData[i].pos -= vec3(0.0, 1.0, 0.0) * dt;
-//		i++;
-//	}
-
-//particlesData[0].pos -= vec3(0.0, 1.0, 0.0) * dt;
-//particlesData[1].pos += vec3(0.0, 1.0, 0.0) * dt;
 
 uint index = gl_GlobalInvocationID.x;
-Particle p = particleData[index];
-p.pos -= vec3(0.0, 1.0, 0.0) * dt;
-
-particleData[index] = p; //Copy data back
+	if(particleData[index].isDead == 0){ //If the particle is not marked as dead
+		particleData[index].pos -= particleData[index].velocity * dt;
+	}
 }

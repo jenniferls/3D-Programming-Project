@@ -1,16 +1,21 @@
 #include "ParticleSystem.h"
-#include "windows.h"
+#include <windows.h>
 #include "glew/include/GL/glew.h"
 #include <gl/GL.h>
+#include <cstdlib>
+#include <ctime>
 
 ParticleSystem::ParticleSystem() {
 	this->particleCount = 0;
 	this->textureID = 0;
 	this->vaoID = 0;
 	this->vboID = 0;
+	this->vboPos = 0;
+	this->vboVel = 0;
 	this->timer = 0.0;
 	this->emitRate = 0.1;
-	this->testCounter = 0.0;
+
+	initParticles(); //Gives rendom positions to particles
 
 	addParticle();
 	createBuffers();
@@ -20,12 +25,17 @@ ParticleSystem::ParticleSystem() {
 ParticleSystem::~ParticleSystem() {
 	glDeleteVertexArrays(1, &vaoID);
 	glDeleteBuffers(1, &vboID);
+
+	glDeleteBuffers(1, &vboPos);
+	glDeleteBuffers(1, &vboVel);
 }
 
 void ParticleSystem::createBuffers() {
 	glGenVertexArrays(1, &vaoID);
 
 	glGenBuffers(1, &vboID);
+	glGenBuffers(1, &vboPos);
+	glGenBuffers(1, &vboVel);
 }
 
 void ParticleSystem::prepareBuffers() {
@@ -34,7 +44,13 @@ void ParticleSystem::prepareBuffers() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(particles), particles, GL_DYNAMIC_COPY); //Data that will be modified by compute shader
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), BUFFER_OFFSET(0));
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), BUFFER_OFFSET(0));
+	//glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), BUFFER_OFFSET(sizeof(float) * 4));
+	//glEnableVertexAttribArray(2);
+	//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), BUFFER_OFFSET(sizeof(float) * 8));
+	//glEnableVertexAttribArray(2);
+	//glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(Particle), BUFFER_OFFSET(sizeof(float) * 8));
 }
 
 void ParticleSystem::prepare(unsigned int& shaderProg) {
@@ -45,10 +61,20 @@ void ParticleSystem::prepare(unsigned int& shaderProg) {
 	glBindBuffer(GL_ARRAY_BUFFER, vboID);
 }
 
+void ParticleSystem::initParticles() {
+	std::srand(static_cast <unsigned> (std::time(0)));
+
+	static float min = -2.0;
+	static float max = 4.0;
+
+	for (int i = 0; i < MAX_PARTICLES; i++) {
+		float r1 = min + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / max);
+		float r2 = min + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / max);
+		this->particles[i].pos = glm::vec4(r1, 0.0, r2, 1.0);
+	}
+}
+
 void ParticleSystem::addParticle() {
-	//this->particles[this->particleCount] = Particle();
-	//this->testCounter += 0.2;
-	//this->particles[this->particleCount].pos = glm::vec3(this->testCounter, 0.0, 0.0);
 	this->particleCount++;
 	OutputDebugStringA("Particle added\n");
 }
