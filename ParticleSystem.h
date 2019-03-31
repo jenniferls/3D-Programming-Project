@@ -9,15 +9,12 @@ public:
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 	struct Particle {
 		glm::vec4 pos = glm::vec4(0.0, 0.0, 0.0, 1.0);
-		glm::vec4 velocity = glm::vec4(0.0, 1.0, 0.0, 1.0);
+		glm::vec4 direction = glm::vec4(0.0, 1.0, 0.0, 1.0);
 		//glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 1.0);
-		//float pad2;
-		//float pos_x = 0.0, pos_y = 0.0, pos_z = 0.0;
-		//float vel_x = 0.0, vel_y = 1.0, vel_z = 0.0;
 		//float lifetime = 3.0f;
-		//float acceleration = 0.0f;
 		int isDead = 0;
-		int padding[3]; //Padding is needed to make the total add up to a multiple of 16
+		int speed = 3;
+		int padding[2]; //Padding is needed to make the total add up to a multiple of 16
 	};
 
 	ParticleSystem();
