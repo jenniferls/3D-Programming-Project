@@ -70,13 +70,14 @@ void ParticleSystem::initParticles() {
 	for (int i = 0; i < MAX_PARTICLES; i++) {
 		float r1 = min + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / max);
 		float r2 = min + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / max);
-		this->particles[i].pos = glm::vec4(r1, 0.0, r2, 1.0);
+		this->particles[i].startPos = glm::vec4(r1, 0.0, r2, 1.0);
+		this->particles[i].pos = this->particles[i].startPos;
 	}
 }
 
 void ParticleSystem::addParticle() {
 	this->particleCount++;
-	OutputDebugStringA("Particle added\n");
+	//OutputDebugStringA("Particle added\n");
 }
 
 void ParticleSystem::update(double dt) {

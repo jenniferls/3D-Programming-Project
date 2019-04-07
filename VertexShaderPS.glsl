@@ -13,6 +13,6 @@ void main(){
 	else{
 		color = vec3(0.0, 0.0, 1.0);
 	}
-//	color = vec3(pos.y, pos.x, pos.z);
+
 	gl_Position = (VIEW_MAT * MODEL_MAT) * vec4(pos.xyz, 1.0);
 }
