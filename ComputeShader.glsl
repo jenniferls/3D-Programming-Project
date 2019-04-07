@@ -7,9 +7,9 @@ layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in; //Threads
 
 struct Particle {
 	vec4 pos;
+	vec4 color;
 	vec4 startPos;
 	vec4 direction;
-//	vec4 color;
 	float lifetime;
 	float speed;
 };
@@ -22,10 +22,17 @@ uniform float max_lifetime;
 
 void InitParticle(uint index){
 		particleData[index].pos = particleData[index].startPos;
+		particleData[index].color.a = 0.0;
 }
 
 void UpdateParticle(uint index){
 	particleData[index].pos -= (particleData[index].direction * particleData[index].speed) * dt;
+	if(particleData[index].color.a < 1.0 && particleData[index].lifetime > 1.0){
+		particleData[index].color.a += 2.0 * dt;
+	}
+	if(particleData[index].lifetime < 1.1){
+		particleData[index].color.a -= 1.0 * dt;
+	}
 }
 
 void main(){
