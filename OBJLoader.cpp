@@ -100,37 +100,37 @@ bool OBJLoader::loadOBJ(RawModel *model) {
 
 	int amtOfVerts = model->getVertCount();
 
-	//for (int i = 0; i < amtOfVerts; i += 3) {
-	//	glm::vec3 & v0 = model->positions[i];
-	//	glm::vec3 & v1 = model->positions[i + 1];
-	//	glm::vec3 & v2 = model->positions[i + 2];
+	for (int i = 0; i < amtOfVerts; i += 3) {
+		glm::vec3 & v0 = model->positions[i];
+		glm::vec3 & v1 = model->positions[i + 1];
+		glm::vec3 & v2 = model->positions[i + 2];
 
-	//	glm::vec2 & uv0 = model->uvs[i];
-	//	glm::vec2 & uv1 = model->uvs[i + 1];
-	//	glm::vec2 & uv2 = model->uvs[i + 2];
+		glm::vec2 & uv0 = model->uvs[i];
+		glm::vec2 & uv1 = model->uvs[i + 1];
+		glm::vec2 & uv2 = model->uvs[i + 2];
 
-	//	//Calculate the triangles
-	//	glm::vec3 deltaPos1 = v1 - v0;
-	//	glm::vec3 deltaPos2 = v2 - v0;
-	//	//Claculate uv delta
-	//	glm::vec2 deltaUV1 = uv1 - uv0;
-	//	glm::vec2 deltaUV2 = uv2 - uv0;
+		//Calculate the triangles
+		glm::vec3 deltaPos1 = v1 - v0;
+		glm::vec3 deltaPos2 = v2 - v0;
+		//Calculate uv delta
+		glm::vec2 deltaUV1 = uv1 - uv0;
+		glm::vec2 deltaUV2 = uv2 - uv0;
 
-	//	//Follows math formula found on: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
-	//	float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-	//	glm::vec3 aTangent = r * (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y);
-	//	glm::vec3 aBitangent = r * (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV1.x);
+		//Follows math formula found on: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
+		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+		glm::vec3 aTangent = r * (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y);
+		glm::vec3 aBitangent = r * (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV1.x);
 
-	//	//Set the same tangent to all three vertices of the triangle
-	//	model->tangent.push_back(aTangent);
-	//	model->tangent.push_back(aTangent);
-	//	model->tangent.push_back(aTangent);
+		//Set the same tangent to all three vertices of the triangle
+		model->tangent.push_back(aTangent);
+		model->tangent.push_back(aTangent);
+		model->tangent.push_back(aTangent);
 
-	//	model->bitangent.push_back(aBitangent);
-	//	model->bitangent.push_back(aBitangent);
-	//	model->bitangent.push_back(aBitangent);
-	//}
-	//std::cout << "Tangnet calcultations done" << std::endl;
+		model->bitangent.push_back(aBitangent);
+		model->bitangent.push_back(aBitangent);
+		model->bitangent.push_back(aBitangent);
+	}
+	std::cout << "Tangent calculations done" << std::endl;
 
 	return true;
 }

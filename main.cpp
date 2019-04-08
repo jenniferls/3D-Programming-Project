@@ -633,7 +633,6 @@ void CreateScene(Scene& scene) {
 	scene.addAnimatedModel("Resources/Models/model.dae");
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
-		//calcTangentBasis(scene.models[i]->vertices, scene.models[i]->positions, scene.models[i]->uvs, scene.models[i]->normals, scene.models[i]->tangent, scene.models[i]->bitangent);
 		scene.models[i]->setTextureID(CreateTexture(scene.models[i]->getTexturePath())); //Create texture
 		scene.models[i]->setNormalID(CreateTexture(scene.models[i]->getNormalTexturePath()));
 	}
@@ -713,7 +712,7 @@ void CreateShadowMatrixData(glm::vec3 lightPos) {
 	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0);
+		0.5, 0.5, 0.5, 1.0);    
 
 
 	shadow_matrix = depthMVP * shadowBias;
@@ -819,7 +818,7 @@ void Render(Scene& scene, float rotationVal) {
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
-		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
+		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normal map
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getNormalID());
 		glActiveTexture(GL_TEXTURE2); //PF
 		glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
@@ -890,7 +889,7 @@ void Render(Scene& scene, float rotationVal) {
 		//Send texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->getTextureID()); //Bind the texture
-		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normalmap
+		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normal map
 		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->getNormalID());
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, scene.blendmapModels[i]->blendTexID);
@@ -1155,7 +1154,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// first pass
-		// render all geometry to a framebuffer object
+		// render all geometry to a frame buffer object
 		glViewport(0, 0, WIDTH, HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
 		glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], gClearColour[3]);
@@ -1186,7 +1185,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		// first pass is done!
 		// now render a second pass
-		// bind default framebuffer
+		// bind default frame buffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -1279,53 +1278,3 @@ void initWindow(unsigned int w, unsigned int h) {
 
 	return;
 }
-
-/*
-void calcTangentBasis(
-	//in:
-	vector<RawModel::TriangleVertex> vertices,
-	vector<glm::vec3> positions,
-	vector<glm::vec2> uvs,
-	vector<glm::vec3> normals,
-	//out
-	vector<glm::vec3> & tangents,
-	vector<glm::vec3> & bitangents
-) 
-{
-	//Calculate edges and deltaUVs based on amount of triangles
-	for (int i = 0; i < vertices.size(); i + 3) {
-		// Shortcuts for verts
-		glm::vec3 & v0 = positions[i + 0];
-		glm::vec3 & v1 = positions[i + 1];
-		glm::vec3 & v2 = positions[i + 2];
-		// Shortcuts for UVs
-		glm::vec2 & uv0 = uvs[i + 0];
-		glm::vec2 & uv1 = uvs[i + 1];
-		glm::vec2 & uv2 = uvs[i + 2];
-		//Edges of the triangle : position delta
-		glm::vec3 deltaPos1 = v1 - v0;
-		glm::vec3 deltaPos2 = v2 - v0;
-		//UV delta
-		glm::vec2 deltaUV1 = uv1 - uv0;
-		glm::vec2 deltaUV2 = uv2 - uv0;
-
-		//Use formula as seen on: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
-		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-		glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)*r;
-		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x)*r;
-
-		//Set the same tangent and bitangent to all three vertices of the triangle.
-		tangents.push_back(tangent);
-		tangents.push_back(tangent);
-		tangents.push_back(tangent);
-
-		bitangents.push_back(bitangent);
-		bitangents.push_back(bitangent);
-		bitangents.push_back(bitangent);
-
-	}
-	cout << "Tangent and bitangent calculated for a Triangle" << endl;
-}
-*/
-
-
