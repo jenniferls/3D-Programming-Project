@@ -23,6 +23,12 @@ in vec3 pointToCamera;
 in vec4 final_shadow_coord;
 uniform sampler2D shadowMap;
 
+//in vec3 fViewPos;
+//in vec3 fFragPos;
+//in vec3 fTangentViewPos;
+//in vec3 fTangentLightPos;
+//in vec3 fTangentFragPos;
+
 float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
 	proj_coord = proj_coord * 0.5 + 0.5;

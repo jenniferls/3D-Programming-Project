@@ -99,27 +99,34 @@ bool OBJLoader::loadOBJ(RawModel *model) {
 	}
 
 	int amtOfVerts = model->getVertCount();
+	glm::vec3 aTangent, aBitangent;
 
 	for (int i = 0; i < amtOfVerts; i += 3) {
-		glm::vec3 & v0 = model->positions[i];
-		glm::vec3 & v1 = model->positions[i + 1];
-		glm::vec3 & v2 = model->positions[i + 2];
+		glm::vec3 pos1 = model->positions[i];
+		glm::vec3 pos2 = model->positions[i + 1];
+		glm::vec3 pos3 = model->positions[i + 2];
 
-		glm::vec2 & uv0 = model->uvs[i];
-		glm::vec2 & uv1 = model->uvs[i + 1];
-		glm::vec2 & uv2 = model->uvs[i + 2];
+		glm::vec2 uv0 = model->uvs[i];
+		glm::vec2 uv1 = model->uvs[i + 1];
+		glm::vec2 uv2 = model->uvs[i + 2];
 
 		//Calculate the triangles
-		glm::vec3 deltaPos1 = v1 - v0;
-		glm::vec3 deltaPos2 = v2 - v0;
+		glm::vec3 edge1 = pos2 - pos1;
+		glm::vec3 edge2 = pos3 - pos1;
 		//Calculate uv delta
 		glm::vec2 deltaUV1 = uv1 - uv0;
 		glm::vec2 deltaUV2 = uv2 - uv0;
 
-		//Follows math formula found on: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
-		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-		glm::vec3 aTangent = r * (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y);
-		glm::vec3 aBitangent = r * (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV1.x);
+		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV2.y);
+		aTangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+		aTangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+		aTangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+		aTangent = glm::normalize(aTangent);
+
+		aBitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+		aBitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+		aBitangent.z = f * (-deltaUV2.x * edge2.z + deltaUV1.x * edge2.z);
+		aBitangent = glm::normalize(aBitangent);
 
 		//Set the same tangent to all three vertices of the triangle
 		model->tangent.push_back(aTangent);
@@ -129,6 +136,8 @@ bool OBJLoader::loadOBJ(RawModel *model) {
 		model->bitangent.push_back(aBitangent);
 		model->bitangent.push_back(aBitangent);
 		model->bitangent.push_back(aBitangent);
+		//Compute face normals and tangents
+
 	}
 	std::cout << "Tangent calculations done" << std::endl;
 

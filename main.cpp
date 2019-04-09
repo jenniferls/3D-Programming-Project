@@ -78,7 +78,7 @@ GLuint gVertexBufferSM = 0;
 GLuint gVertexAtrributeSM = 0;
 GLuint gShaderProgramSM = 0;
 
-float gClearColour[3] {};
+float gClearColour[3]{};
 
 //MVP-Matrix
 GLint model_id = -1;
@@ -109,9 +109,9 @@ GLuint shadow_id3 = -1;
 glm::mat4 shadow_matrix; //PF
 
 //Camera variables
-glm::vec3 camPos	= glm::vec3(0.5f, 0.5f, 8.0f); //Default camera position
-glm::vec3 camFront	= glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
-glm::vec3 camUp		= glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
+glm::vec3 camPos = glm::vec3(0.5f, 0.5f, 8.0f); //Default camera position
+glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
+glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
 float FoV = 45.0f; //Field-of-view
 float camYaw = -90.0f;
 float camPitch = 0.0f;
@@ -186,13 +186,13 @@ int CreateFrameBuffer() {
 	glGenFramebuffers(1, &gFbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, gFbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gFboTextureAttachments[0], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gFboTextureAttachments[1],0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gFboTextureAttachments[1], 0);
 
 	// check if framebuffer is complete (usable):
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
-		err = 0; 
-	} 
+		err = 0;
+	}
 	else
 		err = -1;
 
@@ -332,7 +332,7 @@ void CreateComputeShader() {
 
 void CreateFSShaders() {
 	// local buffer to store error strings when compiling.
-	char buff[1024]; 
+	char buff[1024];
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
@@ -369,7 +369,7 @@ void CreateFSShaders() {
 
 void CreateShaders() {
 	// local buffer to store error strings when compiling.
-	char buff[1024]; 
+	char buff[1024];
 	memset(buff, 0, 1024);
 	GLint compileResult = 0;
 
@@ -525,8 +525,8 @@ void CreateAnimShaders() {
 
 void CreateFullScreenQuad() {
 	struct Pos2UV {
-		float x,y;
-		float u,v;
+		float x, y;
+		float u, v;
 	};
 	Pos2UV myQuad[6] = {
 		-1,-1, 0, 0,	// TOP		LEFT
@@ -543,7 +543,7 @@ void CreateFullScreenQuad() {
 	glBindVertexArray(gVertexAttributeFS);
 	// this activates the first and second attributes of this VAO
 	// think of "attributes" as inputs to the Vertex Shader
-	glEnableVertexAttribArray(0); 
+	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
 	// create a vertex buffer object (VBO) id (out Array of Structs on the GPU side)
@@ -558,7 +558,7 @@ void CreateFullScreenQuad() {
 
 	// tell OpenGL about layout in memory (input assembler information)
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(0));
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float)*2));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Pos2UV), BUFFER_OFFSET(sizeof(float) * 2));
 };
 
 GLuint CreateCubemapTexture(string faces[]) {
@@ -608,7 +608,7 @@ GLuint CreateTexture(string path) {
 	cout << "Texture path: " << filePath << endl; //Debug
 
 	//The stbi_load funcions opens the file, and width and height values from the image and the amount of colour channels in the image.
-	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0); 
+	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0);
 	if (data) {
 		// function args. in order | Target | Mipmap | Image format | Width | Height | Legacy, need to be 0 | Format | Datatype | Image data | 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -623,8 +623,8 @@ GLuint CreateTexture(string path) {
 
 void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
-	scene.addModel("Resources/Models/ship.obj");
-	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	//scene.addModel("Resources/Models/ship.obj");
+	//scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	scene.addModel("Resources/Models/cube.obj");
 
 	scene.addBlendmapModel("Resources/Models/plane.obj");
@@ -705,14 +705,14 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shader
 //PF
 void CreateShadowMatrixData(glm::vec3 lightPos) {
 
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>( -3, 3, -3, 3, -1, 10); //An orthographic matrix
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3, 3, -3, 3, -1, 10); //An orthographic matrix
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); //View from the light position towards origo
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
 	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0);    
+		0.5, 0.5, 0.5, 1.0);
 
 
 	shadow_matrix = depthMVP * shadowBias;
@@ -741,11 +741,11 @@ void SetViewport() {
 void PrePassRender(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramSM);
 
-	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-	scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
+	//scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	//scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
-	scene.models[0]->setWorldRotation(rotationVal);
+	//scene.models[0]->setWorldRotation(rotationVal);
 
 	glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
@@ -784,17 +784,17 @@ void PrePassRender(Scene& scene, float rotationVal) {
 
 void Render(Scene& scene, float rotationVal) {
 	// set the color TO BE used (this does not clear the screen right away)
-	glClearColor(gClearColour[0], gClearColour[1],gClearColour[2],1.0);
+	glClearColor(gClearColour[0], gClearColour[1], gClearColour[2], 1.0);
 	// use the color to clear the color buffer (clear the color buffer only)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//Choose model placement (default is origo)
-	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-	scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
+//	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+//	scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
-	
+
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0]->setWorldRotation(rotationVal);
@@ -1073,7 +1073,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 	cout << endl;
 }
 
-int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow ) {
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
 	//Attaches a console used for displaying debug messages to the application
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
@@ -1162,8 +1162,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		//Prepare IMGUI output
 		ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 		ImGui::Begin("Debug");                          // Create a window called "Debug" and append into it.
 		ImGui::Text("DV1568 3D-Programming");           // Display some text (you can use a format strings too)   
 		ImGui::ColorEdit3("clear color", gClearColour); // Edit 3 floats representing a color
@@ -1200,14 +1200,14 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[0]);
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, gFboTextureAttachments[1]);
-		
+
 		glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(scale, scale, scale));
 		glm::mat4 transform = scaleMat;
 		glUniformMatrix4fv(5, 1, GL_TRUE, &transform[0][0]);
 
 		// false
 		glUniform1i(3, renderDepth);  // 0 == false
-		
+
 		glDrawArrays(GL_TRIANGLES, 0, 6); //Draw quad
 
 		//Render IMGUI interface
@@ -1218,8 +1218,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	// SHUTDOWN
 	ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	glDeleteFramebuffers(1, &gFbo);
 	glDeleteTextures(2, gFboTextureAttachments);
