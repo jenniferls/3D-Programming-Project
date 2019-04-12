@@ -20,7 +20,7 @@ uniform mat4 MODEL_MAT; // PF
 uniform mat4 SHADOW_MAT; // PF
 uniform mat4 VIEW_MAT;
 
-vec3 lightPos = vec3(0.0f, 0.0f, 0.0f);
+vec3 lightPos = vec3(4.0, 6.0, 2.0);
 
 void main() {
 	aTexture = texture_coords; //Pass the texture info to the geometry shader

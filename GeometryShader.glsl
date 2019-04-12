@@ -16,6 +16,16 @@ out vec3 pointToCamera;
 out float diffValue;
 out float specValue;
 
+in vec3 viewPos[];
+in vec3 TangentLightPos[];
+in vec3 TangentViewPos[];
+in vec3 TangentFragPos[];
+
+out vec3 finalView;
+out vec3 finalTanLightPos;
+out vec3 finalTanViewPos;
+out vec3 finalTanFragPos;
+
 in vec4 shadow_coord[]; // PF
 out vec4 final_shadow_coord; // PF
 
@@ -30,6 +40,11 @@ void main(){
 	if(angle <= 0.0f){
 		for(int i = 0; i < gl_in.length(); i++){
 			texUVs = aTexture[i];
+			finalView = viewPos[i];
+			finalTanLightPos = TangentLightPos[i];
+			finalTanViewPos = TangentViewPos[i];
+			finalTanFragPos = TangentFragPos[i];
+
 			finalNormals = normalsOut[i];
 			final_shadow_coord = shadow_coord[i]; // PF
 			gl_Position = (PROJ_MAT * VIEW_MAT * MODEL_MAT) * gl_in[i].gl_Position;

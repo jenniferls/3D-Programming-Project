@@ -20,14 +20,15 @@ uniform vec3 specular_val;	//Specular color
 in vec4 fragPos;
 in vec3 pointToCamera;
 
+in vec3 finalView;
+in vec3 finalTanLightPos;
+in vec3 finalTanViewPos;
+in vec3 finalTanFragPos;
+
+uniform sampler2D normalMap;
+
 in vec4 final_shadow_coord;
 uniform sampler2D shadowMap;
-
-//in vec3 fViewPos;
-//in vec3 fFragPos;
-//in vec3 fTangentViewPos;
-//in vec3 fTangentLightPos;
-//in vec3 fTangentFragPos;
 
 float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
@@ -56,7 +57,7 @@ float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 
 vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
 	//Diffuse shading
-	vec3 pointToLight = normalize(light_pos - fragPos.xyz);
+	vec3 pointToLight = normalize(finalTanLightPos - finalTanFragPos);
 	float diffuseFactor = dot(pointToLight, normal) / (length(pointToLight) * length(normal));
 	diffuseFactor = clamp(diffuseFactor, 0, 1); //Make sure the diffuse factor isn't negative or above 1
 	vec3 diffuse = diffuseFactor * light_color;
@@ -90,13 +91,16 @@ vec4 calcAmbient(vec3 light_color){
 
 void main () {
 	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
+	vec4 normSample = texture(normalMap, vec2(texUVs.s, 1 - texUVs.t)); 
+
+	normSample = normalize(normSample * 2.0 - 1.0);
 
 	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
 	vec4 result = vec4(0.0f);
 
 	float shadow = shadowCalc(final_shadow_coord,norm, light_positions[0]);
-	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm, shadow));
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], normSample.xyz)) * (texSample + calcSpecular(light_positions[0], normSample.xyz, shadow));
 //	result += (calcAmbient(light_colors[1]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[1], light_colors[1], norm)) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
 	fragment_color = result;
