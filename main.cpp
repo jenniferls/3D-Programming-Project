@@ -806,7 +806,8 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(shadow_id2, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
-	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0]));		//Sends light color data to fragment-shader
+	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0])); //Sends light color data to fragment-shader
+	//glUniform3fv(glGetUniformLocation(gShaderProgram, "viewPos"), camPos, glm::value_ptr(camPos));
 
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
@@ -815,14 +816,19 @@ void Render(Scene& scene, float rotationVal) {
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
 		scene.models[i]->prepare(gShaderProgram);
 
-		//Send texture data
+		//Send diffuse texture data
 		glActiveTexture(GL_TEXTURE0); //Activate the texture unit
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getTextureID()); //Bind the texture
+		glUniform1i(glGetUniformLocation(gShaderProgram, "textureSampler"), 0);
+		
+		//Send normal texture data
 		glActiveTexture(GL_TEXTURE1); //Activate texture unit for normal map
 		glBindTexture(GL_TEXTURE_2D, scene.models[i]->getNormalID());
+		glUniform1i(glGetUniformLocation(gShaderProgram, "normalMap"), 1);
+		
+		//Send shadowMap texture data
 		glActiveTexture(GL_TEXTURE2); //PF
 		glBindTexture(GL_TEXTURE_2D, depthMapAttachment[0]); //PF
-
 		glUniform1i(glGetUniformLocation(gShaderProgram, "shadowMap"), 2); //PF
 
 		glUniform3fv(scene.models[i]->ambID, 1, glm::value_ptr(scene.models[i]->ambientVal));		//Ambient

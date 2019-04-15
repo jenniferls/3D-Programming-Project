@@ -8,7 +8,6 @@ in vec3 finalNormals;
 out vec4 fragment_color;
 
 // this is a uniform value, the very same value for ALL pixel shader executions
-uniform sampler2D textureSampler;
 uniform mat4 MODEL_MAT;
 uniform vec3 light_positions[];
 uniform vec3 light_colors[];
@@ -20,15 +19,14 @@ uniform vec3 specular_val;	//Specular color
 in vec4 fragPos;
 in vec3 pointToCamera;
 
-in vec3 finalView;
-in vec3 finalTanLightPos;
-in vec3 finalTanViewPos;
-in vec3 finalTanFragPos;
-
-uniform sampler2D normalMap;
+in vec3 finalTangent;
+in vec3 finalBitangent;
 
 in vec4 final_shadow_coord;
+
+uniform sampler2D textureSampler;
 uniform sampler2D shadowMap;
+uniform sampler2D normalMap;
 
 float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
@@ -57,7 +55,7 @@ float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 
 vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
 	//Diffuse shading
-	vec3 pointToLight = normalize(finalTanLightPos - finalTanFragPos);
+	vec3 pointToLight = normalize(light_pos.xyz - fragPos.xyz);
 	float diffuseFactor = dot(pointToLight, normal) / (length(pointToLight) * length(normal));
 	diffuseFactor = clamp(diffuseFactor, 0, 1); //Make sure the diffuse factor isn't negative or above 1
 	vec3 diffuse = diffuseFactor * light_color;
@@ -93,14 +91,24 @@ void main () {
 	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
 	vec4 normSample = texture(normalMap, vec2(texUVs.s, 1 - texUVs.t)); 
 
-	normSample = normalize(normSample * 2.0 - 1.0);
+	normSample = (2.0f * normSample) - 1.0f;
 
-	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
+	//vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
 	vec4 result = vec4(0.0f);
 
+	//mat3 normalMat = transpose(inverse(mat3(MODEL_MAT)));
+	vec3 t = normalize(finalTangent);
+	vec3 n = normalize(finalNormals);
+	t = normalize(t - dot(t, n) * n);
+	vec3 b = cross(n, t);
+	
+	mat3 tbnMatrix = transpose(mat3(t, b, n));
+
+	vec3 norm = normalize(normSample.xyz * tbnMatrix);
+
 	float shadow = shadowCalc(final_shadow_coord,norm, light_positions[0]);
-	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], normSample.xyz)) * (texSample + calcSpecular(light_positions[0], normSample.xyz, shadow));
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], normSample.xyz)) * (texSample + calcSpecular(light_positions[0], norm, shadow));
 //	result += (calcAmbient(light_colors[1]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[1], light_colors[1], norm)) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
 	fragment_color = result;

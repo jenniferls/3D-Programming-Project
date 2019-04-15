@@ -96,6 +96,8 @@ void RawModel::prepare(unsigned int& shaderProgram) {
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
 }
 
 void RawModel::createBuffers() {
