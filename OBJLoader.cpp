@@ -99,41 +99,82 @@ bool OBJLoader::loadOBJ(RawModel *model) {
 	}
 
 	int amtOfVerts = model->getVertCount();
-	glm::vec3 aTangent, aBitangent;
+	glm::vec3 aTangent, aBitangent, normal = glm::vec3(0.0f);
+	float vtxVectorX, vtxVectorY, vtxVectorZ = 0.0f;
+	float U1, V1, U2, V2 = 0.0f;
+	glm::vec3 edge1, edge2 = glm::vec3(0.0f);
 
 	for (int i = 0; i < amtOfVerts; i += 3) {
-		glm::vec3 pos0 = model->positions[model->vertex_indices[i]];
+		vtxVectorX = model->vertices[i].positions.x - model->vertices[i + 2].positions.x;
+		vtxVectorY = model->vertices[i].positions.y - model->vertices[i + 2].positions.y;
+		vtxVectorZ = model->vertices[i].positions.z - model->vertices[i + 2].positions.z;
+		edge1 = glm::vec3(vtxVectorX, vtxVectorY, vtxVectorZ);
+
+		vtxVectorX = model->vertices[i + 2].positions.x - model->vertices[i + 1].positions.x;
+		vtxVectorY = model->vertices[i + 2].positions.y - model->vertices[i + 1].positions.y;
+		vtxVectorZ = model->vertices[i + 2].positions.z - model->vertices[i + 1].positions.z;
+		edge2 = glm::vec3(vtxVectorX, vtxVectorY, vtxVectorZ);
+
+		normal = glm::cross(edge1, edge2);
+		normal = normalize(normal);
+		
+		U1 = model->vertices[i].UVs.x - model->vertices[i + 2].UVs.x;
+		V1 = model->vertices[i].UVs.y - model->vertices[i + 2].UVs.y;
+		U2 = model->vertices[i + 2].UVs.x - model->vertices[i + 1].UVs.x;
+		V2 = model->vertices[i + 2].UVs.y - model->vertices[i + 1].UVs.y;
+		
+		/*glm::vec3 pos0 = model->positions[model->vertex_indices[i]];
 		glm::vec3 pos1 = model->positions[model->vertex_indices[i + 1]];
-		glm::vec3 pos2 = model->positions[model->vertex_indices[i + 2]];
+		glm::vec3 pos2 = model->positions[model->vertex_indices[i + 2]];*/
 
-		glm::vec2 uv0 = model->uvs[model->uv_indices[i]];
-		glm::vec2 uv1 = model->uvs[model->uv_indices[i + 1]];
-		glm::vec2 uv2 = model->uvs[model->uv_indices[i + 2]];
+		//glm::vec2 uv0 = model->uvs[model->uv_indices[i]];
+		//glm::vec2 uv1 = model->uvs[model->uv_indices[i + 1]];
+		//glm::vec2 uv2 = model->uvs[model->uv_indices[i + 2]];
 
-		//Calculate the triangles
-		glm::vec3 edge1 = pos1 - pos0;
-		glm::vec3 edge2 = pos2 - pos0;
-		//Calculate uv delta
-		glm::vec2 deltaUV1 = uv1 - uv0;
-		glm::vec2 deltaUV2 = uv2 - uv0;
+		////Calculate the triangles
+		//glm::vec3 edge1 = pos1 - pos0;
+		//glm::vec3 edge2 = pos2 - pos0;
+		////Calculate uv delta
+		//glm::vec2 deltaUV1 = uv1 - uv0;
+		//glm::vec2 deltaUV2 = uv2 - uv0;
 
-		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-		aTangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-		aTangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-		aTangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+		//float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+		//aTangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+		//aTangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+		//aTangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+		//aTangent = glm::normalize(aTangent);
+
+		float f = 1.0f / (U1 * V2 - U2 * V1);
+		aTangent.x = f * (U1 * edge1.x - V2 * edge2.x);
+		aTangent.y = f * (U1 * edge1.y - V2 * edge2.y);
+		aTangent.z = f * (U1 * edge1.z - V2 * edge2.z);
 		aTangent = glm::normalize(aTangent);
 
-		aBitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+		model->vertices[i].normals = normal;
+		model->vertices[i + 1].normals = normal;
+		model->vertices[i + 2].normals = normal;
+
+		model->vertices[i].tangents = aTangent;
+		model->vertices[i + 1].tangents = aTangent;
+		model->vertices[i + 2].tangents = aTangent;
+
+		aBitangent = glm::cross(model->vertices[i].normals, aTangent);
+		model->vertices[i].biTangents = aBitangent;
+		model->vertices[i + 1].biTangents = aBitangent;
+		model->vertices[i + 2].biTangents = aBitangent;
+
+		/*aBitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
 		aBitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
 		aBitangent.z = f * (-deltaUV2.x * edge2.z + deltaUV1.x * edge2.z);
-		aBitangent = glm::normalize(aBitangent);
+		aBitangent = glm::normalize(aBitangent);*/
 
 		//Set the same tangent to all three vertices of the triangle
-		for (int i = 0; i < 3; i++) {
+	/*	for (int i = 0; i < 3; i++) {
 			model->tangent.push_back(aTangent);
 			model->bitangent.push_back(aBitangent);
-		}
-		
+		}*/
+
+
 		
 		//Compute face normals and tangents
 

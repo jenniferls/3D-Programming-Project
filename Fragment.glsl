@@ -103,13 +103,14 @@ void main () {
 	t = normalize(t - dot(t, n) * n);
 	vec3 b = cross(n, t);
 	
-	mat3 tbnMatrix = transpose(mat3(t, b, n));
+	mat3 tbnMatrix = (mat3(t, b, n));
 
-	vec3 norm = normalize(normSample.xyz * tbnMatrix);
+	vec3 norm = normalize(vec3(tbnMatrix * normSample.xyz));
 
 	float shadow = shadowCalc(final_shadow_coord,norm, light_positions[0]);
-	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], normSample.xyz)) * (texSample + calcSpecular(light_positions[0], norm, shadow));
+	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm, shadow));
 //	result += (calcAmbient(light_colors[1]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[1], light_colors[1], norm)) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
+	
 
 	fragment_color = result;
 }

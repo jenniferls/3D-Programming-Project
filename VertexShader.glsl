@@ -21,6 +21,7 @@ out vec3 FragPos;
 uniform mat4 MODEL_MAT; // PF
 uniform mat4 SHADOW_MAT; // PF
 uniform mat4 VIEW_MAT;
+uniform mat4 PROJ_MAT;
 
 vec3 lightPos = vec3(4.0, 6.0, 2.0);
 
@@ -29,7 +30,11 @@ void main() {
 	FragPos = vec3(MODEL_MAT * vec4(vertex_position, 1.0));
 	viewPos = (inverse(VIEW_MAT)* vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz - FragPos;
 	
-	normalsOut = normals;
+	tangent = vec3(MODEL_MAT * vec4(aTangent, 1.0f));
+
+	bitangent = vec3(MODEL_MAT * vec4(aBitangent, 1.0f));
+
+	normalsOut = -vec3(MODEL_MAT * vec4(normals, 1.0f));
 //	TangentLightPos = tbnMatrix * lightPos;
 //	TangentViewPos = tbnMatrix * viewPos;
 //	TangentFragPos = tbnMatrix * FragPos;
