@@ -117,32 +117,11 @@ bool OBJLoader::loadOBJ(RawModel *model) {
 
 		normal = glm::cross(edge1, edge2);
 		normal = normalize(normal);
-		
+
 		U1 = model->vertices[i].UVs.x - model->vertices[i + 2].UVs.x;
 		V1 = model->vertices[i].UVs.y - model->vertices[i + 2].UVs.y;
 		U2 = model->vertices[i + 2].UVs.x - model->vertices[i + 1].UVs.x;
 		V2 = model->vertices[i + 2].UVs.y - model->vertices[i + 1].UVs.y;
-		
-		/*glm::vec3 pos0 = model->positions[model->vertex_indices[i]];
-		glm::vec3 pos1 = model->positions[model->vertex_indices[i + 1]];
-		glm::vec3 pos2 = model->positions[model->vertex_indices[i + 2]];*/
-
-		//glm::vec2 uv0 = model->uvs[model->uv_indices[i]];
-		//glm::vec2 uv1 = model->uvs[model->uv_indices[i + 1]];
-		//glm::vec2 uv2 = model->uvs[model->uv_indices[i + 2]];
-
-		////Calculate the triangles
-		//glm::vec3 edge1 = pos1 - pos0;
-		//glm::vec3 edge2 = pos2 - pos0;
-		////Calculate uv delta
-		//glm::vec2 deltaUV1 = uv1 - uv0;
-		//glm::vec2 deltaUV2 = uv2 - uv0;
-
-		//float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-		//aTangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-		//aTangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-		//aTangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-		//aTangent = glm::normalize(aTangent);
 
 		float f = 1.0f / (U1 * V2 - U2 * V1);
 		aTangent.x = f * (U1 * edge1.x - V2 * edge2.x);
@@ -150,9 +129,9 @@ bool OBJLoader::loadOBJ(RawModel *model) {
 		aTangent.z = f * (U1 * edge1.z - V2 * edge2.z);
 		aTangent = glm::normalize(aTangent);
 
-		model->vertices[i].normals = normal;
+	/*	model->vertices[i].normals = normal;
 		model->vertices[i + 1].normals = normal;
-		model->vertices[i + 2].normals = normal;
+		model->vertices[i + 2].normals = normal;*/
 
 		model->vertices[i].tangents = aTangent;
 		model->vertices[i + 1].tangents = aTangent;
@@ -162,22 +141,6 @@ bool OBJLoader::loadOBJ(RawModel *model) {
 		model->vertices[i].biTangents = aBitangent;
 		model->vertices[i + 1].biTangents = aBitangent;
 		model->vertices[i + 2].biTangents = aBitangent;
-
-		/*aBitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-		aBitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-		aBitangent.z = f * (-deltaUV2.x * edge2.z + deltaUV1.x * edge2.z);
-		aBitangent = glm::normalize(aBitangent);*/
-
-		//Set the same tangent to all three vertices of the triangle
-	/*	for (int i = 0; i < 3; i++) {
-			model->tangent.push_back(aTangent);
-			model->bitangent.push_back(aBitangent);
-		}*/
-
-
-		
-		//Compute face normals and tangents
-
 	}
 	std::cout << "Tangent calculations done" << std::endl;
 

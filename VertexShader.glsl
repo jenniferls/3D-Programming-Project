@@ -4,6 +4,9 @@ layout(location = 1) in vec2 texture_coords;
 layout(location = 2) in vec3 normals;
 layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
+layout(location = 5) uniform bool hasNormal;
+
+
 
 out vec2 aTexture;
 out vec3 normalsOut;
@@ -34,7 +37,11 @@ void main() {
 
 	bitangent = vec3(MODEL_MAT * vec4(aBitangent, 1.0f));
 
-	normalsOut = -vec3(MODEL_MAT * vec4(normals, 1.0f));
+	normalsOut = vec3(vec4(normals, 1.0f));
+
+	if(hasNormal == true)
+		normalsOut = vec3(MODEL_MAT * vec4(normals, 1.0f));
+	
 //	TangentLightPos = tbnMatrix * lightPos;
 //	TangentViewPos = tbnMatrix * viewPos;
 //	TangentFragPos = tbnMatrix * FragPos;

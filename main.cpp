@@ -621,11 +621,38 @@ GLuint CreateTexture(string path) {
 	return texture; //Returns an unsigned int/textureID
 }
 
+GLuint CreateNormal(string path, Scene& scene, int index) {
+	GLuint normal = 0;
+	glGenTextures(1, &normal);
+	glBindTexture(GL_TEXTURE_2D, normal);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, colourChannels;
+	const char* filePath = path.c_str();
+	cout << "Normal Texture Path: " << filePath << endl;
+	
+	unsigned char* data = stbi_load(filePath, &width, &height, &colourChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		scene.models[index]->setHasNormal(true);
+		cout << scene.models[index]->getHasNormal() << endl;
+	}
+	else
+		cout << "Failde to load normal map. Reason; " << stbi_failure_reason() << endl;
+	stbi_image_free(data);
+	return normal;
+}
+
 void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
-	//scene.addModel("Resources/Models/ship.obj");
-	//scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 	scene.addModel("Resources/Models/cube.obj");
+	scene.addModel("Resources/Models/ship.obj");
+	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 
 	scene.addBlendmapModel("Resources/Models/plane.obj");
 
@@ -634,15 +661,15 @@ void CreateScene(Scene& scene) {
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		scene.models[i]->setTextureID(CreateTexture(scene.models[i]->getTexturePath())); //Create texture
-		scene.models[i]->setNormalID(CreateTexture(scene.models[i]->getNormalTexturePath()));
+		scene.models[i]->setNormalID(CreateNormal(scene.models[i]->getNormalTexturePath(), scene, i));
 	}
 
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
 		scene.blendmapModels[i]->setTextureID(CreateTexture(scene.blendmapModels[i]->getTexturePath()));
-		scene.blendmapModels[i]->setNormalID(CreateTexture(scene.blendmapModels[i]->getNormalTexturePath()));
+		scene.blendmapModels[i]->setNormalID(CreateNormal(scene.blendmapModels[i]->getNormalTexturePath(), scene, i));
 
 		scene.blendmapModels[i]->blendmapPath = "Resources/Textures/basic_blendmap3.jpg";
-		scene.blendmapModels[i]->rTexPath = "Resources/Textures/brickwall_normal.jpg"; //Test
+		scene.blendmapModels[i]->rTexPath = "Resources/Textures/brickwall.jpg"; //Test
 		scene.blendmapModels[i]->gTexPath = "Resources/Textures/container.jpg"; //Test
 		scene.blendmapModels[i]->bTexPath = "Resources/Textures/texture1.jpg"; //Test
 
@@ -741,11 +768,11 @@ void SetViewport() {
 void PrePassRender(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramSM);
 
-	//scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-	//scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
+	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	scene.models[2]->setWorldPosition(glm::vec3(-1.0f, 0.0f, 2.0f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
-	//scene.models[0]->setWorldRotation(rotationVal);
+	scene.models[0]->setWorldRotation(rotationVal);
 
 	glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
@@ -789,8 +816,8 @@ void Render(Scene& scene, float rotationVal) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//Choose model placement (default is origo)
-//	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-//	scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
+	//scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	//scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
@@ -805,6 +832,7 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 	glUniformMatrix4fv(shadow_id2, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
+
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0])); //Sends light color data to fragment-shader
 	//glUniform3fv(glGetUniformLocation(gShaderProgram, "viewPos"), camPos, glm::value_ptr(camPos));
@@ -814,6 +842,7 @@ void Render(Scene& scene, float rotationVal) {
 		//Send model matrix data per model
 		CreateModelMatrix(scene.models[i]->getWorldRotation(), scene.models[i]->getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
+		glUniform1i(glGetUniformLocation(gShaderProgram, "hasNormal"), scene.models[i]->getHasNormal());
 		scene.models[i]->prepare(gShaderProgram);
 
 		//Send diffuse texture data

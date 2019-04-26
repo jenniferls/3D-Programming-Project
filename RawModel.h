@@ -76,6 +76,9 @@ public:
 
 	unsigned int shaderProg;
 
+	void setHasNormal(bool);
+	bool getHasNormal() const;
+
 private:
 	void prepareMaterials();
 
@@ -88,5 +91,7 @@ private:
 	int vertCount;
 	glm::vec3 worldPosition;
 	float worldRotation;
+
+	bool hasNormal;
 };
 

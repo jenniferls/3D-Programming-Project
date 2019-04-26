@@ -1,4 +1,5 @@
 #version 440
+layout(location = 5) uniform bool hasNormal;
 
 // these values are interpolated at the rasteriser
 in vec2 texUVs;
@@ -89,23 +90,23 @@ vec4 calcAmbient(vec3 light_color){
 
 void main () {
 	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
-	vec4 normSample = texture(normalMap, vec2(texUVs.s, 1 - texUVs.t)); 
-
-	normSample = (2.0f * normSample) - 1.0f;
+	vec3 norm = finalNormals;
 
 	//vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
 	vec4 result = vec4(0.0f);
 
 	//mat3 normalMat = transpose(inverse(mat3(MODEL_MAT)));
-	vec3 t = normalize(finalTangent);
-	vec3 n = normalize(finalNormals);
-	t = normalize(t - dot(t, n) * n);
-	vec3 b = cross(n, t);
-	
-	mat3 tbnMatrix = (mat3(t, b, n));
-
-	vec3 norm = normalize(vec3(tbnMatrix * normSample.xyz));
+	if(hasNormal == true){
+		vec4 normSample = texture(normalMap, vec2(texUVs.s, 1 - texUVs.t)); 
+		normSample = (2.0f * normSample) - 1.0f;
+		vec3 t = normalize(finalTangent);
+		vec3 n = normalize(finalNormals);
+		t = normalize(t - dot(t, n) * n);
+		vec3 b = cross(n, t);
+		mat3 tbnMatrix = (mat3(t, b, n));
+		norm = normalize(vec3(tbnMatrix * normSample.xyz));
+	}
 
 	float shadow = shadowCalc(final_shadow_coord,norm, light_positions[0]);
 	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm, shadow));

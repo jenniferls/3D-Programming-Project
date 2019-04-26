@@ -32,6 +32,8 @@ RawModel::RawModel(const char* filePath) {
 	this->worldPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->worldRotation = 0.0f;
 
+	this->hasNormal = false;
+
 	createBuffers();
 }
 
@@ -163,4 +165,12 @@ std::string RawModel::getMaterialPath() const {
 
 unsigned int RawModel::getTextureID() const {
 	return this->textureID;
+}
+
+void RawModel::setHasNormal(bool hasNormal) {
+	this->hasNormal = hasNormal;
+}
+
+bool RawModel::getHasNormal() const {
+	return this->hasNormal;
 }
