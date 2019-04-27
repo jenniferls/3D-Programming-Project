@@ -109,7 +109,7 @@ GLuint shadow_id3 = -1;
 glm::mat4 shadow_matrix; //PF
 
 //Camera variables
-glm::vec3 camPos = glm::vec3(0.5f, 0.5f, 8.0f); //Default camera position
+glm::vec3 camPos = glm::vec3(0.5f, 1.0f, 10.0f); //Default camera position
 glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
 glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
 float FoV = 45.0f; //Field-of-view
@@ -653,6 +653,7 @@ void CreateScene(Scene& scene) {
 	scene.addModel("Resources/Models/cube2.obj");
 	scene.addModel("Resources/Models/ship.obj");
 	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
+	scene.addModel("Resources/Models/earth.obj");
 
 	scene.addBlendmapModel("Resources/Models/plane.obj");
 
@@ -768,12 +769,13 @@ void SetViewport() {
 void PrePassRender(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramSM);
 
-	scene.models[0]->setWorldPosition(glm::vec3(7.0f, 2.0f, 3.0f));
+	scene.models[0]->setWorldPosition(glm::vec3(-4.0f, 1.0f, 2.0f));
 	scene.models[1]->setWorldPosition(glm::vec3(4.0f, 1.0f, -3.0f));
-	scene.models[2]->setWorldPosition(glm::vec3(-2.0f, 0.0f, 2.0f));
+	scene.models[2]->setWorldPosition(glm::vec3(-2.0f, 0.0f, -3.0f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
 	scene.models[0]->setWorldRotation(rotationVal);
+	scene.models[3]->setWorldRotation(rotationVal);
 
 	glUniformMatrix4fv(shadow_id, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
@@ -821,7 +823,7 @@ void Render(Scene& scene, float rotationVal) {
 	//scene.models[1]->setWorldPosition(glm::vec3(4.0f, 1.0f, 0.0f));
 	//scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
-	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
+	scene.animatedModels[1]->setWorldPosition(glm::vec3(-9.0f, 2.0f, -2.5f));
 	//scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
 
