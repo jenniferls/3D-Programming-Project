@@ -98,10 +98,10 @@ void main () {
 		vec4 normSample = texture(normalMap, vec2(texUVs.s, 1 - texUVs.t)); 
 		normSample = (2.0f * normSample) - 1.0f;
 		vec3 t = normalize(finalTangent);
-		vec3 n = normalize(finalNormals);
-		t = normalize(t - dot(t, n) * n);
-		vec3 b = cross(n, t);
-		mat3 tbnMatrix = (mat3(t, b, n));
+//		vec3 n = normalize(finalNormals);
+		t = normalize(t - dot(t, norm) * norm);
+		vec3 b = cross(norm, t);
+		mat3 tbnMatrix = (mat3(t, b, norm));
 		norm = normalize(vec3(tbnMatrix * normSample.xyz));
 	}
 

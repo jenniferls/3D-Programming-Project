@@ -39,9 +39,9 @@ void main() {
 
 	normalsOut = vec3(vec4(normals, 1.0f));
 
-	if(hasNormal == true) {
-		normalsOut = vec3(MODEL_MAT * vec4(normals, 1.0f)); //This is not optimal, the same normal should be used -JLS
-	}
+//	if(hasNormal == true) {
+//		normalsOut = vec3(MODEL_MAT * vec4(normals, 1.0f)); //This is not optimal, the same normal should be used -JLS
+//	}
 	
 //	TangentLightPos = tbnMatrix * lightPos;
 //	TangentViewPos = tbnMatrix * viewPos;
