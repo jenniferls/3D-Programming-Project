@@ -621,7 +621,7 @@ GLuint CreateTexture(string path) {
 	return texture; //Returns an unsigned int/textureID
 }
 
-GLuint CreateNormal(string path, Scene& scene, int index) {
+GLuint CreateNormalTexture(string path, Scene& scene, int index) {
 	GLuint normal = 0;
 	glGenTextures(1, &normal);
 	glBindTexture(GL_TEXTURE_2D, normal);
@@ -643,14 +643,14 @@ GLuint CreateNormal(string path, Scene& scene, int index) {
 		cout << scene.models[index]->getHasNormal() << endl;
 	}
 	else
-		cout << "Failde to load normal map. Reason; " << stbi_failure_reason() << endl;
+		cout << "Failed to load normal map. Reason: " << stbi_failure_reason() << endl;
 	stbi_image_free(data);
 	return normal;
 }
 
 void CreateScene(Scene& scene) {
 	//Fill the scene object with models to render
-	scene.addModel("Resources/Models/cube.obj");
+	scene.addModel("Resources/Models/cube2.obj");
 	scene.addModel("Resources/Models/ship.obj");
 	scene.addModel("Resources/Models/cruiser.obj"); //Model borrowed from: http://www.prinmath.com/csci5229/OBJ/index.html
 
@@ -661,12 +661,12 @@ void CreateScene(Scene& scene) {
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		scene.models[i]->setTextureID(CreateTexture(scene.models[i]->getTexturePath())); //Create texture
-		scene.models[i]->setNormalID(CreateNormal(scene.models[i]->getNormalTexturePath(), scene, i));
+		scene.models[i]->setNormalID(CreateNormalTexture(scene.models[i]->getNormalTexturePath(), scene, i));
 	}
 
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
 		scene.blendmapModels[i]->setTextureID(CreateTexture(scene.blendmapModels[i]->getTexturePath()));
-		scene.blendmapModels[i]->setNormalID(CreateNormal(scene.blendmapModels[i]->getNormalTexturePath(), scene, i));
+		scene.blendmapModels[i]->setNormalID(CreateNormalTexture(scene.blendmapModels[i]->getNormalTexturePath(), scene, i));
 
 		scene.blendmapModels[i]->blendmapPath = "Resources/Textures/basic_blendmap3.jpg";
 		scene.blendmapModels[i]->rTexPath = "Resources/Textures/brickwall.jpg"; //Test
@@ -732,7 +732,7 @@ void CreateModelMatrix(float rotationValue, glm::vec3 translation, GLuint shader
 //PF
 void CreateShadowMatrixData(glm::vec3 lightPos) {
 
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3, 3, -3, 3, -1, 10); //An orthographic matrix
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5, 5, -4, 4, -1, 10); //An orthographic matrix
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); //View from the light position towards origo
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
@@ -768,8 +768,9 @@ void SetViewport() {
 void PrePassRender(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramSM);
 
-	scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
-	scene.models[2]->setWorldPosition(glm::vec3(-1.0f, 0.0f, 2.0f));
+	scene.models[0]->setWorldPosition(glm::vec3(7.0f, 2.0f, 3.0f));
+	scene.models[1]->setWorldPosition(glm::vec3(4.0f, 1.0f, -3.0f));
+	scene.models[2]->setWorldPosition(glm::vec3(-2.0f, 0.0f, 2.0f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
 	scene.models[0]->setWorldRotation(rotationVal);
@@ -816,11 +817,12 @@ void Render(Scene& scene, float rotationVal) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//Choose model placement (default is origo)
-	//scene.models[1]->setWorldPosition(glm::vec3(5.0f, 1.0f, 0.0f));
+	//scene.models[0]->setWorldPosition(glm::vec3(6.0f, 0.0f, 3.0f));
+	//scene.models[1]->setWorldPosition(glm::vec3(4.0f, 1.0f, 0.0f));
 	//scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 	scene.animatedModels[1]->setWorldPosition(glm::vec3(-6.0f, 2.0f, -2.5f));
-	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+	//scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
 
 	//Chose model rotations (default is 0.0f)
@@ -835,7 +837,6 @@ void Render(Scene& scene, float rotationVal) {
 
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0])); //Sends light color data to fragment-shader
-	//glUniform3fv(glGetUniformLocation(gShaderProgram, "viewPos"), camPos, glm::value_ptr(camPos));
 
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
