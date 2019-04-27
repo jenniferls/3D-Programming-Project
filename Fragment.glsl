@@ -90,11 +90,8 @@ vec4 calcAmbient(vec3 light_color){
 
 void main () {
 	vec4 texSample = texture(textureSampler, vec2(texUVs.s, 1 - texUVs.t)); //Texture
-	vec3 norm = finalNormals;
 
-	//vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
-
-	vec4 result = vec4(0.0f);
+	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
 	//mat3 normalMat = transpose(inverse(mat3(MODEL_MAT)));
 	if(hasNormal == true){
@@ -107,6 +104,8 @@ void main () {
 		mat3 tbnMatrix = (mat3(t, b, n));
 		norm = normalize(vec3(tbnMatrix * normSample.xyz));
 	}
+
+	vec4 result = vec4(0.0f);
 
 	float shadow = shadowCalc(final_shadow_coord,norm, light_positions[0]);
 	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm, shadow));
