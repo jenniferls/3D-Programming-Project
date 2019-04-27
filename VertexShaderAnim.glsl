@@ -13,7 +13,6 @@ uniform mat4 jointTransforms[MAX_JOINTS];
 out vec2 aTexture;
 out vec3 normalsOut;
 out vec4 fragPosOut;
-out vec4 justPos;
 
 uniform mat4 MODEL_MAT;
 
