@@ -45,6 +45,7 @@ public:
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned short> vertex_indices, uv_indices, normal_indices, tangent_indices, bitangent_indicies;
+
 	//For normal mapping
 	std::vector<glm::vec3> tangent;
 	std::vector<glm::vec3> bitangent;
@@ -76,7 +77,7 @@ public:
 
 	unsigned int shaderProg;
 
-	void setHasNormal(bool);
+	void setHasNormal(bool hasNormal);
 	bool getHasNormal() const;
 
 private:

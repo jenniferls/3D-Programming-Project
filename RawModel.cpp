@@ -18,6 +18,7 @@ RawModel::RawModel(const char* filePath) {
 	this->bTexPath = "Path not loaded";
 	this->textureID = 0;
 	this->blendTexID = 0;
+	this->normalID = 0;
 	this->rTexID = 0;
 	this->gTexID = 0;
 	this->bTexID = 0;

@@ -628,12 +628,11 @@ GLuint CreateNormalTexture(string path, Scene& scene, int index) {
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-
-		scene.models[index]->setHasNormal(true);
-		cout << scene.models[index]->getHasNormal() << endl;
 	}
-	else
-		cout << "Failed to load normal map. Reason: " << stbi_failure_reason() << endl;
+	else {
+		cout << "Failed to load normal map. Reason: " << stbi_failure_reason();
+		cout << endl;
+	}
 	stbi_image_free(data);
 	return normal;
 }
@@ -652,12 +651,13 @@ void CreateScene(Scene& scene) {
 
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		scene.models[i]->setTextureID(CreateTexture(scene.models[i]->getTexturePath())); //Create texture
-		scene.models[i]->setNormalID(CreateNormalTexture(scene.models[i]->getNormalTexturePath(), scene, i));
+		if (scene.models[i]->getHasNormal()) {
+			scene.models[i]->setNormalID(CreateNormalTexture(scene.models[i]->getNormalTexturePath(), scene, i));
+		}
 	}
 
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
 		scene.blendmapModels[i]->setTextureID(CreateTexture(scene.blendmapModels[i]->getTexturePath()));
-		scene.blendmapModels[i]->setNormalID(CreateNormalTexture(scene.blendmapModels[i]->getNormalTexturePath(), scene, i));
 
 		scene.blendmapModels[i]->blendmapPath = "Resources/Textures/basic_blendmap3.jpg";
 		scene.blendmapModels[i]->rTexPath = "Resources/Textures/brickwall.jpg"; //Test

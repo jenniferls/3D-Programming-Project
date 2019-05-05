@@ -194,6 +194,7 @@ bool OBJLoader::loadMTL(RawModel *model) {
 			s >> tex;
 			tex = "Resources/Textures/" + tex;
 			model->setNormalTexturePath(tex);
+			model->setHasNormal(true);
 		}
 	}
 	return true;
