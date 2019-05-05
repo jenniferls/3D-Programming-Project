@@ -782,6 +782,12 @@ void PrePassRender(Scene& scene, float rotationVal) {
 		GLint vertexPos = glGetAttribLocation(gShaderProgramSM, "vertex_position");
 		glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
 
+		//Disable unused attributes
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4);
+
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i]->getVertCount());
 	}
 	//Draws all blendmap models in the scene
@@ -797,6 +803,12 @@ void PrePassRender(Scene& scene, float rotationVal) {
 		glEnableVertexAttribArray(0);
 		GLint vertexPos = glGetAttribLocation(gShaderProgramSM, "vertex_position");
 		glVertexAttribPointer(vertexPos, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, BUFFER_OFFSET(0));
+
+		//Disable unused attributes
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4);
 
 		glDrawArrays(GL_TRIANGLES, 0, scene.blendmapModels[i]->getVertCount());
 	}
