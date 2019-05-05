@@ -32,8 +32,6 @@ float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 	proj_coord = proj_coord * 0.5 + 0.5;
 	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
 	float currentDepth = proj_coord.z;
-	//float bias = 0.005;
-	//float shadow = currentDepth - bias > closetsDepth ? 1.0 : 0.0;
 	vec3 lightDir = normalize(light_pos - fragPos.xyz);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	float shadow = 0.0;
@@ -55,7 +53,6 @@ float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 }
 
 vec4 calcDiffuse(vec3 light_pos, vec3 light_color, vec3 normal){
-//	vec3 am = ambient_val * light_color; // PF: the ambient 
 	//Diffuse shading
 	vec3 pointToLight = normalize(light_pos - fragPos.xyz);
 	float diffuseFactor = dot(pointToLight, normal) / (length(pointToLight) * length(normal));
@@ -103,8 +100,6 @@ void main () {
 	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
 	vec4 result = vec4(0.0f);
-//	result += calcDiffuse(light_positions[0], light_colors[0], norm) * finalTex + calcSpecular(light_positions[0], light_colors[0], norm);
-//	result += calcDiffuse(light_positions[1], light_colors[1], norm) * finalTex + calcSpecular(light_positions[1], light_colors[1], norm);
 
 	float shadow = shadowCalc(final_shadow_coord, norm, light_positions[0]);
 	result += (calcAmbient(light_colors[0]) + (1.0 - shadow) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (finalTex + calcSpecular(light_positions[0], norm, shadow));

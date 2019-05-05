@@ -93,12 +93,10 @@ void main () {
 
 	vec3 norm = normalize(mat3(MODEL_MAT) * finalNormals); //Make sure the vectors are normalized in world space
 
-	//mat3 normalMat = transpose(inverse(mat3(MODEL_MAT)));
 	if(hasNormal == true){
 		vec4 normSample = texture(normalMap, vec2(texUVs.s, 1 - texUVs.t)); 
 		normSample = (2.0f * normSample) - 1.0f;
 		vec3 t = normalize(finalTangent);
-//		vec3 n = normalize(finalNormals);
 		t = normalize(t - dot(t, norm) * norm);
 		vec3 b = cross(norm, t);
 		mat3 tbnMatrix = (mat3(t, b, norm));
@@ -109,8 +107,6 @@ void main () {
 
 	float shadow = shadowCalc(final_shadow_coord,norm, light_positions[0]);
 	result += (calcAmbient(light_colors[0]) + (1.0 - shadow ) * calcDiffuse(light_positions[0], light_colors[0], norm)) * (texSample + calcSpecular(light_positions[0], norm, shadow));
-//	result += (calcAmbient(light_colors[1]) + (1.0 - shadowCalc(final_shadow_coord)) * calcDiffuse(light_positions[1], light_colors[1], norm)) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 	
-
 	fragment_color = result;
 }

@@ -46,25 +46,15 @@ using namespace std;
 
 void initWindow(unsigned int w, unsigned int h);
 
-
-// OpenGL uses unsigned integers to keep track of
-// created resources (shaders, vertices, textures, etc)
-// For simplicity, we make them global here, but it is
-// safe to put them in a class and pass around...
 GLuint gShaderProgram = 0;
-
 //Shader for animated models
 GLuint gShaderProgramAnim = 0;
-
 //Particle shader
 GLuint gShaderProgramPS = 0;
-
 //Skybox shader
 GLuint gShaderProgramSkybox = 0;
-
 //Blend-mapping shader
 GLuint gShaderProgramBlend = 0;
-
 //Compute shader program
 GLuint gShaderProgramCompute = 0;
 
@@ -819,13 +809,8 @@ void Render(Scene& scene, float rotationVal) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//Choose model placement (default is origo)
-	//scene.models[0]->setWorldPosition(glm::vec3(6.0f, 0.0f, 3.0f));
-	//scene.models[1]->setWorldPosition(glm::vec3(4.0f, 1.0f, 0.0f));
-	//scene.models[2]->setWorldPosition(glm::vec3(-3.0f, 0.0f, -4.0f));
 	scene.animatedModels[0]->setWorldPosition(glm::vec3(2.0f, 1.0f, -5.0f));
 	scene.animatedModels[1]->setWorldPosition(glm::vec3(-9.0f, 2.0f, -2.5f));
-	//scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
-
 
 	//Chose model rotations (default is 0.0f)
 	scene.models[0]->setWorldRotation(rotationVal);
@@ -1213,11 +1198,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		ImGui::Checkbox("Show DepthMap", &renderDepth);
 		ImGui::End();
 
-		CreateMatrixData(gShaderProgram, projection_id, view_id); //Creates vp-matrices for standard shader
-		CreateMatrixData(gShaderProgramBlend, projection_id_blend, view_id_blend); //Creates vp-matrices for blendmap shader
-		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim); //Creates vp-matrices for animated model-shader
+		CreateMatrixData(gShaderProgram, projection_id, view_id);					  // Creates vp-matrices for standard shader
+		CreateMatrixData(gShaderProgramBlend, projection_id_blend, view_id_blend);    // Creates vp-matrices for blendmap shader
+		CreateMatrixData(gShaderProgramAnim, projection_id_anim, view_id_anim);		  // Creates vp-matrices for animated model-shader
 		CreateMatrixData(gShaderProgramSkybox, projection_id_skybox, view_id_skybox); // Creates vp-matrices for skybox
-		CreateMatrixData(gShaderProgramPS, projection_id_ps, view_id_ps); // Creates vp-matrices for particle system
+		CreateMatrixData(gShaderProgramPS, projection_id_ps, view_id_ps);			  // Creates vp-matrices for particle system
 
 		Render(gameScene, rotation); //9. Render
 

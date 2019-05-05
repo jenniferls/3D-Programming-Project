@@ -38,7 +38,7 @@ void UpdateParticle(uint index){
 void main(){
 	uint index = gl_GlobalInvocationID.x;
 
-	if(particleData[index].lifetime <= 0.0){ //Should probably be exchanged for a lifetime variable
+	if(particleData[index].lifetime <= 0.0) {
 		particleData[index].lifetime = max_lifetime;
 		InitParticle(index);
 	}

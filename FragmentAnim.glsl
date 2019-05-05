@@ -50,9 +50,8 @@ void main () {
 
 	vec3 norm = normalize(finalNormals); //Make sure the vectors are normalized in world space
 
-	vec4 result = vec4(0.0f); //This value should be 0.0f but is right now used to verify that this shader is being used
+	vec4 result = vec4(0.0f);
 	result += calcDiffuse(light_positions[0], light_colors[0], norm) * texSample + calcSpecular(light_positions[0], light_colors[0], norm);
-//	result += calcDiffuse(light_positions[1], light_colors[1], norm) * texSample + calcSpecular(light_positions[1], light_colors[1], norm);
 
 	fragment_color = result;
 }
