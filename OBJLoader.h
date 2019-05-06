@@ -13,5 +13,6 @@ public:
 	bool loadMTL(RawModel *model);
 
 private:
+	bool calcTangent();
 };
 

@@ -17,7 +17,7 @@ out float diffValue;
 out float specValue;
 
 in vec3 tangent[];
-in vec3 bitangent[];
+//in vec3 bitangent[];
 
 out vec3 finalTangent;
 out vec3 finalBitangent;
@@ -37,7 +37,7 @@ void main(){
 		for(int i = 0; i < gl_in.length(); i++){
 			texUVs = aTexture[i];
 			finalTangent = tangent[i];
-			finalBitangent = bitangent[i];
+//			finalBitangent = bitangent[i];
 
 			finalNormals = normalsOut[i];
 			final_shadow_coord = shadow_coord[i]; // PF

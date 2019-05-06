@@ -833,7 +833,6 @@ void Render(Scene& scene, float rotationVal) {
 	glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view_matrix));				//Sends data about view-matrix to geometry-shader
 	glUniformMatrix4fv(shadow_id2, 1, GL_FALSE, glm::value_ptr(shadow_matrix));
 
-
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_positions"), scene.getLightCount(), glm::value_ptr(scene.lightPositions[0]));  //Sends light position data to fragment-shader
 	glUniform3fv(glGetUniformLocation(gShaderProgram, "light_colors"), scene.getLightCount(), glm::value_ptr(scene.lightColors[0])); //Sends light color data to fragment-shader
 
@@ -1169,7 +1168,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		//Calculate delta time
 		timer.Tick();
 
-		float increment = 0.6f * timer.GetDeltaTime();
+		float increment = 0.3f * timer.GetDeltaTime();
 
 		if (rotation >= _360_DEGREES) {
 			rotation -= _360_DEGREES;

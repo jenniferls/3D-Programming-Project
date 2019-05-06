@@ -3,9 +3,7 @@ layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec2 texture_coords;
 layout(location = 2) in vec3 normals;
 layout(location = 3) in vec3 aTangent;
-layout(location = 4) in vec3 aBitangent;
-
-
+//layout(location = 4) in vec3 aBitangent;
 
 out vec2 aTexture;
 out vec3 normalsOut;
@@ -26,7 +24,7 @@ void main() {
 	
 	tangent = vec3(MODEL_MAT * vec4(aTangent, 1.0f));
 
-	bitangent = vec3(MODEL_MAT * vec4(aBitangent, 1.0f));
+//	bitangent = vec3(MODEL_MAT * vec4(aBitangent, 1.0f));
 
 	normalsOut = vec3(vec4(normals, 1.0f));
 

@@ -13,7 +13,7 @@ public:
 		glm::vec2 UVs;
 		glm::vec3 normals;
 		glm::vec3 tangents;
-		glm::vec3 biTangents;
+		//glm::vec3 biTangents;
 	};
 
 	RawModel(const char* filePath);
