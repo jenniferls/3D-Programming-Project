@@ -22,11 +22,11 @@ vec3 lightPos = vec3(4.0, 6.0, 2.0);
 void main() {
 	aTexture = texture_coords; //Pass the texture info to the geometry shader
 	
-	tangent = vec3(MODEL_MAT * vec4(aTangent, 1.0f));
+	tangent = vec3(MODEL_MAT * vec4(aTangent, 0.0f));
 
 //	bitangent = vec3(MODEL_MAT * vec4(aBitangent, 1.0f));
 
-	normalsOut = vec3(vec4(normals, 1.0f));
+	normalsOut = vec3(vec4(normals, 0.0f));
 
 	gl_Position = vec4(vertex_position, 1.0);
 
