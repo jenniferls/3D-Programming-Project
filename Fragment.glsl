@@ -21,7 +21,6 @@ in vec3 pointToCamera;
 
 in vec3 finalTangent;
 //in vec3 finalBitangent;
-in mat3 TBN_MAT;
 
 in vec4 final_shadow_coord;
 
@@ -97,15 +96,12 @@ void main () {
 		vec4 normSample = texture(normalMap, vec2(texUVs.s, 1 - texUVs.t)); //Normal map texture
 		normSample = normalize((2.0f * normSample) - 1.0f); // Remapping from [0,1] to [-1,1]
 
-//		norm = normalize(vec3(TBN_MAT * normSample.xyz));
-
 		vec3 t = normalize(finalTangent);
 		t = normalize(t - dot(t, norm) * norm); //Re-orthogonalize tangent just in case
 		vec3 b = cross(norm, t); //Calculate the bitangent
 //		vec3 b = normalize(finalBitangent);
 
 		mat3 tbnMatrix = (mat3(t, b, norm)); //Build the TBN matrix
-
 		norm = normalize(vec3(tbnMatrix * normSample.xyz)); //Transform from tangent space to world space
 	}
 
