@@ -20,7 +20,7 @@ in vec3 tangent[];
 //in vec3 bitangent[];
 
 out vec3 finalTangent;
-out vec3 finalBitangent;
+//out vec3 finalBitangent;
 
 in vec4 shadow_coord[]; // PF
 out vec4 final_shadow_coord; // PF

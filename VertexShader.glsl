@@ -10,7 +10,7 @@ out vec3 normalsOut;
 out vec4 shadow_coord;
 out vec3 viewPos;
 out vec3 tangent;
-out vec3 bitangent;
+//out vec3 bitangent;
 
 uniform mat4 MODEL_MAT; // PF
 uniform mat4 SHADOW_MAT; // PF
