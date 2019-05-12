@@ -27,15 +27,15 @@ in vec3 pointToCamera;
 in vec4 final_shadow_coord;
 
 float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
-	
 	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
 	proj_coord = proj_coord * 0.5 + 0.5;
 	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
 	float currentDepth = proj_coord.z;
 	vec3 lightDir = normalize(light_pos - fragPos.xyz);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-	float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
+	float shadow = 0.0;
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
@@ -46,7 +46,7 @@ float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
     }
     shadow /= 9.0;
 
-	if(proj_coord.z > 1.0)
+	if(currentDepth > 1.0)
 		shadow = 0.0;
 
 	return shadow;

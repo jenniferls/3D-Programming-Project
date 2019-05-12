@@ -727,26 +727,27 @@ void CreateShadowMatrixData(glm::vec3 lightPos) {
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)); //View from the light position towards origo
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
-	glm::mat4 shadowBias = glm::mat4(0.5, 0.0, 0.0, 0.0,
+	glm::mat4 shadowBias = glm::mat4( //Texture bias for transforming from [-1, 1] to [0, 1]
+		0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
 		0.5, 0.5, 0.5, 1.0);
 
-
 	shadow_matrix = depthMVP * shadowBias;
+
 	shadow_id = glGetUniformLocation(gShaderProgramSM, "SHADOW_MAT");
 	if (shadow_id == -1) {
-		OutputDebugStringA("Error, cannot find 'shadow_id' attribute in Vertex shader SM\n");
+		OutputDebugStringA("Error, cannot find 'SHADOW_MAT' attribute in Vertex shader SM\n");
 		return;
 	}
 	shadow_id2 = glGetUniformLocation(gShaderProgram, "SHADOW_MAT");
 	if (shadow_id2 == -1) {
-		OutputDebugStringA("Error, cannot find 'shadow_id2' attribute in Vertex shader\n");
+		OutputDebugStringA("Error, cannot find 'SHADOW_MAT' attribute in Vertex shader\n");
 		return;
 	}
 	shadow_id3 = glGetUniformLocation(gShaderProgramBlend, "SHADOW_MAT");
 	if (shadow_id3 == -1) {
-		OutputDebugStringA("Error, cannot find 'shadow_id3' attribute in Vertex shader Blend\n");
+		OutputDebugStringA("Error, cannot find 'SHADOW_MAT' attribute in Vertex shader Blend\n");
 		return;
 	}
 }

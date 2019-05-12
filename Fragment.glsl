@@ -29,25 +29,28 @@ uniform sampler2D shadowMap;
 uniform sampler2D normalMap;
 
 float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
-	vec3 proj_coord = shadow_coord.xyz/shadow_coord.w;
-	proj_coord = proj_coord * 0.5 + 0.5;
+	vec3 proj_coord = shadow_coord.xyz / shadow_coord.w; //Perspective divide. Range [-1, 1]
+	proj_coord = proj_coord * 0.5 + 0.5; //Transform to [0, 1] Range.
 	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
 	float currentDepth = proj_coord.z;
 	vec3 lightDir = normalize(light_pos - fragPos.xyz);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-	float shadow = 0.0;
+//    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005f); //For avoiding shadow acne and prevents self-shadows (positive and negative)
+	float bias = 0.005f*tan(acos(clamp(dot( normal,lightDir), 0f, 1f))); //Same as above but preserves self-shadows. Changes bias according to slope
+	bias = clamp(bias, 0f , 0.05f);
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
+	float shadow = 0.0f;
     for(int x = -1; x <= 1; ++x)
     {
-        for(int y = -1; y <= 1; ++y)
+        for(int y = -1; y <= 1; ++y) //Loops through texture
         {
-            float pcfDepth = texture(shadowMap, proj_coord.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+            float pcfDepth = texture(shadowMap, proj_coord.xy + vec2(x, y) * texelSize).r; //Percentage closer filtering
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;
         }    
     }
     shadow /= 9.0;
 
-	if(proj_coord.z > 1.0)
+	if(currentDepth > 1.0) //If sampling outside frustum
 		shadow = 0.0;
 
 	return shadow;
