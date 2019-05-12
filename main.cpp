@@ -660,9 +660,9 @@ void CreateScene(Scene& scene) {
 		scene.blendmapModels[i]->setTextureID(CreateTexture(scene.blendmapModels[i]->getTexturePath()));
 
 		scene.blendmapModels[i]->blendmapPath = "Resources/Textures/basic_blendmap3.jpg";
-		scene.blendmapModels[i]->rTexPath = "Resources/Textures/brickwall.jpg"; //Test
-		scene.blendmapModels[i]->gTexPath = "Resources/Textures/container.jpg"; //Test
-		scene.blendmapModels[i]->bTexPath = "Resources/Textures/texture1.jpg"; //Test
+		scene.blendmapModels[i]->rTexPath = "Resources/Textures/brickwall.jpg";
+		scene.blendmapModels[i]->gTexPath = "Resources/Textures/container.jpg";
+		scene.blendmapModels[i]->bTexPath = "Resources/Textures/texture1.jpg";
 
 		scene.blendmapModels[i]->blendTexID = CreateTexture(scene.blendmapModels[i]->blendmapPath);
 		scene.blendmapModels[i]->rTexID = CreateTexture(scene.blendmapModels[i]->rTexPath);
