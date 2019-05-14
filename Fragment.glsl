@@ -34,9 +34,9 @@ float shadowCalc(vec4 shadow_coord, vec3 normal, vec3 light_pos){
 	float closetsDepth = texture(shadowMap, proj_coord.xy).r;
 	float currentDepth = proj_coord.z;
 	vec3 lightDir = normalize(light_pos - fragPos.xyz);
-//    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005f); //For avoiding shadow acne and prevents self-shadows (positive and negative)
-	float bias = 0.005f*tan(acos(clamp(dot( normal,lightDir), 0f, 1f))); //Same as above but preserves self-shadows. Changes bias according to slope
-	bias = clamp(bias, 0f , 0.05f);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005f); //For avoiding shadow acne and prevents self-shadows (positive and negative)
+//	float bias = 0.005f*tan(acos(clamp(dot( normal,lightDir), 0f, 1f))); //Same as above but preserves self-shadows. Changes bias according to slope
+//	bias = clamp(bias, 0f , 0.05f);
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
 	float shadow = 0.0f;
