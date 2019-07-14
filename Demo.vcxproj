@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="AnimatedModel.cpp" />
     <ClCompile Include="AssimpLoader.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
@@ -170,6 +171,7 @@
   <ItemGroup>
     <ClInclude Include="AnimatedModel.h" />
     <ClInclude Include="AssimpLoader.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />

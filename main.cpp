@@ -31,6 +31,7 @@
 #include "GameTimer.h"
 #include "Scene.h"
 #include "Skybox.h"
+#include "Camera.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -98,15 +99,7 @@ GLuint shadow_id2 = -1;
 GLuint shadow_id3 = -1;
 glm::mat4 shadow_matrix; //PF
 
-//Camera variables
-glm::vec3 camPos = glm::vec3(0.5f, 1.0f, 10.0f); //Default camera position
-glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f); //Default camera front
-glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); //Default camera up-vector
-float FoV = 45.0f; //Field-of-view
-float camYaw = -90.0f;
-float camPitch = 0.0f;
-float mouseLastX = WIDTH / 2; //At centre of the screen
-float mouseLastY = HEIGHT / 2; //At centre of the screen
+Camera camera(WIDTH, HEIGHT, glm::vec3(0.5f, 1.0f, 10.0f));
 
 GameTimer timer;
 
@@ -694,14 +687,14 @@ void CreateScene(Scene& scene) {
 }
 
 void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
-	projection_matrix = glm::perspective(glm::radians(FoV), WIDTH / HEIGHT, 0.1f, 100.0f);
+	projection_matrix = glm::perspective(glm::radians(camera.getFoV()), WIDTH / HEIGHT, 0.1f, 100.0f);
 	projectionID = glGetUniformLocation(shaderProg, "PROJ_MAT");
 	if (projectionID == -1) {
 		OutputDebugStringA("Error, cannot find 'projection_id' attribute in Geometry shader\n");
 		return;
 	}
 
-	view_matrix = glm::lookAt(camPos, camPos + camFront, camUp); //Camera position, Looking direction and Up vector
+	view_matrix = glm::lookAt(camera.getCameraPosition(), camera.getCameraPosition() + camera.getCameraFront(), camera.getCameraUp()); //Camera position, Looking direction and Up vector
 	viewID = glGetUniformLocation(shaderProg, "VIEW_MAT");
 	if (viewID == -1) {
 		OutputDebugStringA("Error, cannot find 'view_id' attribute in Geometry shader\n");
@@ -1004,61 +997,27 @@ void Render(Scene& scene, float rotationVal) {
 	glUseProgram(0);
 }
 
-void keyboardUpdate() {
-	float movementSpeed = 7.5f * timer.GetDeltaTime();
-	if (GetAsyncKeyState(GLFW_KEY_W)) //GetAsyncKeyState Determines whether a key is up or down at the time of the function call.
-		camPos += movementSpeed * camFront;
-
-	if (GetAsyncKeyState(GLFW_KEY_A))
-		camPos -= glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
-
-	if (GetAsyncKeyState(GLFW_KEY_S))
-		camPos -= movementSpeed * camFront;
-
-	if (GetAsyncKeyState(GLFW_KEY_D))
-		camPos += glm::normalize(glm::cross(camFront, camUp)) * movementSpeed;
-}
-
 //This function uses output from the mouse wheel
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-	FoV = FoV - 5 * yOffset;
-	if (FoV <= 10.0f) {
-		FoV = 10.0f;
-	}
-	if (FoV >= 100.0f) {
-		FoV = 100.0f;
-	}
-	cout << "Current FoV: " << FoV << endl;
+	camera.updateFoV(yOffset);
+	cout << "Current FoV: " << camera.getFoV() << endl;
 }
 
 void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
 	float mouseSpeed = 0.05f;
 
-	float xOffset = xPos - mouseLastX;
-	float yOffset = mouseLastY - yPos;
-	mouseLastX = xPos;
-	mouseLastY = yPos;
+	float xOffset = xPos - camera.getMouseLastX();
+	float yOffset = camera.getMouseLastY() - yPos;
+	camera.setMouseLastX(xPos);
+	camera.setMouseLastY(yPos);
 
 	xOffset *= mouseSpeed;
 	yOffset *= mouseSpeed;
 
-	camYaw += xOffset;
-	camPitch += yOffset;
+	camera.calcCameraYaw(xOffset);
+	camera.calcCameraPitch(yOffset);
 
-	//Constraining camera movement to avoid flipping
-	if (camPitch >= 89.0f) {
-		camPitch = 89.0f;;
-	}
-	if (camPitch <= -89.0f) {
-		camPitch = -89.0f;
-	}
-
-	//Calculating direction vector
-	glm::vec3 direction = glm::vec3(
-		cos(glm::radians(camPitch)) * cos(glm::radians(camYaw)),
-		sin(glm::radians(camPitch)),
-		cos(glm::radians(camPitch)) * sin(glm::radians(camYaw)));
-	camFront = glm::normalize(direction);
+	camera.updateCameraVectors();
 
 	//This provides feedback to console for mouse movement
 	//cout << "X-Position: " << xPos << endl;
@@ -1177,7 +1136,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 		rotation += increment;
 
-		keyboardUpdate();
+		camera.keyboardUpdate(timer.GetDeltaTime());
+		//keyboardUpdate();
 
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT); //Set the viewport to the same resolution as the framebuffer to be able to render shadows correctly
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFbo); //PF
@@ -1292,7 +1252,7 @@ void initWindow(unsigned int w, unsigned int h) {
 	glewExperimental = GL_TRUE;
 
 	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //Disables mouse cursor (Press ESCAPE to quit application)
-	glfwSetCursorPos(gWindow, mouseLastX, mouseLastY); //Initializes cursor position to the middle of the screen
+	glfwSetCursorPos(gWindow, camera.getMouseLastX(), camera.getMouseLastY()); //Initializes cursor position to the middle of the screen
 	glfwSetScrollCallback(gWindow, scrollCallback); //Scroll-wheel callback
 	glfwSetCursorPosCallback(gWindow, mouseCallback); //Mouse callback
 
