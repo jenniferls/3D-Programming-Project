@@ -1,4 +1,13 @@
-﻿  Camera.cpp
+﻿  OBJLoader.cpp
+  Scene.cpp
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\defs.h : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\matrix3x3.h : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\matrix3x3.inl : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\matrix4x4.inl : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
   main.cpp
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\defs.h : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\matrix3x3.h : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\matrix3x3.inl : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+g:\my documents\bth studies\inlämningsuppgifter\3d-programming\project\3dproject\assimp\include\assimp\matrix4x4.inl : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
   Generating Code...
   Demo.vcxproj -> G:\My Documents\BTH Studies\Inlämningsuppgifter\3D-Programming\Project\3DProject\x64\Debug\3DProject.exe

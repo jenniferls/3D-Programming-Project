@@ -1,6 +1,7 @@
 //--------------------------------------------------------------------------------------
 // BTH - Stefan Petersson 2014.
 //     - updated by FLL
+//     - further updated by Jennifer Larsson-Stahl 2019.
 //--------------------------------------------------------------------------------------
 #include <windows.h>
 
@@ -19,7 +20,6 @@
 #include "glew/include/GL/glew.h"
 #include "glfw/include/GLFW/glfw3.h"
 
-// read docs: https://github.com/g-truc/glm/blob/master/manual.md#section1
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
