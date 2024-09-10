@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <string>
 #include "glm/glm.hpp"
 
 const int MAX_PARTICLES = 100;
