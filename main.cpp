@@ -702,9 +702,10 @@ void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
 	}
 }
 
-void CreateModelMatrix(float rotationValue, glm::vec3 rotationAxis, glm::vec3 translation, GLuint shaderProg, GLint &modelID) {
+void CreateModelMatrix(float rotationValue, glm::vec3 rotationAxis, glm::vec3 translation, GLuint shaderProg, GLint &modelID, glm::vec3 scale) {
 	glm::mat4 identity_mat = glm::mat4(1.0f);
-	model_matrix = glm::translate(identity_mat, translation);
+	model_matrix = glm::scale(identity_mat, scale);
+	model_matrix = glm::translate(model_matrix, translation);
 	model_matrix = glm::rotate(model_matrix, rotationValue, rotationAxis);
 	modelID = glGetUniformLocation(shaderProg, "MODEL_MAT");
 	if (modelID == -1) {
@@ -758,6 +759,8 @@ void PrePassRender(Scene& scene, float rotationVal) {
 	scene.models[2]->setWorldPosition(glm::vec3(-2.0f, 0.0f, -3.0f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
+	scene.models[1]->setScale(glm::vec3(5.0f, 5.0f, 5.0f));
+
 	scene.models[0]->setWorldRotation(rotationVal);
 	scene.models[3]->setWorldRotation(rotationVal);
 
@@ -767,7 +770,7 @@ void PrePassRender(Scene& scene, float rotationVal) {
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send mvp matrix data per model
 		CreateShadowMatrixData(scene.lightPositions[0]); //Creates the matrix every frame
-		CreateModelMatrix(scene.models[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.models[i]->getWorldPosition(), gShaderProgramSM, model_id_sm);
+		CreateModelMatrix(scene.models[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.models[i]->getWorldPosition(), gShaderProgramSM, model_id_sm, scene.models[i]->getScale());
 		glUniformMatrix4fv(model_id_sm, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
 		glBindVertexArray(scene.models[i]->vaoID); // bind is like "enabling" the object to use it
@@ -788,7 +791,7 @@ void PrePassRender(Scene& scene, float rotationVal) {
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
 		//Send mvp matrix data per model
 		CreateShadowMatrixData(scene.lightPositions[0]); //Creates the matrix every frame
-		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramSM, model_id_sm);  //Exchange rotation for "0.0f" to stop rotation
+		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramSM, model_id_sm, scene.blendmapModels[i]->getScale());  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id_sm, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
 		// tell opengl we are going to use the VAO we described earlier
@@ -834,7 +837,7 @@ void Render(Scene& scene, float rotationVal) {
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getModelCount(); i++) {
 		//Send model matrix data per model
-		CreateModelMatrix(scene.models[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.models[i]->getWorldPosition(), gShaderProgram, model_id);  //Exchange rotation for "0.0f" to stop rotation
+		CreateModelMatrix(scene.models[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.models[i]->getWorldPosition(), gShaderProgram, model_id, scene.models[i]->getScale());  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
 		glUniform1i(glGetUniformLocation(gShaderProgram, "hasNormal"), scene.models[i]->getHasNormal());
 		scene.models[i]->prepare(gShaderProgram);
@@ -875,7 +878,7 @@ void Render(Scene& scene, float rotationVal) {
 
 	//Draws all animated models in the scene
 	for (int i = 0; i < scene.getAnimModelCount(); i++) {
-		CreateModelMatrix(scene.animatedModels[i]->getWorldRotation(), glm::vec3(1.0f, 0.0f, 0.0f), scene.animatedModels[i]->getWorldPosition(), gShaderProgramAnim, model_id_anim);
+		CreateModelMatrix(scene.animatedModels[i]->getWorldRotation(), glm::vec3(1.0f, 0.0f, 0.0f), scene.animatedModels[i]->getWorldPosition(), gShaderProgramAnim, model_id_anim, glm::vec3(1.0f));
 		glUniformMatrix4fv(model_id_anim, 1, GL_FALSE, glm::value_ptr(model_matrix));
 		//scene.animatedModels[i]->prepare(gShaderProgramAnim);
 
@@ -911,7 +914,7 @@ void Render(Scene& scene, float rotationVal) {
 	//Draws all static models in the scene
 	for (int i = 0; i < scene.getBlendmapModelCount(); i++) {
 		//Send model matrix data per model
-		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramBlend, model_id_blend);  //Exchange rotation for "0.0f" to stop rotation
+		CreateModelMatrix(scene.blendmapModels[i]->getWorldRotation(), glm::vec3(0.0f, 1.0f, 0.0f), scene.blendmapModels[i]->getWorldPosition(), gShaderProgramBlend, model_id_blend, scene.blendmapModels[i]->getScale());  //Exchange rotation for "0.0f" to stop rotation
 		glUniformMatrix4fv(model_id_blend, 1, GL_FALSE, glm::value_ptr(model_matrix)); //Sends data about model-matrix to geometry-shader
 		scene.blendmapModels[i]->prepare(gShaderProgramBlend);
 
@@ -981,7 +984,7 @@ void Render(Scene& scene, float rotationVal) {
 	glEnable(GL_BLEND); //For transparency
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	CreateModelMatrix(0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0, 5.0, 0.0), gShaderProgramPS, model_id_ps);
+	CreateModelMatrix(0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0, 5.0, 0.0), gShaderProgramPS, model_id_ps, glm::vec3(1.0f));
 	glUniformMatrix4fv(projection_id_ps, 1, GL_FALSE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix
 	glUniformMatrix4fv(view_id_ps, 1, GL_FALSE, glm::value_ptr(view_matrix));			  //Sends data about view-matrix
 	glUniformMatrix4fv(model_id_ps, 1, GL_FALSE, glm::value_ptr(model_matrix));			  //Sends data about model-matrix

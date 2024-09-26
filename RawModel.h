@@ -36,6 +36,8 @@ public:
 
 	glm::vec3 getWorldPosition() const;
 	void setWorldPosition(glm::vec3 position);
+	glm::vec3 getScale() const;
+	void setScale(glm::vec3 scale);
 	float getWorldRotation() const;
 	void setWorldRotation(float rotation);
 
@@ -92,6 +94,7 @@ private:
 	std::string materialPath; //File path to .mtl-file
 	int vertCount;
 	glm::vec3 worldPosition;
+	glm::vec3 scale;
 	float worldRotation;
 
 	bool hasNormal;
