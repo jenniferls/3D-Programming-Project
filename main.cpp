@@ -704,9 +704,9 @@ void CreateMatrixData(GLuint shaderProg, GLint &projectionID, GLint &viewID) {
 
 void CreateModelMatrix(float rotationValue, glm::vec3 rotationAxis, glm::vec3 translation, GLuint shaderProg, GLint &modelID, glm::vec3 scale) {
 	glm::mat4 identity_mat = glm::mat4(1.0f);
-	model_matrix = glm::scale(identity_mat, scale);
-	model_matrix = glm::translate(model_matrix, translation);
+	model_matrix = glm::translate(identity_mat, translation);
 	model_matrix = glm::rotate(model_matrix, rotationValue, rotationAxis);
+	model_matrix = glm::scale(model_matrix, scale);
 	modelID = glGetUniformLocation(shaderProg, "MODEL_MAT");
 	if (modelID == -1) {
 		OutputDebugStringA("Error, cannot find 'model_id' attribute in Geometry shader\n");
@@ -755,11 +755,11 @@ void PrePassRender(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramSM);
 
 	scene.models[0]->setWorldPosition(glm::vec3(-4.0f, 1.0f, 2.0f));
-	scene.models[1]->setWorldPosition(glm::vec3(4.0f, 1.0f, -3.0f));
+	scene.models[1]->setWorldPosition(glm::vec3(10.0f, 1.0f, -3.0f));
 	scene.models[2]->setWorldPosition(glm::vec3(-2.0f, 0.0f, -3.0f));
 	scene.blendmapModels[0]->setWorldPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 
-	scene.models[1]->setScale(glm::vec3(5.0f, 5.0f, 5.0f));
+	scene.models[1]->setScale(glm::vec3(3.0f, 3.0f, 3.0f));
 
 	scene.models[0]->setWorldRotation(rotationVal);
 	scene.models[3]->setWorldRotation(rotationVal);
