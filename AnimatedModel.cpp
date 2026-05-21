@@ -39,6 +39,7 @@ AnimatedModel::~AnimatedModel() {
 	glDeleteVertexArrays(1, &vaoID);
 	glDeleteBuffers(1, &vboID);
 	glDeleteBuffers(1, &iboID);
+	glDeleteBuffers(1, &vboIDJoints);
 }
 
 void AnimatedModel::prepareMaterials() {
