@@ -976,7 +976,7 @@ void Render(Scene& scene, float rotationVal) {
 	glUniform1f(glGetUniformLocation(gShaderProgramCompute, "max_lifetime"), MAX_LIFETIME); //Send the max lifetime of particles
 	glDispatchCompute(scene.particleSystem.getCount(), 1, 1);
 	//cout << sizeof(scene.particleSystem.particles) << endl; // Debug
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 	glUseProgram(0);
 
 	////////// Particle System  //////////
@@ -1234,6 +1234,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	glDeleteProgram(gShaderProgramPS);
 	glDeleteProgram(gShaderProgramSkybox);
 	glDeleteProgram(gShaderProgramSM);
+	glDeleteProgram(gShaderProgramCompute);
 
 	return 0;
 }
