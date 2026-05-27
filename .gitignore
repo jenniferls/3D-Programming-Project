@@ -260,3 +260,5 @@ paket-files/
 __pycache__/
 *.pyc
 *.pdb
+x64/Debug/3DProject.pdb
+x64/Debug/3DProject.ilk
