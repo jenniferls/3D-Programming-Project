@@ -3,7 +3,7 @@
 #extension GL_ARB_shader_storage_buffer_object : enable
 
 
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in; //Threads
+layout (local_size_x = 128, local_size_y = 1, local_size_z = 1) in; //Threads
 
 struct Particle {
 	vec4 pos;
@@ -18,7 +18,8 @@ layout (std430, binding = 0) buffer particles {
 };
 
 uniform float dt;
-uniform float max_lifetime;
+uniform float maxLifetime;
+uniform int particleCount;
 
 void InitParticle(uint index){
 		particleData[index].pos = particleData[index].startPos;
@@ -38,8 +39,12 @@ void UpdateParticle(uint index){
 void main(){
 	uint index = gl_GlobalInvocationID.x;
 
+	if (index >= particleCount) {
+		return;
+	}
+
 	if(particleData[index].lifetime <= 0.0) {
-		particleData[index].lifetime = max_lifetime;
+		particleData[index].lifetime = maxLifetime;
 		InitParticle(index);
 	}
 

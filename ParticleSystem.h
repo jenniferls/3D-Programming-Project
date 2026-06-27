@@ -3,12 +3,13 @@
 #include <string>
 #include "glm/glm.hpp"
 
-const int MAX_PARTICLES = 100;
+const int MAX_PARTICLES = 1280;
 
 class ParticleSystem {
 public:
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 #define MAX_LIFETIME 2.0f
+#define GROUP_SIZE 128
 	struct Particle {
 		glm::vec4 pos = glm::vec4(0.0, 0.0, 0.0, 1.0);
 		glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 0.0);

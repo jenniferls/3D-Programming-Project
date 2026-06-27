@@ -973,8 +973,9 @@ void Render(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramCompute);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, scene.particleSystem.vboID);
 	glUniform1f(glGetUniformLocation(gShaderProgramCompute, "dt"), timer.GetDeltaTime()); //Send delta time
-	glUniform1f(glGetUniformLocation(gShaderProgramCompute, "max_lifetime"), MAX_LIFETIME); //Send the max lifetime of particles
-	glDispatchCompute(scene.particleSystem.getCount(), 1, 1);
+	glUniform1f(glGetUniformLocation(gShaderProgramCompute, "maxLifetime"), MAX_LIFETIME); //Send the max lifetime of particles
+	glUniform1i(glGetUniformLocation(gShaderProgramCompute, "particleCount"), scene.particleSystem.getCount());
+	glDispatchCompute((scene.particleSystem.getCount() + GROUP_SIZE - 1) / GROUP_SIZE, 1, 1);
 	//cout << sizeof(scene.particleSystem.particles) << endl; // Debug
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 	glUseProgram(0);
@@ -983,6 +984,7 @@ void Render(Scene& scene, float rotationVal) {
 	glUseProgram(gShaderProgramPS);
 	glEnable(GL_BLEND); //For transparency
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glDepthMask(GL_FALSE);
 
 	CreateModelMatrix(0.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0, 5.0, 0.0), gShaderProgramPS, model_id_ps, glm::vec3(1.0f));
 	glUniformMatrix4fv(projection_id_ps, 1, GL_FALSE, glm::value_ptr(projection_matrix)); //Sends data about projection-matrix
@@ -998,6 +1000,7 @@ void Render(Scene& scene, float rotationVal) {
 	glDrawArrays(GL_POINTS, 0, scene.particleSystem.getCount());
 
 	glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
 	glUseProgram(0);
 }
 

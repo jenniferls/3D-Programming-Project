@@ -12,8 +12,8 @@ ParticleSystem::ParticleSystem() {
 	this->vboID = 0;
 	this->vboPos = 0;
 	this->vboVel = 0;
-	this->timer = 0.0;
-	this->emitRate = 0.1;
+	this->emitRate = 0.01;
+	this->timer = this->emitRate;
 
 	initParticles(); //Gives rendom positions to particles
 
@@ -78,10 +78,17 @@ void ParticleSystem::addParticle() {
 }
 
 void ParticleSystem::update(double dt) {
-	this->timer -= 1.0 * dt;
+	this->timer -= dt;
+
+	//This version may cause a burst of particles to emit during startup currently
+	//while (this->particleCount < MAX_PARTICLES && this->timer <= 0) {
+	//	addParticle();
+	//	this->timer += this->emitRate;
+	//}
+
 	if (this->particleCount < MAX_PARTICLES && this->timer <= 0) {
 		addParticle();
-		this->timer = this->emitRate;
+		this->timer += this->emitRate;
 	}
 }
 
