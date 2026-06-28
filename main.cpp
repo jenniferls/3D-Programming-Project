@@ -1118,8 +1118,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		shutdown = true;
 
 	//Create a scene object and fill it
-	Scene gameScene;
-	CreateScene(gameScene);
+	Scene* gameScene = new Scene();
+	CreateScene(*gameScene);
 
 	CreateFullScreenQuad();
 
@@ -1151,7 +1151,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //PF
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
-		PrePassRender(gameScene, rotation);
+		PrePassRender(*gameScene, rotation);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1170,7 +1170,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		ImGui::Text("DV1568 3D-Programming");           // Display some text (you can use a format strings too)   
 		ImGui::ColorEdit3("clear color", gClearColour); // Edit 3 floats representing a color
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::Text("Particles in scene: %i", gameScene.particleSystem.getCount());
+		ImGui::Text("Particles in scene: %i", gameScene->particleSystem.getCount());
 		static float scale = 1.0f;
 		ImGui::SliderFloat("Scale", &scale, 0.0f, 1.0f);
 		static bool renderDepth = false;
@@ -1183,7 +1183,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		CreateMatrixData(gShaderProgramSkybox, projection_id_skybox, view_id_skybox); // Creates vp-matrices for skybox
 		CreateMatrixData(gShaderProgramPS, projection_id_ps, view_id_ps);			  // Creates vp-matrices for particle system
 
-		Render(gameScene, rotation); //9. Render
+		Render(*gameScene, rotation); //9. Render
 
 		// first pass is done!
 		// now render a second pass
@@ -1238,6 +1238,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	glDeleteProgram(gShaderProgramSkybox);
 	glDeleteProgram(gShaderProgramSM);
 	glDeleteProgram(gShaderProgramCompute);
+
+	delete gameScene;
 
 	return 0;
 }

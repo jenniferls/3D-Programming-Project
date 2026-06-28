@@ -3,7 +3,7 @@
 #include <string>
 #include "glm/glm.hpp"
 
-const int MAX_PARTICLES = 1280;
+const int MAX_PARTICLES = 12800;
 
 class ParticleSystem {
 public:
